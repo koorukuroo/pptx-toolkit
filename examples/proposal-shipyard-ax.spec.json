@@ -1,0 +1,47 @@
+{
+  "version": "0.2",
+  "metadata": {
+    "title": "조선소 현장 AX 전환 제안",
+    "subtitle": "용접·도장 공정의 품질 데이터를 AI로 연결해 재작업률을 낮추는 12개월 프로그램",
+    "organization": "코어닷투데이",
+    "presenter": "AX사업본부",
+    "date": "2026. 10.",
+    "audience": "조선사 생산혁신 임원 및 공정기술팀 (제안 평가)",
+    "success_condition": "1단계 파일럿(도장 공정 2개 라인, 4개월) 계약을 체결한다",
+    "delivery_mode": "live",
+    "duration_minutes": 15,
+    "language": "ko-KR"
+  },
+  "route": { "deck_type": "proposal_bid", "style_profile": "paperlogy_business", "brand_mode": "neutral", "communication_mode": "narrative" },
+  "assets": { "images": { "site": "assets/sample-kiosk.png" } },
+  "evidence": [
+    { "id": "E1", "claim": "도장 공정 재작업률 7.8%는 업계 상위권 대비 2배다", "kind": "user_provided", "confidence": "high", "source": "고객사 제공 공정 KPI", "period": "2025" },
+    { "id": "E2", "claim": "재작업 원인의 61%는 막두께·습도 조건 이탈로, 센서 데이터로 사전 감지 가능하다", "kind": "interpretation", "confidence": "medium", "source": "고객사 품질 보고서 분석 (3개월치)", "period": "2026.6–2026.8" }
+  ],
+  "slides": [
+    { "number": 1, "archetype": "cover", "title": "조선소 현장 AX 전환 제안", "content": { "subtitle": "용접·도장 품질 데이터를 AI로 연결해 재작업률을 절반으로", "tagline": "제안서 · 1단계 파일럿", "image": "site" } },
+    { "number": 2, "archetype": "statement", "title": "문제 정의", "content": { "statement": "재작업의 61%는 이미 측정하고 있는 데이터 안에 예고돼 있었습니다", "attribution": "고객사 품질 보고서 3개월치 분석" } },
+    { "number": 3, "section": "현황", "archetype": "evidence_chart", "title": "도장 재작업률 7.8%는 선도 조선소의 두 배이며 3년째 개선되지 않았습니다",
+      "content": { "chart": { "type": "line", "categories": ["2022", "2023", "2024", "2025"], "series": [ { "name": "고객사", "values": [8.1, 7.9, 8.0, 7.8] }, { "name": "선도 조선소(추정)", "values": [5.2, 4.6, 4.1, 3.9] } ], "unit": "%", "highlight": "고객사", "value_format": "0.0" }, "insight": "격차는 설비가 아니라 공정 조건 관리에서 납니다", "callouts": ["재작업 1%p = 연 약 24억원 (고객사 제공 원가 기준)", "선도사는 막두께·습도 이탈을 실시간 경고"] },
+      "source_note": "출처: 고객사 공정 KPI(2022–2025), 선도 조선소 수치는 공개 IR·업계 인터뷰 기반 추정", "evidence_ids": ["E1"] },
+    { "number": 4, "section": "현황", "archetype": "evidence_chart", "title": "재작업 원인의 6할은 센서로 이미 측정 중인 막두께·습도 이탈입니다",
+      "content": { "chart": { "type": "doughnut", "categories": ["막두께 이탈", "습도·온도 조건", "표면 처리 불량", "작업자 숙련", "기타"], "series": [ { "name": "원인 비중", "values": [38, 23, 17, 14, 8] } ], "highlight": 0 }, "insight": "막두께·습도 두 원인(61%)은 현장 센서 데이터로 발생 전 감지할 수 있습니다", "callouts": ["막두께계·환경 센서 데이터는 수집되지만 사후 보고용으로만 사용", "경고 기준이 작업자 경험에 의존"], "layout": "chart-left" },
+      "source_note": "출처: 고객사 품질 보고서 2026.6–8 (재작업 건 412건 분류), 코어닷투데이 분석", "evidence_ids": ["E2"] },
+    { "number": 5, "section": "제안", "archetype": "image_focus", "title": "현장 센서와 작업 지시를 한 화면으로 연결하는 공정 조건 관제가 핵심입니다",
+      "content": { "image": "site", "caption": "도장 라인 관제 화면(시안): 막두께·습도·온도 실시간 경고와 작업 지시가 한 화면에", "points": ["이탈 발생 전 30분 예측 경고", "작업반장 태블릿·현장 사이니지 동시 표시", "기존 MES·품질 시스템과 양방향 연동"], "layout": "image-right" } },
+    { "number": 6, "section": "제안", "archetype": "process", "title": "4개월 파일럿은 데이터 연결 → 예측 모델 → 현장 적용의 세 단계로 진행합니다",
+      "content": { "style": "chevron", "steps": [ { "title": "데이터 연결", "detail": "막두께계·환경 센서·MES 작업 지시 데이터를 하나의 공정 데이터 레이크로 통합", "owner": "1개월" }, { "title": "예측 모델", "detail": "이탈 30분 전 예측 모델 학습, 라인별 경고 기준 튜닝", "owner": "1.5개월" }, { "title": "현장 적용", "detail": "2개 라인 관제 화면·태블릿 적용, 재작업률 변화 측정", "owner": "1.5개월" } ] } },
+    { "number": 7, "section": "제안", "archetype": "points", "title": "파일럿 성공 기준은 재작업률·경고 정확도·현장 수용도 세 가지로 미리 합의합니다",
+      "content": { "layout": "columns", "points": [ { "heading": "재작업률", "detail": "파일럿 2개 라인 7.8% → 5.5% 이하", "metric": "-30%" }, { "heading": "경고 정확도", "detail": "이탈 예측 정밀도 80% 이상, 오경보 하루 3건 이하", "metric": "80%" }, { "heading": "현장 수용도", "detail": "작업반장 만족도 4점 이상(5점), 경고 조치율 90%", "metric": "90%" } ] } },
+    { "number": 8, "section": "신뢰", "archetype": "case_study", "title": "유사 프로젝트에서 6개월 만에 불량률을 35% 낮춘 경험이 있습니다",
+      "content": { "client": "중공업 부품 가공사 (2025)", "context": "가공 라인 불량률 4.2%, 원인은 공구 마모와 가공 조건 이탈", "intervention": "설비 센서·MES 데이터를 연결하고 공구 교체 시점 예측 모델을 현장 화면에 적용", "result": "6개월 후 불량률 2.7%, 공구 비용 12% 절감", "evidence": "고객사 제공 KPI 기준(2025.3 → 2025.9). 레퍼런스 체크 가능" } },
+    { "number": 9, "section": "신뢰", "archetype": "team", "title": "제조 현장 경험이 있는 PM과 데이터 엔지니어가 전담합니다",
+      "content": { "members": [ { "name": "김○○", "role": "PM", "responsibility": "프로젝트 총괄, 고객 공정기술팀 창구", "proof": "조선·중공업 스마트팩토리 PM 3건" }, { "name": "이○○", "role": "데이터 엔지니어", "responsibility": "센서·MES 데이터 연결, 데이터 레이크", "proof": "OT 데이터 통합 5개 현장" }, { "name": "박○○", "role": "ML 엔지니어", "responsibility": "이탈 예측 모델·경고 기준", "proof": "시계열 이상 감지 논문 2편" }, { "name": "최○○", "role": "현장 적용 리드", "responsibility": "관제 화면·태블릿 UX, 작업반 교육", "proof": "현장 사이니지 구축 8건" } ] } },
+    { "number": 10, "section": "조건", "archetype": "data_table", "title": "파일럿 비용은 3.2억원이며 2단계 확산 시 라인당 단가는 40% 낮아집니다",
+      "content": { "unit": "백만원, 부가세 별도", "columns": ["항목", "파일럿(2개 라인)", "2단계 확산(라인당)"], "rows": [ ["데이터 연결·레이크", "90", "25"], ["예측 모델 개발", "110", "30"], ["관제 화면·태블릿", "70", "35"], ["현장 교육·운영 지원", "50", "20"], ["합계", "320", "110"] ], "highlight_rows": [4] },
+      "source_note": "출처: 코어닷투데이 표준 단가(2026). 하드웨어(센서·태블릿)는 고객사 기존 자산 활용 전제" },
+    { "number": 11, "archetype": "custom", "title": "파일럿 일정 (커스텀 훅 예시)", "content": { "note": "hooks.js 의 11번 핸들러가 간트 막대를 그린다" } },
+    { "number": 12, "archetype": "conclusion", "title": "11월 착수 시 내년 3월에 파일럿 결과로 확산 여부를 결정하실 수 있습니다",
+      "content": { "statement": "도장 2개 라인 4개월 파일럿으로 재작업률 30% 감소를 먼저 증명하겠습니다", "takeaways": ["재작업 원인 61%는 이미 있는 데이터로 예측 가능", "4개월 · 3.2억원 · 성공 기준 사전 합의", "성공 시 라인당 1.1억원으로 전 라인 확산"], "next_steps": [ { "label": "파일럿 범위·성공 기준 합의", "owner": "고객 공정기술팀 · 코어닷투데이", "when": "10월 4주" }, { "label": "데이터 접근 권한·보안 검토", "owner": "고객 IT", "when": "11월 1주" }, { "label": "착수", "owner": "공동", "when": "11월 2주" } ], "contact": "AX사업본부 · ax@core.today" } }
+  ]
+}

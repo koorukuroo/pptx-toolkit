@@ -1,0 +1,122 @@
+{
+  "version": "0.2",
+  "metadata": {
+    "title": "AI 아르스 키오스크 플랫폼 구축 전략",
+    "subtitle": "검증된 행사형 AI 체험을 템플릿·SDK·운영 콘솔로 제품화하는 1차 개발 범위 승인 요청",
+    "organization": "코어닷투데이",
+    "presenter": "플랫폼사업부",
+    "date": "2026. 10.",
+    "audience": "대표이사 및 제품개발팀장 (의사결정자)",
+    "success_condition": "1차 개발 범위(템플릿 3종·공통 런타임·운영 콘솔)와 6개월 일정을 승인한다",
+    "delivery_mode": "hybrid",
+    "duration_minutes": 20,
+    "language": "ko-KR",
+    "confidentiality": "대외비",
+    "sticker": "DRAFT"
+  },
+  "route": { "deck_type": "consulting_executive", "style_profile": "consulting_grade", "brand_mode": "neutral", "communication_mode": "pyramid" },
+  "design_tokens": {},
+  "assets": { "images": {} },
+  "evidence": [
+    { "id": "E1", "claim": "최근 8개 행사에서 촬영→생성→동의→인쇄 흐름이 동일하게 반복됐다", "kind": "user_provided", "confidence": "high", "source": "내부 행사 운영 기록 2025.9–2026.9" },
+    { "id": "E2", "claim": "행사당 평균 개발 기간은 6.5주이며 그중 4주가 공통 기능 재구현이다", "kind": "estimate", "confidence": "medium", "source": "프로젝트 타임시트 집계 (8건)", "period": "2025.9–2026.9" },
+    { "id": "E3", "claim": "운영 중 장애의 62%가 행사별로 새로 짠 결제·인쇄 코드에서 발생했다", "kind": "fact", "confidence": "high", "source": "장애 티켓 분류 (n=34)", "period": "2026.1–2026.9" }
+  ],
+  "slides": [
+    { "number": 1, "archetype": "cover", "title": "AI 아르스 키오스크 플랫폼 구축 전략", "content": { "subtitle": "검증된 행사형 AI 체험을 템플릿·SDK·운영 콘솔로 제품화합니다", "tagline": "1차 개발 범위 승인 요청" } },
+    { "number": 2, "section": "결론", "archetype": "executive_summary", "title": "반복 개발을 플랫폼화하면 납기와 품질을 동시에 통제할 수 있습니다", "takeaway": "템플릿·공통 런타임·SDK·운영 콘솔의 4개 층으로 제품화한다",
+      "content": {
+        "answer": "행사마다 새로 만들던 AI 체험을 4개 층의 플랫폼으로 제품화하면 개발 기간은 절반, 운영 장애는 1/3로 줄일 수 있습니다",
+        "points": [
+          { "heading": "흐름은 이미 표준화돼 있다", "detail": "최근 8개 행사 모두 촬영→생성→동의→인쇄의 같은 순서로 운영됐다" },
+          { "heading": "비용은 공통 기능 재구현에서 샌다", "detail": "행사당 6.5주 중 4주가 결제·인쇄·동의 등 공통 기능을 다시 만드는 데 쓰였다" },
+          { "heading": "장애도 같은 곳에서 난다", "detail": "운영 장애의 62%가 행사별로 새로 짠 결제·인쇄 코드에서 발생했다" }
+        ],
+        "decision": "템플릿 3종 + 공통 런타임 + 운영 콘솔을 6개월 안에 구축하는 1차 범위와 인력 4명 투입을 승인해 주십시오"
+      },
+      "evidence_ids": ["E1", "E2", "E3"], "speaker_notes": "결론부터. 세 가지 근거는 모두 내부 데이터이며 부록에 산출 근거가 있다." },
+    { "number": 3, "section": "현황 진단", "archetype": "hero_metric", "title": "행사당 개발 기간의 60%가 매번 같은 기능을 다시 만드는 데 쓰입니다",
+      "content": { "metrics": [ { "value": "6.5", "unit": "주", "label": "행사당 평균 개발 기간", "delta": "8건 평균" }, { "value": "4.0", "unit": "주", "label": "그중 공통 기능 재구현", "delta": "전체의 62%", "trend": "down" }, { "value": "62", "unit": "%", "label": "운영 장애 중 신규 코드 기인 비율", "delta": "티켓 34건 기준", "trend": "down" } ], "context": "공통 기능(결제·인쇄·동의·브랜딩 교체)은 행사와 무관하게 동일한데도 매번 새로 작성되고 있으며, 그 코드가 장애의 주원인이기도 합니다." },
+      "source_note": "출처: 내부 프로젝트 타임시트·장애 티켓 분류 (2025.9–2026.9, n=8 행사 / 34 티켓). 기간은 착수–오픈 기준", "evidence_ids": ["E2", "E3"] },
+    { "number": 4, "section": "현황 진단", "archetype": "evidence_chart", "title": "플랫폼화 이후 행사당 개발 기간은 6.5주에서 3주 이내로 줄어듭니다", "exhibit": 1,
+      "content": {
+        "chart": { "type": "column", "categories": ["2025 하반기", "2026 상반기", "2026 하반기(현재)", "플랫폼 1차 적용 후(목표)"], "series": [ { "name": "행사당 개발 기간(주)", "values": [7.5, 6.5, 6.0, 2.8] } ], "unit": "주", "highlight": 3, "value_format": "0.0" },
+        "insight": "템플릿으로 시작하면 행사별 작업은 브랜드 교체·문구·레이아웃 조정만 남습니다",
+        "callouts": [ "공통 런타임이 결제·인쇄·동의를 흡수", "운영 콘솔에서 문구·브랜딩 교체", "고급 커스텀은 SDK 플러그인으로 분리" ],
+        "layout": "chart-left"
+      },
+      "source_note": "출처: 내부 타임시트 (실적), 목표치는 템플릿 3종 기준 내부 추정. 2026 하반기는 진행 중 2건 평균", "evidence_ids": ["E2"] },
+    { "number": 5, "section": "해결 방안", "archetype": "architecture", "title": "공통 런타임과 플러그인 구조를 분리하면 신규 체험을 독립적으로 배포할 수 있습니다",
+      "content": {
+        "layers": [
+          { "name": "체험 템플릿", "tone": "primary", "components": [ { "name": "AI 포토", "note": "촬영→생성→인쇄" }, { "name": "AI 캐리커처", "note": "스타일 선택형" }, { "name": "AI 운세·메시지", "note": "텍스트 생성형" } ] },
+          { "name": "공통 런타임", "components": [ { "name": "촬영·입력" }, { "name": "생성 큐" }, { "name": "동의·개인정보" }, { "name": "결제" }, { "name": "인쇄·전송" } ] },
+          { "name": "SDK · 플러그인", "components": [ { "name": "모델 어댑터", "note": "이미지·LLM 교체" }, { "name": "UI 테마", "note": "브랜드 토큰" }, { "name": "외부 연동", "note": "CRM·SNS" } ] },
+          { "name": "운영 콘솔", "tone": "accent", "components": [ { "name": "행사 설정" }, { "name": "문구·브랜딩 교체" }, { "name": "실시간 모니터링" }, { "name": "정산 리포트" } ] }
+        ],
+        "flows": [ "행사 담당자는 콘솔에서 템플릿을 고르고 브랜딩만 바꾼다", "개발자는 SDK로 새 체험·모델을 플러그인으로 추가한다", "런타임은 행사와 무관하게 동일 버전을 유지한다" ]
+      },
+      "speaker_notes": "핵심은 런타임을 행사 코드에서 떼어내는 것. 템플릿과 플러그인은 바뀌어도 런타임은 같은 버전." },
+    { "number": 6, "section": "해결 방안", "archetype": "comparison", "title": "플랫폼 방식은 초기 투자가 크지만 세 번째 행사부터 누적 비용이 역전됩니다",
+      "content": {
+        "columns": ["현행 (행사별 개발)", "플랫폼 (템플릿+런타임)"],
+        "rows": [
+          { "criterion": "행사당 개발 기간", "cells": ["6.5주", "3주 이내"] },
+          { "criterion": "초기 투자", "cells": ["없음", "6개월 · 4명"] },
+          { "criterion": "운영 장애 (행사당)", "cells": ["4.3건", "1.5건 이하 목표"] },
+          { "criterion": "브랜딩·문구 교체", "cells": ["개발자 수정", "콘솔에서 담당자 직접"] },
+          { "criterion": "누적 비용 역전 시점", "cells": ["—", "3번째 행사"] }
+        ],
+        "winner": 1,
+        "verdict": "연 6회 이상 행사를 수주하는 현재 추세라면 플랫폼 투자는 1년 안에 회수됩니다"
+      },
+      "source_note": "출처: 내부 원가 모델 (2026.10). 장애 건수는 티켓 분류 기준, 목표치는 추정", "evidence_ids": ["E2", "E3"] },
+    { "number": 7, "section": "실행 계획", "archetype": "roadmap", "title": "템플릿·런타임·콘솔을 3단계로 구축해 초기 매출과 확장성을 함께 확보합니다",
+      "content": {
+        "phases": [
+          { "name": "1단계 · 기반", "period": "1–2개월", "items": ["공통 런타임 v1 (촬영·생성·동의·인쇄)", "AI 포토 템플릿 이관", "디자인 토큰 체계"], "milestone": "첫 행사에 런타임 적용" },
+          { "name": "2단계 · 확장", "period": "3–4개월", "items": ["캐리커처·메시지 템플릿", "SDK 어댑터 (이미지·LLM)", "결제 모듈 공통화"], "milestone": "템플릿 3종 동시 운영" },
+          { "name": "3단계 · 운영", "period": "5–6개월", "items": ["운영 콘솔 (설정·브랜딩·모니터링)", "정산 리포트", "파트너 온보딩 가이드"], "milestone": "담당자 단독 행사 세팅" }
+        ],
+        "horizon": "2026.11 – 2027.4"
+      } },
+    { "number": 8, "section": "실행 계획", "archetype": "pricing_or_budget", "title": "6개월 총 투입은 4.8억원이며 70%가 런타임과 콘솔 개발 인건비입니다",
+      "content": {
+        "unit": "백만원",
+        "items": [ { "label": "공통 런타임 개발 (2명 × 6개월)", "amount": "216", "note": "시니어 1·주니어 1" }, { "label": "운영 콘솔 개발 (1명 × 5개월)", "amount": "120" }, { "label": "템플릿 3종 디자인·이관", "amount": "72", "note": "외주 포함" }, { "label": "인프라·모델 API", "amount": "48", "note": "6개월 사용료" }, { "label": "예비비 (5%)", "amount": "24" } ],
+        "total": "480",
+        "assumptions": ["인건비는 2026년 내부 표준 단가 기준", "모델 API 비용은 행사 6회 분량 기준 추정", "기존 행사 수주 매출은 포함하지 않음"],
+        "exclusions": ["하드웨어(키오스크 본체) 구매", "행사별 현장 운영 인력"]
+      },
+      "source_note": "출처: 내부 표준 단가표 (2026.1), 모델 API 사용료는 2026.9 청구 기준 추정. 부가세 별도" },
+    { "number": 9, "section": "실행 계획", "archetype": "matrix", "title": "결제와 인쇄 모듈을 먼저 공통화해야 투자 대비 장애 감소 효과가 가장 큽니다",
+      "content": {
+        "x_axis": { "label": "공통화 난이도", "low": "낮음", "high": "높음" },
+        "y_axis": { "label": "장애·재작업 감소 효과", "low": "낮음", "high": "높음" },
+        "quadrants": ["우선 착수", "2단계", "여유 시", "보류"],
+        "items": [ { "label": "결제", "x": 0.3, "y": 0.9, "emphasis": true }, { "label": "인쇄·전송", "x": 0.25, "y": 0.75, "emphasis": true }, { "label": "동의·개인정보", "x": 0.2, "y": 0.6 }, { "label": "생성 큐", "x": 0.7, "y": 0.8 }, { "label": "모델 어댑터", "x": 0.8, "y": 0.55 }, { "label": "UI 테마", "x": 0.35, "y": 0.3 }, { "label": "외부 연동", "x": 0.85, "y": 0.25 } ],
+        "implication": "1단계에서 결제·인쇄·동의 세 모듈만 공통화해도 장애의 절반 이상을 없앨 수 있습니다. 생성 큐는 효과가 크지만 난이도가 높아 2단계로 둡니다."
+      },
+      "source_note": "출처: 장애 티켓 분류(n=34)와 개발팀 난이도 평가 (2026.10 워크숍)", "evidence_ids": ["E3"] },
+    { "number": 10, "section": "권고", "archetype": "recommendation", "title": "1차 범위를 승인하면 11월 첫 행사부터 공통 런타임을 적용할 수 있습니다",
+      "content": {
+        "recommendation": "템플릿 3종 · 공통 런타임 · 운영 콘솔을 6개월 안에 구축하는 1차 개발 범위를 승인하고, 11월 행사를 첫 적용 대상으로 지정합니다",
+        "reasons": [ { "heading": "즉시 적용 가능", "detail": "AI 포토 템플릿은 이미 3회 검증돼 런타임 이관만 남았다" }, { "heading": "회수 기간 1년", "detail": "연 6회 수주 기준 세 번째 행사에서 누적 비용이 역전된다" }, { "heading": "장애 절반 감소", "detail": "결제·인쇄·동의 공통화만으로 장애 원인의 과반을 제거한다" } ],
+        "next_action": "승인 후 2주 내 런타임 v1 상세 설계 리뷰, 4주 내 11월 행사 적용 계획 확정",
+        "owner": "플랫폼사업부", "timing": "2026.10 말"
+      } },
+    { "number": 11, "archetype": "conclusion", "title": "오늘 결정해 주실 것은 1차 범위와 인력 4명의 투입입니다",
+      "content": {
+        "statement": "플랫폼화는 선택이 아니라 반복 수주를 감당하기 위한 조건입니다. 1차 범위 승인으로 11월부터 적용을 시작하겠습니다",
+        "takeaways": ["개발 기간 6.5주 → 3주 이내", "운영 장애 행사당 4.3건 → 1.5건 이하", "총 투입 4.8억원, 3번째 행사에서 회수 시작"],
+        "next_steps": [ { "label": "1차 개발 범위·예산 승인", "owner": "대표이사", "when": "이번 주" }, { "label": "런타임 v1 상세 설계 리뷰", "owner": "플랫폼사업부", "when": "+2주" }, { "label": "11월 행사 적용 계획 확정", "owner": "사업팀·플랫폼사업부", "when": "+4주" } ],
+        "contact": "플랫폼사업부 · platform@core.today"
+      } },
+    { "number": 12, "archetype": "appendix", "title": "부록 A. 행사별 개발 기간과 장애 건수 원자료", "appendix": true,
+      "content": {
+        "table": { "columns": ["행사", "시기", "개발 기간(주)", "공통 기능 재구현(주)", "운영 장애(건)"], "rows": [ ["A사 신제품 런칭", "2025.9", "8", "5", "6"], ["B 박람회", "2025.11", "7", "4", "5"], ["C 지자체 축제", "2026.1", "6", "4", "4"], ["D 쇼핑몰 팝업", "2026.3", "6", "3.5", "4"], ["E 대학 축제", "2026.5", "7", "4.5", "5"], ["F 컨퍼런스", "2026.6", "6", "4", "3"], ["G 브랜드 데이", "2026.8", "6", "3.5", "4"], ["H 전시회", "2026.9", "6", "3.5", "3"] ] },
+        "items": ["개발 기간은 착수 회의부터 현장 오픈까지의 역일 기준", "공통 기능 = 결제·인쇄·동의·브랜딩 교체·관리 화면"]
+      },
+      "source_note": "출처: 내부 프로젝트 타임시트·장애 티켓 (2025.9–2026.9)" }
+  ]
+}

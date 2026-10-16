@@ -1,0 +1,9 @@
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+build/
+*.render/
+*.rejected.pptx
+qa-report.json
+.DS_Store

@@ -1,0 +1,178 @@
+{
+  "version": "0.2.0",
+  "_doc": "슬라이드 아키타입 = 목적별 레이아웃 레시피. content 필드는 scripts/build.js 렌더러가 읽는 계약이다. max_chars는 본문 글자 수 상한(공백 포함, 한글 기준; 영문은 ×1.6). title_required=true면 액션 타이틀(문장형) 필수.",
+  "archetypes": {
+    "cover": {
+      "purpose": "주제·약속·톤을 세운다. 목차가 아니라 자료가 제시하는 약속과 콘셉트",
+      "title_required": false,
+      "content": { "subtitle": "string", "organization": "string", "presenter": "string", "date": "string", "image": "asset id (optional)", "tagline": "string (optional)" },
+      "max_chars": { "live": 60, "pre_read": 90 },
+      "avoid": ["목차 나열", "여러 로고 경쟁", "긴 문단"]
+    },
+    "agenda": {
+      "purpose": "목차·흐름 안내 (10장 초과 자료에서만)",
+      "title_required": false,
+      "content": { "items": [{ "label": "string", "detail": "string (optional)" }] },
+      "max_items": 7,
+      "max_chars": { "live": 120, "pre_read": 200 },
+      "avoid": ["8개 이상 항목", "세부 소제목까지 나열"]
+    },
+    "executive_summary": {
+      "purpose": "답을 먼저 말하고 3~5개 근거로 받친다",
+      "title_required": true,
+      "content": { "answer": "string (핵심 결론 한 문장)", "points": [{ "heading": "string", "detail": "string" }], "decision": "string (요청하는 결정, optional)" },
+      "max_items": 5,
+      "max_chars": { "live": 260, "pre_read": 520 },
+      "avoid": ["모든 슬라이드의 축소판", "동일 비중 카드 벽"]
+    },
+    "section_divider": {
+      "purpose": "서사 전환 신호",
+      "title_required": false,
+      "content": { "number": "string|int", "subtitle": "string (optional)", "image": "asset id (optional)" },
+      "max_chars": { "live": 60, "pre_read": 90 },
+      "avoid": ["본문 복사", "조밀한 다이어그램"]
+    },
+    "hero_metric": {
+      "purpose": "숫자 하나(최대 3개)를 기억하게 만들고 왜 중요한지 설명한다",
+      "title_required": true,
+      "content": { "metrics": [{ "value": "string (예: 68)", "unit": "string (예: %)", "label": "string", "delta": "string (optional, 예: +12%p YoY)", "trend": "up|down|flat (optional)" }], "context": "string (해석 1~2문장)", "comparison": "string (optional)" },
+      "max_items": 3,
+      "max_chars": { "live": 160, "pre_read": 300 },
+      "avoid": ["5개 이상 숫자 경쟁", "분모 없는 비율"]
+    },
+    "evidence_chart": {
+      "purpose": "정량 근거로 결론을 증명한다. 네이티브 차트 필수",
+      "title_required": true,
+      "content": {
+        "chart": { "type": "column|bar|line|area|pie|doughnut|stacked_column|stacked_bar|scatter|combo", "categories": ["string"], "series": [{ "name": "string", "values": ["number"] }], "unit": "string", "highlight": "category index|series name (optional)", "value_format": "string (optional, 예: #,##0)", "show_values": "bool (default true)", "y_max": "number (optional)" },
+        "insight": "string (차트 옆 해석, optional)",
+        "callouts": ["string (최대 3)"],
+        "layout": "chart-left|chart-right|chart-full (default chart-left)"
+      },
+      "max_chars": { "live": 220, "pre_read": 420 },
+      "avoid": ["3D", "무지개 팔레트", "직접 라벨이 가능한데 범례", "0이 아닌 기준선 막대"]
+    },
+    "comparison": {
+      "purpose": "대안·시나리오·경쟁·현재vs목표 비교",
+      "title_required": true,
+      "content": { "columns": ["string (옵션 이름)"], "rows": [{ "criterion": "string", "cells": ["string"] }], "winner": "column index (optional)", "verdict": "string (optional)" },
+      "max_items": 6,
+      "max_chars": { "live": 320, "pre_read": 600 },
+      "avoid": ["체크마크 벽지", "본문 슬라이드에 8개 이상 기준"]
+    },
+    "process": {
+      "purpose": "순서·운영모델·여정 설명 (4~5단계 권장, 7 초과면 phase로 묶기)",
+      "title_required": true,
+      "content": { "steps": [{ "title": "string", "detail": "string", "owner": "string (optional)" }], "style": "chevron|numbered|timeline (default numbered)" },
+      "max_items": 6,
+      "max_chars": { "live": 260, "pre_read": 480 },
+      "avoid": ["교차 화살표", "7개 초과 동일 단계", "장식용 순환 도형"]
+    },
+    "roadmap": {
+      "purpose": "시간에 따른 단계별 실행",
+      "title_required": true,
+      "content": { "phases": [{ "name": "string", "period": "string", "items": ["string"], "milestone": "string (optional)" }], "horizon": "string (optional)" },
+      "max_items": 4,
+      "max_chars": { "live": 300, "pre_read": 560 },
+      "avoid": ["간트 수준 상세", "성과 없는 날짜 나열"]
+    },
+    "architecture": {
+      "purpose": "시스템 계층·구성요소·흐름 설명",
+      "title_required": true,
+      "content": { "layers": [{ "name": "string", "components": [{ "name": "string", "note": "string (optional)" }], "tone": "primary|neutral|accent (optional)" }], "flows": ["string (optional, 좌측 설명)"], "legend": "string (optional)" },
+      "max_items": 5,
+      "max_chars": { "live": 300, "pre_read": 560 },
+      "avoid": ["라벨 위를 지나는 커넥터", "이름 없는 박스", "벤더 로고 콜라주"]
+    },
+    "matrix": {
+      "purpose": "두 축으로 항목을 배치·우선순위화 (2x2)",
+      "title_required": true,
+      "content": { "x_axis": { "label": "string", "low": "string", "high": "string" }, "y_axis": { "label": "string", "low": "string", "high": "string" }, "quadrants": ["string (좌상, 우상, 좌하, 우하 이름)"], "items": [{ "label": "string", "x": "0~1", "y": "0~1", "emphasis": "bool (optional)" }], "implication": "string" },
+      "max_items": 10,
+      "max_chars": { "live": 220, "pre_read": 420 },
+      "avoid": ["임의의 축", "겹치는 라벨", "거짓 정밀도"]
+    },
+    "case_study": {
+      "purpose": "구체 사례로 신뢰 확보 (상황→개입→결과)",
+      "title_required": true,
+      "content": { "context": "string", "intervention": "string", "result": "string", "evidence": "string (수치·출처)", "image": "asset id (optional)", "client": "string (optional)" },
+      "max_chars": { "live": 320, "pre_read": 600 },
+      "avoid": ["지어낸 KPI", "일반적 추천사", "허가 없는 기밀 데이터"]
+    },
+    "recommendation": {
+      "purpose": "무엇을 왜 해야 하고 다음에 무엇이 일어나는지",
+      "title_required": true,
+      "content": { "recommendation": "string", "reasons": [{ "heading": "string", "detail": "string" }], "next_action": "string", "owner": "string (optional)", "timing": "string (optional)" },
+      "max_items": 4,
+      "max_chars": { "live": 280, "pre_read": 520 },
+      "avoid": ["모호한 동사", "근거 없는 권고"]
+    },
+    "points": {
+      "purpose": "핵심 논점 2~4개 (번호·큰 숫자 위계). 범용 카드 벽을 대신하는 절제된 목록",
+      "title_required": true,
+      "content": { "points": [{ "heading": "string", "detail": "string", "metric": "string (optional 강조 숫자)" }], "layout": "rows|columns (default rows)" },
+      "max_items": 4,
+      "max_chars": { "live": 280, "pre_read": 520 },
+      "avoid": ["동일 크기 둥근 카드 3개", "문장마다 아이콘", "5개 이상 항목"]
+    },
+    "statement": {
+      "purpose": "한 문장을 크게 (키노트형 전환·인용·선언)",
+      "title_required": false,
+      "content": { "statement": "string", "attribution": "string (optional)", "image": "asset id (optional)" },
+      "max_chars": { "live": 90, "pre_read": 140 },
+      "avoid": ["문단 길이의 인용", "출처 없는 인용"]
+    },
+    "data_table": {
+      "purpose": "정확한 수치를 표로 (프리리드·부록 적합)",
+      "title_required": true,
+      "content": { "columns": ["string"], "rows": [["string"]], "highlight_rows": ["int (optional)"], "unit": "string (optional)", "align": ["left|right|center (열별, optional)"] },
+      "max_items": 10,
+      "max_chars": { "live": 400, "pre_read": 900 },
+      "avoid": ["12행 초과", "단위 누락", "셀 안 긴 문장"]
+    },
+    "image_focus": {
+      "purpose": "한 장의 이미지를 과감히 크롭해 메시지 전달",
+      "title_required": true,
+      "content": { "image": "asset id", "caption": "string", "points": ["string (최대 3, optional)"], "layout": "image-left|image-right|full-bleed (default image-right)" },
+      "max_chars": { "live": 160, "pre_read": 280 },
+      "avoid": ["썸네일 여러 장", "늘어난 비율", "스크림 없는 이미지 위 텍스트"]
+    },
+    "team": {
+      "purpose": "책임 역할과 관련 신뢰 근거",
+      "title_required": true,
+      "content": { "members": [{ "role": "string", "name": "string", "responsibility": "string", "proof": "string (optional)" }] },
+      "max_items": 6,
+      "max_chars": { "live": 300, "pre_read": 560 },
+      "avoid": ["이력서 문단", "역할 없는 증명사진 격자"]
+    },
+    "pricing_or_budget": {
+      "purpose": "비용·옵션·가정·가치 설명",
+      "title_required": true,
+      "content": { "items": [{ "label": "string", "amount": "string", "note": "string (optional)" }], "total": "string", "unit": "string", "assumptions": ["string"], "exclusions": ["string (optional)"] },
+      "max_items": 8,
+      "max_chars": { "live": 320, "pre_read": 600 },
+      "avoid": ["숨은 가정", "깨알 법률 문구", "오해를 부르는 할인 강조"]
+    },
+    "conclusion": {
+      "purpose": "최종 답·결정·다음 단계를 화면에 남긴다 (THANK YOU 금지)",
+      "title_required": true,
+      "content": { "statement": "string", "takeaways": ["string (최대 3)"], "next_steps": [{ "label": "string", "owner": "string (optional)", "when": "string (optional)" }], "contact": "string (optional)" },
+      "max_chars": { "live": 200, "pre_read": 360 },
+      "avoid": ["감사합니다만", "마지막에 새 근거 제시"]
+    },
+    "appendix": {
+      "purpose": "본문 서사를 방해하지 않는 상세",
+      "title_required": false,
+      "content": { "paragraphs": ["string"], "table": { "columns": ["string"], "rows": [["string"]] }, "items": ["string"] },
+      "max_chars": { "live": 700, "pre_read": 1000 },
+      "avoid": ["본문 이해에 필수인 내용"]
+    },
+    "custom": {
+      "purpose": "렌더러 아키타입으로 표현 불가한 레이아웃. hooks.js에서 pptxgenjs API로 직접 그린다",
+      "title_required": true,
+      "content": { "note": "hooks 파일의 slide 번호 핸들러가 그린다" },
+      "max_chars": { "live": 400, "pre_read": 800 },
+      "avoid": ["토큰 밖 색·폰트"]
+    }
+  }
+}

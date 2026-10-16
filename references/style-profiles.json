@@ -1,0 +1,151 @@
+{
+  "version": "0.2.0",
+  "_doc": "스타일 프로파일 = 디자인 토큰의 출발점. 특정 기관·회사의 브랜드가 아니며 로고·고유 템플릿을 모방하지 않는다. 색은 6자리 hex(# 없음). 길이 단위 inch, 글자 pt. 설명은 references/style-profiles.md 참조.",
+  "profiles": {
+    "government_kr": {
+      "label": "정부·공공기관 보고",
+      "intent": "중앙·지방정부 보고, 공공기관 제안·심의 자료. 신뢰·절제·근거 중심. 흰 배경, 정부청색 계열 주조, 빨강은 경고·핵심 강조에만.",
+      "use_when": ["부처·지자체·의회 보고", "공공기관 제안서·심의자료", "정책 추진계획", "국비 사업계획"],
+      "tokens": {
+        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.6, "right": 0.6, "top": 0.45, "bottom": 0.4 }, "grid_columns": 12, "gutter": 0.16 },
+        "fonts": { "display": "Paperlogy", "body": "Paperlogy", "fallback": ["Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "bold", "body": "regular", "emphasis": "bold" } },
+        "type": {
+          "live":     { "cover_title": 44, "section_title": 40, "title": 28, "subtitle": 16, "body": 18, "body_min": 14, "caption": 12, "source": 10, "hero_number": 72, "kicker": 11, "table": 14 },
+          "pre_read": { "cover_title": 40, "section_title": 36, "title": 24, "subtitle": 14, "body": 15, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 60, "kicker": 10, "table": 12 },
+          "hybrid":   { "cover_title": 42, "section_title": 38, "title": 26, "subtitle": 15, "body": 16, "body_min": 13, "caption": 11, "source": 9,  "hero_number": 64, "kicker": 10, "table": 13 }
+        },
+        "colors": {
+          "background": "FFFFFF", "surface": "F4F5F6", "surface_strong": "E6E8EA",
+          "ink": "1E2124", "ink_muted": "58616A", "ink_faint": "8A949E", "line": "CDD1D5", "line_faint": "E6E8EA",
+          "primary": "003764", "primary_soft": "D8E5FD", "secondary": "346FB2", "accent": "E4032E", "accent_soft": "FBE9EC",
+          "positive": "228738", "warning": "9E6A00", "negative": "DE3412", "info": "0B78CB",
+          "on_primary": "FFFFFF", "dark_background": "052561", "on_dark": "FFFFFF"
+        },
+        "ratios": { "background": 0.6, "secondary": 0.3, "accent": 0.1, "point_max": 0.05 },
+        "chart": { "palette": ["003764", "346FB2", "86AFF9", "B1B8BE", "CDD1D5"], "highlight": "E4032E", "muted": "B1B8BE", "positive": "228738", "negative": "DE3412", "gridline": "E6E8EA", "label_pt": 12, "direct_labels": true },
+        "geometry": { "radius": 0, "line_width": 0.75, "shadow": false, "divider": "hairline" },
+        "title": { "style": "chip", "chip_numerals": "roman", "align": "left", "max_lines": 2, "kicker": "section" },
+        "footer": { "left": "organization", "right": "page_number", "source_above_footer": true, "confidentiality": true },
+        "imagery": { "treatment": "documentary", "scrim": "0C1824", "scrim_transparency": 45, "avoid": ["홍보용 스톡", "악수 사진", "강한 듀오톤 필터"] },
+        "cover": { "variant": "light-left", "band_color": "003764" },
+        "list": { "markers": ["□", "○", "-", "·"], "numbering": ["1.", "가.", "1)", "가)"] }
+      }
+    },
+    "public_policy": {
+      "label": "정책연구·프리리드 보고서",
+      "intent": "연구보고서·정책자료·사전 배포용(pre-read). 읽기용 밀도, 완결 문장 제목, 출처 철저.",
+      "use_when": ["정책 백서", "연구 브리핑", "공청회 요약", "사전 배포 자료"],
+      "tokens": {
+        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.62, "right": 0.62, "top": 0.45, "bottom": 0.42 }, "grid_columns": 12, "gutter": 0.16 },
+        "fonts": { "display": "Paperlogy", "body": "Pretendard", "fallback": ["Paperlogy", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "bold", "body": "regular", "emphasis": "bold" } },
+        "type": {
+          "live":     { "cover_title": 42, "section_title": 38, "title": 26, "subtitle": 15, "body": 17, "body_min": 14, "caption": 12, "source": 10, "hero_number": 64, "kicker": 11, "table": 13 },
+          "pre_read": { "cover_title": 38, "section_title": 34, "title": 22, "subtitle": 14, "body": 14, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 56, "kicker": 10, "table": 12 },
+          "hybrid":   { "cover_title": 40, "section_title": 36, "title": 24, "subtitle": 14, "body": 15, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 60, "kicker": 10, "table": 12 }
+        },
+        "colors": {
+          "background": "FFFFFF", "surface": "F2F5F7", "surface_strong": "E3EAF0",
+          "ink": "1D2733", "ink_muted": "64707D", "ink_faint": "97A2AD", "line": "D6DEE5", "line_faint": "E8EEF2",
+          "primary": "173F5F", "primary_soft": "DCE7F0", "secondary": "2F7DA1", "accent": "C65A3A", "accent_soft": "F8E8E2",
+          "positive": "2E7D5B", "warning": "A36B00", "negative": "B33A3A", "info": "2F7DA1",
+          "on_primary": "FFFFFF", "dark_background": "122F47", "on_dark": "FFFFFF"
+        },
+        "ratios": { "background": 0.6, "secondary": 0.3, "accent": 0.1, "point_max": 0.05 },
+        "chart": { "palette": ["173F5F", "2F7DA1", "79A9BF", "BFD3DD", "DCE7F0"], "highlight": "C65A3A", "muted": "BFD3DD", "positive": "2E7D5B", "negative": "B33A3A", "gridline": "E8EEF2", "label_pt": 11, "direct_labels": true },
+        "geometry": { "radius": 0, "line_width": 0.75, "shadow": false, "divider": "hairline" },
+        "title": { "style": "plain", "align": "left", "max_lines": 2, "kicker": "section" },
+        "footer": { "left": "document_title", "right": "page_number", "source_above_footer": true, "confidentiality": false },
+        "imagery": { "treatment": "editorial", "scrim": "122F47", "scrim_transparency": 40, "avoid": ["홍보용 스톡"] },
+        "cover": { "variant": "light-left", "band_color": "173F5F" },
+        "list": { "markers": ["•", "–", "·"], "numbering": ["1.", "1)", "(1)"] }
+      }
+    },
+    "consulting_grade": {
+      "label": "컨설팅 그레이드 임원 보고",
+      "intent": "답 먼저(answer-first), 액션 타이틀, 슬라이드당 결론 하나와 그것을 증명하는 전시물 하나. 출처·단위·가정 표시.",
+      "use_when": ["경영진·이사회 보고", "전략 분석", "사업계획·비즈니스 케이스", "실사·진단 보고"],
+      "tokens": {
+        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.55, "right": 0.55, "top": 0.4, "bottom": 0.38 }, "grid_columns": 12, "gutter": 0.14 },
+        "fonts": { "display": "Paperlogy", "body": "Pretendard", "fallback": ["Paperlogy", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "bold", "body": "regular", "emphasis": "semibold" } },
+        "type": {
+          "live":     { "cover_title": 42, "section_title": 38, "title": 26, "subtitle": 15, "body": 17, "body_min": 14, "caption": 12, "source": 10, "hero_number": 72, "kicker": 10, "table": 13 },
+          "pre_read": { "cover_title": 38, "section_title": 34, "title": 22, "subtitle": 13, "body": 14, "body_min": 11, "caption": 10, "source": 8,  "hero_number": 60, "kicker": 9,  "table": 11 },
+          "hybrid":   { "cover_title": 40, "section_title": 36, "title": 24, "subtitle": 14, "body": 15, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 64, "kicker": 10, "table": 12 }
+        },
+        "colors": {
+          "background": "FFFFFF", "surface": "F3F4F5", "surface_strong": "E4E7EA",
+          "ink": "20252B", "ink_muted": "626A73", "ink_faint": "9AA3AC", "line": "D9DDE1", "line_faint": "ECEEF0",
+          "primary": "0B3558", "primary_soft": "DCE6F0", "secondary": "1B8A6B", "accent": "C77B30", "accent_soft": "F8EBDD",
+          "positive": "1B8A6B", "warning": "C77B30", "negative": "B3261E", "info": "2F6FAD",
+          "on_primary": "FFFFFF", "dark_background": "0B3558", "on_dark": "FFFFFF"
+        },
+        "ratios": { "background": 0.6, "secondary": 0.3, "accent": 0.1, "point_max": 0.05 },
+        "chart": { "palette": ["0B3558", "1B8A6B", "6E8FAB", "B9C6D2", "D9DDE1"], "highlight": "C77B30", "muted": "B9C6D2", "positive": "1B8A6B", "negative": "B3261E", "gridline": "ECEEF0", "label_pt": 11, "direct_labels": true },
+        "geometry": { "radius": 0, "line_width": 0.75, "shadow": false, "divider": "hairline" },
+        "title": { "style": "plain", "align": "left", "max_lines": 2, "kicker": "tracker" },
+        "footer": { "left": "document_title", "right": "page_number", "source_above_footer": true, "confidentiality": true, "exhibit_numbers": true },
+        "imagery": { "treatment": "rare-editorial", "scrim": "0B3558", "scrim_transparency": 40, "avoid": ["본문 페이지의 사진", "아이콘 행"] },
+        "cover": { "variant": "dark-left", "band_color": "0B3558" },
+        "list": { "markers": ["•", "–", "·"], "numbering": ["1.", "a.", "i."] }
+      }
+    },
+    "paperlogy_business": {
+      "label": "한국형 실무 제안·영업·내부 보고",
+      "intent": "강한 숫자, 간결한 카피, 기준선과 덩어리, 과감한 트리밍. 빠르고 일관된 제작.",
+      "use_when": ["기업 제안서", "영업 자료", "내부 보고", "교육 자료"],
+      "tokens": {
+        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.58, "right": 0.58, "top": 0.44, "bottom": 0.4 }, "grid_columns": 12, "gutter": 0.14 },
+        "fonts": { "display": "Paperlogy", "body": "Paperlogy", "fallback": ["Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "extrabold", "body": "regular", "emphasis": "bold" } },
+        "type": {
+          "live":     { "cover_title": 48, "section_title": 44, "title": 30, "subtitle": 16, "body": 18, "body_min": 14, "caption": 12, "source": 10, "hero_number": 84, "kicker": 11, "table": 14 },
+          "pre_read": { "cover_title": 40, "section_title": 36, "title": 24, "subtitle": 14, "body": 15, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 64, "kicker": 10, "table": 12 },
+          "hybrid":   { "cover_title": 44, "section_title": 40, "title": 27, "subtitle": 15, "body": 16, "body_min": 13, "caption": 11, "source": 9,  "hero_number": 72, "kicker": 10, "table": 13 }
+        },
+        "colors": {
+          "background": "FFFFFF", "surface": "F4F5F7", "surface_strong": "E7E9EE",
+          "ink": "191D22", "ink_muted": "666D75", "ink_faint": "9CA3AB", "line": "D9DCE0", "line_faint": "ECEEF1",
+          "primary": "1E3A5F", "primary_soft": "DEE6F2", "secondary": "2E7D74", "accent": "FF5A3D", "accent_soft": "FFE7E1",
+          "positive": "2E7D74", "warning": "D08A17", "negative": "D64545", "info": "2F6FAD",
+          "on_primary": "FFFFFF", "dark_background": "14202E", "on_dark": "FFFFFF"
+        },
+        "ratios": { "background": 0.6, "secondary": 0.3, "accent": 0.1, "point_max": 0.05 },
+        "chart": { "palette": ["1E3A5F", "2E7D74", "7C94B0", "BCC7D4", "D9DCE0"], "highlight": "FF5A3D", "muted": "BCC7D4", "positive": "2E7D74", "negative": "D64545", "gridline": "ECEEF1", "label_pt": 12, "direct_labels": true },
+        "geometry": { "radius": 4, "line_width": 1, "shadow": false, "divider": "hairline" },
+        "title": { "style": "plain", "align": "left", "max_lines": 2, "kicker": "section" },
+        "footer": { "left": "organization", "right": "page_number", "source_above_footer": true, "confidentiality": false },
+        "imagery": { "treatment": "decisive-crop", "scrim": "14202E", "scrim_transparency": 45, "avoid": ["여러 장 썸네일 나열"] },
+        "cover": { "variant": "image-or-dark", "band_color": "1E3A5F" },
+        "list": { "markers": ["•", "–", "·"], "numbering": ["01", "02", "03"] }
+      }
+    },
+    "executive_keynote": {
+      "label": "키노트·강연·비전 발표",
+      "intent": "발표자 중심, 슬라이드당 한 메시지, 큰 글자, 어두운 배경 허용, 본문 밀도 최소.",
+      "use_when": ["컨퍼런스 키노트", "비전 발표", "제품 공개", "강연"],
+      "tokens": {
+        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.7, "right": 0.7, "top": 0.55, "bottom": 0.5 }, "grid_columns": 12, "gutter": 0.16 },
+        "fonts": { "display": "Paperlogy", "body": "Paperlogy", "fallback": ["Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "extrabold", "body": "regular", "emphasis": "bold" } },
+        "type": {
+          "live":     { "cover_title": 56, "section_title": 52, "title": 36, "subtitle": 20, "body": 22, "body_min": 18, "caption": 14, "source": 11, "hero_number": 110, "kicker": 12, "table": 16 },
+          "pre_read": { "cover_title": 48, "section_title": 44, "title": 30, "subtitle": 16, "body": 18, "body_min": 14, "caption": 12, "source": 10, "hero_number": 84, "kicker": 11, "table": 14 },
+          "hybrid":   { "cover_title": 52, "section_title": 48, "title": 32, "subtitle": 18, "body": 20, "body_min": 16, "caption": 13, "source": 10, "hero_number": 96, "kicker": 11, "table": 15 }
+        },
+        "colors": {
+          "background": "0C1824", "surface": "15232F", "surface_strong": "1E2E3C",
+          "ink": "FFFFFF", "ink_muted": "C7D0D8", "ink_faint": "8FA1B2", "line": "2C3C4B", "line_faint": "1E2E3C",
+          "primary": "47C8FF", "primary_soft": "163B4D", "secondary": "7C5CFF", "accent": "FFB13B", "accent_soft": "3D3016",
+          "positive": "4FD1A5", "warning": "FFB13B", "negative": "FF6B6B", "info": "47C8FF",
+          "on_primary": "0C1824", "dark_background": "0C1824", "on_dark": "FFFFFF", "light_background": "FFFFFF", "light_ink": "18212A"
+        },
+        "ratios": { "background": 0.7, "secondary": 0.2, "accent": 0.1, "point_max": 0.05 },
+        "chart": { "palette": ["47C8FF", "7C5CFF", "8FA1B2", "4A5B6B", "2C3C4B"], "highlight": "FFB13B", "muted": "4A5B6B", "positive": "4FD1A5", "negative": "FF6B6B", "gridline": "1E2E3C", "label_pt": 13, "direct_labels": true },
+        "geometry": { "radius": 0, "line_width": 1, "shadow": false, "divider": "none" },
+        "title": { "style": "plain", "align": "left", "max_lines": 2, "kicker": "none" },
+        "footer": { "left": "none", "right": "none", "source_above_footer": true, "confidentiality": false },
+        "imagery": { "treatment": "full-bleed-hero", "scrim": "0C1824", "scrim_transparency": 35, "avoid": ["작은 썸네일", "장식용 일러스트"] },
+        "cover": { "variant": "dark-center", "band_color": "0C1824" },
+        "list": { "markers": ["—"], "numbering": ["01", "02", "03"] }
+      }
+    }
+  }
+}

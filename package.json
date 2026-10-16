@@ -1,0 +1,22 @@
+{
+  "name": "pptx-toolkit",
+  "version": "0.2.0",
+  "description": "deck-spec.json → 편집 가능한 전문 PPTX (정부·컨설팅·제안서 프로파일) — Claude 스킬 겸 CLI",
+  "private": true,
+  "type": "commonjs",
+  "main": "scripts/build.js",
+  "bin": {
+    "pptx-build": "scripts/build.js"
+  },
+  "scripts": {
+    "build:examples": "mkdir -p build && node scripts/build.js examples/consulting-kiosk-strategy.spec.json -o build/consulting.pptx && node scripts/build.js examples/gov-ai-platform-briefing.spec.json -o build/gov.pptx && node scripts/build.js examples/proposal-shipyard-ax.spec.json -o build/proposal.pptx --hooks examples/proposal-hooks.js",
+    "test": "python3 -m unittest discover -s tests -v"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}
