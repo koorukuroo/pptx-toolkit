@@ -1,7 +1,20 @@
 'use strict';
 // pptxgenjs가 쓰지 못하는 테마 값(한글 ea 글꼴, 색 스킴)을 작성 후 theme1.xml에 주입한다.
 const fs = require('fs');
-const JSZip = require('jszip');
+const path = require('path');
+
+// jszip은 pptxgenjs의 의존성이다. 이 저장소에서 `npm install`을 했으면 바로 풀리지만, pptxgenjs만 전역(`npm i -g`)으로
+// 설치된 환경(코드 샌드박스 등)에서는 jszip이 pptxgenjs/node_modules/ 안에 중첩돼 있어 직접 require가 실패한다 —
+// 그때는 pptxgenjs가 설치된 위치를 기준으로 다시 찾는다.
+function loadJSZip() {
+  try {
+    return require('jszip');
+  } catch (e) {
+    const from = path.dirname(require.resolve('pptxgenjs'));
+    return require(require.resolve('jszip', { paths: [from] }));
+  }
+}
+const JSZip = loadJSZip();
 
 function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
