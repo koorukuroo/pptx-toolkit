@@ -1,0 +1,103 @@
+{
+  "version": "0.3",
+  "metadata": {
+    "title": "지역 거점 물류센터 자동화 투자 검토",
+    "subtitle": "v0.3 아키타입(작은 차트 격자·큰 숫자·중첩 시장·전후 비교·KPI 격자)과 차트 relation·목표선 시연",
+    "organization": "코어닷투데이",
+    "presenter": "운영혁신팀",
+    "date": "2026. 10.",
+    "audience": "물류 사업부장·CFO (투자 심의)",
+    "success_condition": "3개 거점 중 2곳의 자동화 투자(총 38억원)를 1차로 승인한다",
+    "delivery_mode": "hybrid",
+    "duration_minutes": 15,
+    "language": "ko-KR",
+    "audience_state": { "initial": "자동화는 비용이 크고 효과가 불확실하다고 본다", "desired": "거점별 효과 차이를 이해하고 2곳 선투자를 승인한다" }
+  },
+  "route": { "deck_type": "consulting_executive", "style_profile": "paperlogy_business", "brand_mode": "neutral", "communication_mode": "pyramid" },
+  "design_tokens": {},
+  "assets": { "images": { "ref1": "assets/sample-kiosk.png" } },
+  "evidence": [
+    { "id": "E1", "claim": "거점 3곳의 분류 오류율은 1.8~3.1%로 편차가 크다", "kind": "user_provided", "confidence": "high", "source": "WMS 월간 리포트", "period": "2026.1–2026.9" },
+    { "id": "E2", "claim": "파일럿 거점(A)에서 자동 분류 도입 후 처리량이 36% 늘었다", "kind": "fact", "confidence": "high", "source": "A거점 파일럿 성과 보고 (2026.8)", "period": "2026.5–2026.8" },
+    { "id": "E3", "claim": "국내 중소형 거점 자동화 시장은 연 4,200억원 규모로 추정된다", "kind": "estimate", "confidence": "medium", "source": "내부 추정 (공공 통계·업계 보고서 조합)", "period": "2026" }
+  ],
+  "slides": [
+    { "number": 1, "archetype": "cover", "title": "지역 거점 물류센터 자동화 투자 검토", "role": "hook", "content": { "subtitle": "파일럿 결과로 확인된 효과를 2개 거점에 먼저 확장합니다", "tagline": "투자 심의 자료" } },
+    { "number": 2, "section": "결론", "archetype": "big_number_stage", "title": "파일럿 거점에서 처리량이 36% 늘어 투자 회수 기간은 2.1년입니다", "role": "takeaway", "takeaway": "A거점 파일럿 성과가 투자 결정의 근거다",
+      "content": { "value": "36", "unit": "%", "label": "A거점 일 처리량 증가 (도입 전 대비)", "delta": "4개월 평균, 피크 주 +41%", "trend": "up", "context": "같은 인원으로 성수기 물량을 소화해 외주 상하차비가 월 2,400만원 줄었고, 이 절감만으로 투자비를 2.1년 안에 회수합니다", "comparison": "B·C거점은 오류율이 더 높아 효과가 A보다 클 것으로 추정됩니다" },
+      "source_note": "출처: A거점 파일럿 성과 보고 (2026.5–2026.8), 회수 기간은 절감액 기준 내부 추정", "evidence_ids": ["E2"],
+      "speaker_notes": "숫자 하나만 기억시킨다: 36%. 이 수치는 파일럿 4개월 평균이며 피크 주에는 41%였다. 회수 기간 2.1년은 외주비 절감만 계산한 보수적 값이고, 오류 감소 효과는 포함하지 않았다. 다음 장에서 거점별 차이를 보여준다." },
+    { "number": 3, "section": "현황", "archetype": "small_multiples", "title": "분류 오류율은 거점마다 다르며 B·C거점이 A거점보다 높습니다", "role": "proof", "takeaway": "오류율이 높은 거점일수록 자동화 효과가 크다",
+      "content": {
+        "charts": [
+          { "title": "A거점 (파일럿)", "chart": { "relation": "change", "categories": ["1Q", "2Q", "3Q"], "series": [ { "name": "오류율", "values": [2.4, 1.9, 1.1] } ], "unit": "%", "value_format": "0.0" } },
+          { "title": "B거점", "chart": { "relation": "change", "categories": ["1Q", "2Q", "3Q"], "series": [ { "name": "오류율", "values": [2.9, 3.1, 3.0] } ], "unit": "%", "value_format": "0.0" } },
+          { "title": "C거점", "chart": { "relation": "change", "categories": ["1Q", "2Q", "3Q"], "series": [ { "name": "오류율", "values": [2.6, 2.8, 2.7] } ], "unit": "%", "value_format": "0.0" } }
+        ],
+        "shared_y": true,
+        "note": "A거점은 2026년 5월 자동 분류 도입 이후 오류율이 절반 이하로 떨어졌습니다. B·C거점은 같은 기간 변화가 없습니다."
+      },
+      "source_note": "출처: WMS 월간 리포트 분기 평균 (2026.1–2026.9). 오류율 = 오분류 건 ÷ 처리 건", "evidence_ids": ["E1"],
+      "speaker_notes": "세 차트의 세로축은 같다. A만 내려간다는 점을 강조하고, B·C는 도입 전 A와 비슷하거나 더 높다는 점을 짚는다. 질문 대비: 계절 효과는 분기 평균으로 제거했다." },
+    { "number": 4, "section": "현황", "archetype": "evidence_chart", "title": "월 처리량은 목표 12만 건에 미달하며 성수기에는 격차가 더 벌어집니다", "role": "tension", "exhibit": 1,
+      "content": {
+        "chart": { "relation": "change", "categories": ["4월", "5월", "6월", "7월", "8월", "9월"], "series": [ { "name": "B거점 처리량", "values": [98, 104, 101, 112, 109, 103] } ], "unit": "천 건", "target": { "label": "목표 120", "value": 120 }, "value_format": "#,##0" },
+        "insight": "목표선과의 격차는 성수기(7–8월)에도 좁혀지지 않았습니다",
+        "callouts": ["외주 상하차 투입에도 목표 미달", "오류 재처리가 처리량의 3%를 잠식"],
+        "layout": "chart-left"
+      },
+      "source_note": "출처: WMS 월간 리포트 (2026.4–2026.9). 목표는 2026 사업계획 기준", "evidence_ids": ["E1"],
+      "speaker_notes": "점선이 목표. 막대가 한 번도 점선에 닿지 않는다는 것이 이 장의 메시지다. 성수기에도 못 미쳤다는 점을 강조한다. 외주를 늘려도 안 되는 구조라는 점으로 다음 장(전후 비교)으로 넘어간다." },
+    { "number": 5, "section": "효과", "archetype": "before_after", "title": "자동 분류 도입은 인력 재배치 없이 처리량과 정확도를 동시에 올립니다", "role": "proof",
+      "content": {
+        "before": { "label": "현재 (수작업 분류)", "metric": "1.1", "metric_unit": "천 건/시간", "metric_label": "시간당 처리량", "points": ["피크 시간 외주 인력 8명 투입", "오분류 재처리 일 300건", "야간 2교대 운영"] },
+        "after": { "label": "자동 분류 도입 후", "metric": "1.5", "metric_unit": "천 건/시간", "metric_label": "시간당 처리량 (+36%)", "points": ["외주 인력 0명, 기존 인원 재배치", "오분류 재처리 일 110건", "야간 1교대로 축소"] },
+        "arrow_label": "A거점 파일럿 결과"
+      },
+      "source_note": "출처: A거점 파일럿 성과 보고 (2026.5–2026.8)", "evidence_ids": ["E2"],
+      "speaker_notes": "좌우를 같은 항목으로 대응시켰다. 처리량·재처리·교대 세 가지. 인원 감축이 아니라 재배치라는 점을 분명히 말한다. 노조 질문에 대비해 재배치 계획은 부록에 있다." },
+    { "number": 6, "section": "효과", "archetype": "evidence_chart", "title": "거점별 손익 영향은 B거점이 가장 크고 C거점은 2차 연도부터 흑자입니다", "role": "proof", "exhibit": 2,
+      "content": {
+        "chart": { "relation": "deviation", "categories": ["A거점 (완료)", "B거점", "C거점", "D거점 (보류)"], "series": [ { "name": "연간 손익 영향", "values": [2.9, 4.1, 1.6, -0.8] } ], "unit": "억원", "value_format": "0.0" },
+        "insight": "D거점은 물량이 적어 투자 회수가 되지 않아 보류합니다",
+        "layout": "chart-left"
+      },
+      "source_note": "출처: 내부 원가 모델 (2026.10). 1차 연도 기준, 감가상각 포함, 부가세 별도",
+      "speaker_notes": "음수는 빨강. D거점을 왜 빼는지 이 장에서 설명한다. 손익 영향은 1차 연도 기준이고 C거점은 2차 연도부터 흑자라는 점을 말로 보충한다." },
+    { "number": 7, "section": "시장", "archetype": "tam_nested", "title": "자동화 솔루션을 내재화하면 외부 거점에도 공급할 수 있는 시장이 있습니다", "role": "context",
+      "content": {
+        "rings": [
+          { "label": "전체 시장 (TAM)", "value": "4,200억원", "note": "국내 중소형 물류 거점 자동화 연간 투자 추정" },
+          { "label": "접근 가능 (SAM)", "value": "1,100억원", "note": "당사 처리 규모(일 10만 건 이하) 거점" },
+          { "label": "목표 (SOM)", "value": "120억원", "note": "3년 내 파트너 거점 12곳" }
+        ],
+        "method": "TAM은 공공 물류 통계의 거점 수 × 평균 자동화 투자액, SAM은 그중 당사 솔루션 규격에 맞는 거점, SOM은 영업 파이프라인 기준 추정입니다.",
+        "implication": "자체 거점 투자는 외부 공급 사업의 레퍼런스가 됩니다"
+      },
+      "source_note": "출처: 내부 추정 (2026). 공공 물류 통계·업계 보고서 조합, 추정치", "evidence_ids": ["E3"],
+      "speaker_notes": "이 장은 부가 논점이다. 투자 승인과 직접 관련은 없지만 '왜 내재화하는가'에 답한다. 숫자는 모두 추정이며 산출 방법을 화면에 적어 두었다." },
+    { "number": 8, "section": "시장", "archetype": "logo_wall", "title": "파일럿 솔루션은 이미 네 곳의 외부 거점에서 검증 요청을 받았습니다", "role": "proof",
+      "content": { "logos": [ { "image": "ref1", "label": "A사 거점" }, { "image": "ref1", "label": "B사 거점" }, { "image": "ref1", "label": "C 지자체" }, { "image": "ref1", "label": "D 물류" } ], "caption": "로고는 승인 자산만 사용합니다 (예시 이미지)" },
+      "speaker_notes": "레퍼런스 넷. 실제 로고는 각 사의 승인을 받아 교체한다. 이 장은 신뢰 확보용이며 길게 설명하지 않는다." },
+    { "number": 9, "section": "실행", "archetype": "kpi_bento", "title": "1차 투자 38억원으로 2개 거점의 처리량·정확도·인건비 세 지표를 함께 개선합니다", "role": "method",
+      "content": {
+        "hero": { "value": "38", "unit": "억원", "label": "1차 투자 (B·C거점)", "delta": "회수 2.1년 · 부가세 별도", "trend": "flat" },
+        "cells": [
+          { "value": "+36", "unit": "%", "label": "처리량", "delta": "파일럿 실적", "trend": "up" },
+          { "value": "-63", "unit": "%", "label": "오분류", "delta": "일 300 → 110건", "trend": "up" },
+          { "value": "0", "unit": "명", "label": "외주 투입", "delta": "현재 8명", "trend": "up" },
+          { "value": "6", "unit": "개월", "label": "구축 기간", "delta": "거점당", "trend": "flat" }
+        ],
+        "note": "지표는 A거점 파일럿 실적을 B·C거점에 적용한 추정이며, 실제 효과는 거점별 오류율에 따라 다릅니다."
+      },
+      "source_note": "출처: 내부 투자 계획 (2026.10), 파일럿 성과 보고. 추정치 포함", "evidence_ids": ["E2"],
+      "speaker_notes": "왼쪽 큰 숫자가 요청 금액. 오른쪽 네 칸은 그 돈으로 얻는 것. 오분류 -63%는 좋은 방향이므로 초록으로 표시했다. 구축 기간 6개월은 거점당이며 두 거점은 병행한다." },
+    { "number": 10, "archetype": "conclusion", "title": "오늘 결정해 주실 것은 B·C거점 1차 투자 38억원의 승인입니다", "role": "takeaway",
+      "content": {
+        "statement": "파일럿으로 효과가 확인된 자동 분류를 오류율이 높은 두 거점에 먼저 확장하고, D거점은 물량 추이를 본 뒤 재검토합니다",
+        "takeaways": ["처리량 +36%, 오분류 -63% (A거점 실적)", "1차 투자 38억원, 회수 2.1년", "D거점 보류, 2027년 재검토"],
+        "next_steps": [ { "label": "1차 투자 승인", "owner": "투자심의위원회", "when": "이번 주" }, { "label": "B거점 착공 · 장비 발주", "owner": "운영혁신팀", "when": "+3주" }, { "label": "C거점 설계 착수", "owner": "운영혁신팀", "when": "+6주" } ]
+      },
+      "speaker_notes": "결정 사항 하나: 38억원 승인. 다음 단계 셋의 담당과 시점을 읽어 준다. D거점은 보류이지 폐기가 아니라는 점을 마지막에 한 번 더 말한다." }
+  ]
+}

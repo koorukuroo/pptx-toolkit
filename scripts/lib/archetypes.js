@@ -3,7 +3,10 @@
 const P = require('./primitives');
 const { buildChart } = require('./charts');
 const { numeralText } = require('./frame');
-const { heightFor, fitText } = require('./text');
+const { heightFor, fitText, spacingMultiple, textWidthIn } = require('./text');
+
+const D = (ctx, bold = true) => ({ face: ctx.font.display, bold });
+const B = (ctx) => ({ face: ctx.font.body, bold: false });
 
 const c = (s) => s.content || {};
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -31,8 +34,8 @@ function cover(ctx, slide, s, body) {
     else P.rect(ctx, slide, { x: fieldX, y: 0, w: W - fieldX, h: H }, { fill: tok.cover.band_color || ctx.pal.primary, radius: 0 });
     const tw = fieldX - M.left - 0.5;
     if (k.tagline) P.label(ctx, slide, k.tagline, { x: M.left, y: H * 0.3 - 0.4, w: tw, h: 0.3 }, { color: ctx.pal.primary, pt: ctx.scale.kicker + 1 });
-    const fit = fitText([s.title], tw, 2.6, titlePt, titlePt - 12, { lineHeight: 1.15 });
-    P.ctxText(ctx, slide, s.title, { x: M.left, y: H * 0.3, w: tw, h: Math.min(2.6, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.primary, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: 0.96 });
+    const fit = fitText([s.title], tw, 2.6, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15 }, D(ctx)));
+    P.ctxText(ctx, slide, s.title, { x: M.left, y: H * 0.3, w: tw, h: Math.min(2.6, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.primary, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
     const subY = H * 0.3 + Math.min(2.6, fit.needIn) + 0.25;
     if (k.subtitle) P.fitBox(ctx, slide, [k.subtitle], { x: M.left, y: subY, w: tw, h: 1.0, name: 'cover subtitle' }, { maxPt: ctx.scale.subtitle + 2, minPt: ctx.scale.subtitle - 2, textOptions: { color: ctx.pal.ink_muted } });
     if (lines.length) P.ctxText(ctx, slide, lines.map((t, i) => ({ text: t, options: { breakLine: i < lines.length - 1, bold: i === 0 } })), { x: M.left, y: H - M.bottom - 1.0, w: tw, h: 0.9, fontSize: ctx.scale.caption + 1, color: ctx.pal.ink, valign: 'bottom', paraSpaceAfter: 2 });
@@ -45,8 +48,8 @@ function cover(ctx, slide, s, body) {
   const tw = center ? W - 2 * M.left - 1.0 : W * 0.72;
   const tx = center ? (W - tw) / 2 : M.left;
   if (k.tagline) P.label(ctx, slide, k.tagline, { x: tx, y: H * 0.3 - 0.42, w: tw, h: 0.3 }, { color: ctx.pal.accent, pt: ctx.scale.kicker + 1, align: center ? 'center' : 'left' });
-  const fit = fitText([s.title], tw, 2.6, titlePt, titlePt - 12, { lineHeight: 1.15 });
-  P.ctxText(ctx, slide, s.title, { x: tx, y: H * 0.3, w: tw, h: Math.min(2.6, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'top', align: center ? 'center' : 'left', lineSpacingMultiple: 0.96 });
+  const fit = fitText([s.title], tw, 2.6, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15 }, D(ctx)));
+  P.ctxText(ctx, slide, s.title, { x: tx, y: H * 0.3, w: tw, h: Math.min(2.6, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'top', align: center ? 'center' : 'left', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
   const subY = H * 0.3 + Math.min(2.6, fit.needIn) + 0.25;
   if (k.subtitle) P.fitBox(ctx, slide, [k.subtitle], { x: tx, y: subY, w: tw, h: 1.0, name: 'cover subtitle' }, { maxPt: ctx.scale.subtitle + 2, minPt: ctx.scale.subtitle - 2, textOptions: { color: ctx.pal.ink_muted, align: center ? 'center' : 'left' } });
   if (lines.length) P.ctxText(ctx, slide, lines.map((t, i) => ({ text: t, options: { breakLine: i < lines.length - 1, bold: i === 0 } })), { x: tx, y: H - M.bottom - 1.0, w: tw, h: 0.9, fontSize: ctx.scale.caption + 1, color: ctx.pal.ink_muted, valign: 'bottom', align: center ? 'center' : 'left', paraSpaceAfter: 2 });
@@ -112,8 +115,8 @@ function section_divider(ctx, slide, s, body) {
   const n = k.number != null ? k.number : s._sectionIndex;
   const tw = k.image ? W * 0.5 - M.left : W - 2 * M.left;
   if (n != null) P.numeral(ctx, slide, numeralText(ctx, Number(n) || 1), { x: M.left, y: H * 0.22, w: tw, h: 1.4 }, { pt: ctx.scale.hero_number, color: ctx.pal.dark ? ctx.pal.accent : ctx.pal.primary });
-  const fit = fitText([s.title], tw, 1.8, ctx.scale.section_title, ctx.scale.section_title - 10, { lineHeight: 1.15 });
-  P.ctxText(ctx, slide, s.title, { x: M.left, y: H * 0.22 + 1.45, w: tw, h: Math.min(1.8, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: 0.98 });
+  const fit = fitText([s.title], tw, 1.8, ctx.scale.section_title, ctx.scale.section_title - 10, Object.assign({ lineHeight: 1.15 }, D(ctx)));
+  P.ctxText(ctx, slide, s.title, { x: M.left, y: H * 0.22 + 1.45, w: tw, h: Math.min(1.8, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
   if (k.subtitle) P.fitBox(ctx, slide, [k.subtitle], { x: M.left, y: H * 0.22 + 1.45 + Math.min(1.8, fit.needIn) + 0.2, w: tw, h: 1.0, name: 'section subtitle' }, { maxPt: ctx.scale.subtitle + 2, minPt: ctx.scale.subtitle - 2, textOptions: { color: ctx.pal.ink_muted } });
 }
 
@@ -169,7 +172,7 @@ function evidence_chart(ctx, slide, s, body) {
   if (sideBox) {
     let y = sideBox.y;
     if (k.insight) {
-      const h = Math.min(sideBox.h * 0.5, heightFor([k.insight], sideBox.w - 0.16, ctx.scale.body + 1, { lineHeight: 1.3 }) + 0.1);
+      const h = Math.min(sideBox.h * 0.5, heightFor([k.insight], sideBox.w - 0.16, ctx.scale.body + 1, { lineHeight: ctx.tok.typography.line_height.body, face: ctx.font.body, bold: true }) + 0.1);
       P.callout(ctx, slide, k.insight, { x: sideBox.x, y, w: sideBox.w, h }, { maxPt: ctx.scale.body + 1, minPt: ctx.scale.body_min, bold: true });
       y += h + 0.3;
     }
@@ -244,7 +247,7 @@ function roadmap(ctx, slide, s, body) {
   const cols = columns(body, n, 0.18);
   const headH = 0.78;
   // 열 간 마일스톤 정렬용: 가장 긴 항목 높이
-  roadmap._maxItemsH = Math.max(0, ...phases.map((ph) => Math.min(body.h - headH - 0.25 - (ph.milestone ? 0.62 : 0), (ph.items || []).length ? heightFor(ph.items, cols[0].w - 0.4, ctx.scale.body - 1, { lineHeight: 1.25, paraGapEm: 0.35 }) + 0.1 : 0)));
+  roadmap._maxItemsH = Math.max(0, ...phases.map((ph) => Math.min(body.h - headH - 0.25 - (ph.milestone ? 0.62 : 0), (ph.items || []).length ? heightFor(ph.items, cols[0].w - 0.4, ctx.scale.body - 1, Object.assign({ lineHeight: ctx.tok.typography.line_height.body, paraGapEm: 0.35 }, B(ctx))) + 0.1 : 0)));
   phases.forEach((ph, i) => {
     const col = cols[i];
     const first = i === 0;
@@ -254,7 +257,7 @@ function roadmap(ctx, slide, s, body) {
     const msH = ph.milestone ? 0.62 : 0;
     const items = ph.items || [];
     const availH = col.h - headH - 0.25 - msH;
-    const itemsH = items.length ? Math.min(availH, heightFor(items, col.w - 0.4, ctx.scale.body - 1, { lineHeight: 1.25, paraGapEm: 0.35 }) + 0.1) : 0;
+    const itemsH = items.length ? Math.min(availH, heightFor(items, col.w - 0.4, ctx.scale.body - 1, Object.assign({ lineHeight: ctx.tok.typography.line_height.body, paraGapEm: 0.35 }, B(ctx))) + 0.1) : 0;
     if (items.length) P.bulletList(ctx, slide, items, { x: col.x + 0.05, y: col.y + headH + 0.2, w: col.w - 0.1, h: itemsH, name: `phase ${i + 1}` }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min, paraGapEm: 0.35 });
     if (ph.milestone) {
       // 마일스톤은 항목 바로 아래(내용 기준)에 두되, 열 간 높이를 맞추기 위해 가장 긴 열 기준으로 정렬한다
@@ -434,8 +437,8 @@ function statement(ctx, slide, s, body) {
   const k = c(s);
   if (k.image) P.image(ctx, slide, k.image, { x: 0, y: 0, w: W, h: H }, { scrim: true });
   const tw = W - 2 * M.left - 0.8;
-  const fit = fitText([k.statement || s.title], tw, 3.0, ctx.scale.section_title, ctx.scale.title, { lineHeight: 1.2 });
-  P.ctxText(ctx, slide, k.statement || s.title, { x: M.left + 0.4, y: (H - Math.min(3.0, fit.needIn)) / 2 - 0.3, w: tw, h: Math.min(3.0, fit.needIn) + 0.2, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'middle', lineSpacingMultiple: 1.0 });
+  const fit = fitText([k.statement || s.title], tw, 3.0, ctx.scale.section_title, ctx.scale.title, Object.assign({ lineHeight: 1.25 }, D(ctx)));
+  P.ctxText(ctx, slide, k.statement || s.title, { x: M.left + 0.4, y: (H - Math.min(3.0, fit.needIn)) / 2 - 0.3, w: tw, h: Math.min(3.0, fit.needIn) + 0.2, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'middle', lineSpacingMultiple: spacingMultiple(1.25, ctx.font.display, true) });
   if (k.attribution) P.ctxText(ctx, slide, `— ${k.attribution}`, { x: M.left + 0.4, y: (H + Math.min(3.0, fit.needIn)) / 2 + 0.1, w: tw, h: 0.4, fontSize: ctx.scale.body, color: ctx.pal.ink_muted });
 }
 
@@ -465,7 +468,7 @@ function image_focus(ctx, slide, s, body) {
   P.image(ctx, slide, k.image, imgBox);
   let y = body.y;
   if (k.caption) {
-    const h = Math.min(body.h * 0.45, heightFor([k.caption], tw, ctx.scale.body + 2, { lineHeight: 1.3 }) + 0.1);
+    const h = Math.min(body.h * 0.45, heightFor([k.caption], tw, ctx.scale.body + 2, Object.assign({ lineHeight: ctx.tok.typography.line_height.body }, B(ctx), { bold: true })) + 0.1);
     P.fitBox(ctx, slide, [k.caption], { x: tx, y, w: tw, h, name: 'caption' }, { maxPt: ctx.scale.body + 2, minPt: ctx.scale.body, textOptions: { bold: true } });
     y += h + 0.25;
   }
@@ -502,7 +505,7 @@ function pricing_or_budget(ctx, slide, s, body) {
   let y = body.y;
   if ((k.assumptions || []).length) {
     P.label(ctx, slide, '가정', { x: rx, y, w: rw, h: 0.24 }, { color: ctx.pal.primary });
-    const h = Math.min(body.h * 0.6, heightFor(k.assumptions, rw - 0.3, ctx.scale.body - 1, { lineHeight: 1.25, paraGapEm: 0.4 }) + 0.15);
+    const h = Math.min(body.h * 0.6, heightFor(k.assumptions, rw - 0.3, ctx.scale.body - 1, Object.assign({ lineHeight: ctx.tok.typography.line_height.body, paraGapEm: 0.4 }, B(ctx))) + 0.15);
     P.bulletList(ctx, slide, k.assumptions, { x: rx, y: y + 0.3, w: rw, h, name: 'assumptions' }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min });
     y += h + 0.5;
   }
@@ -552,7 +555,7 @@ function appendix(ctx, slide, s, body) {
   const k = c(s);
   let y = body.y;
   if ((k.paragraphs || []).length) {
-    const h = k.table ? Math.min(body.h * 0.4, heightFor(k.paragraphs, body.w, ctx.scale.body - 1) + 0.2) : body.h - ((k.items || []).length ? body.h * 0.45 : 0);
+    const h = k.table ? Math.min(body.h * 0.4, heightFor(k.paragraphs, body.w, ctx.scale.body - 1, Object.assign({ lineHeight: ctx.tok.typography.line_height.body }, B(ctx))) + 0.2) : body.h - ((k.items || []).length ? body.h * 0.45 : 0);
     P.fitBox(ctx, slide, k.paragraphs, { x: body.x, y, w: body.w, h, name: 'appendix text' }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min - 1 });
     y += h + 0.2;
   }
@@ -564,9 +567,193 @@ function appendix(ctx, slide, s, body) {
   if ((k.items || []).length) P.bulletList(ctx, slide, k.items, { x: body.x, y, w: body.w, h: body.y + body.h - y, name: 'appendix items' }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min - 1 });
 }
 
+// ---------------------------------------------------------------- small_multiples
+// 같은 축을 공유하는 작은 차트 격자 (≤6). 비교의 기준이 같아야 하므로 shared_y 기본 true.
+function small_multiples(ctx, slide, s, body) {
+  const k = c(s);
+  const charts = (k.charts || []).slice(0, 6);
+  if (!charts.length) { ctx.warn('small_multiples: charts 비어 있음', {}); return; }
+  const n = charts.length;
+  const ncol = k.columns || (n <= 2 ? n : n <= 4 ? 2 : 3);
+  const nrow = Math.ceil(n / ncol);
+  const noteH = k.note ? 0.45 : 0;
+  const gapX = 0.4, gapY = 0.35, titleH = 0.3;
+  const cw = (body.w - gapX * (ncol - 1)) / ncol;
+  const ch = (body.h - noteH - gapY * (nrow - 1)) / nrow;
+  let yMax = k.y_max;
+  if (k.shared_y !== false && yMax == null) {
+    let mx = 0;
+    charts.forEach((m) => ((m.chart || {}).series || []).forEach((se) => se.values.forEach((v) => { if (v != null && Number(v) > mx) mx = Number(v); })));
+    yMax = mx > 0 ? Math.ceil(mx * 1.15 * 10) / 10 : undefined;
+  }
+  const unit = (charts.find((m) => (m.chart || {}).unit) || { chart: {} }).chart.unit;
+  if (unit) P.label(ctx, slide, `(단위: ${unit})`, { x: body.x, y: body.y - 0.26, w: body.w, h: 0.22 }, { align: 'right', bold: false, pt: Math.max(9, ctx.scale.caption - 1), spacing: 0 });
+  charts.forEach((m, i) => {
+    const col = i % ncol, row = Math.floor(i / ncol);
+    const x = body.x + col * (cw + gapX), y = body.y + row * (ch + gapY);
+    P.ctxText(ctx, slide, m.title || '', { x, y, w: cw, h: titleH, fontSize: ctx.scale.body, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'middle' });
+    const spec = Object.assign({}, m.chart || {}, { y_max: yMax, hide_value_axis: true, hide_unit: true, label_pt: Math.max(9, ctx.tok.chart.label_pt - 2) });
+    buildChart(ctx, slide, spec, { x, y: y + titleH + 0.05, w: cw, h: ch - titleH - 0.05 });
+  });
+  if (k.note) P.fitBox(ctx, slide, [k.note], { x: body.x, y: body.y + body.h - noteH + 0.1, w: body.w, h: noteH - 0.1, name: 'note' }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min, textOptions: { color: ctx.pal.ink_muted } });
+}
+
+// ---------------------------------------------------------------- big_number_stage
+// 숫자 하나가 화면 절반 — 그 숫자가 왜 중요한지 오른쪽 한 문장
+function big_number_stage(ctx, slide, s, body) {
+  const k = c(s);
+  if (k.value == null) { ctx.warn('big_number_stage: value 없음', {}); return; }
+  const lw = body.w * 0.5;
+  const pt = Math.round(ctx.scale.hero_number * 1.35);
+  const numH = (pt * 1.05) / 72;
+  const top = body.y + Math.max(0.1, (body.h - numH - 0.9) / 2);
+  P.bigNumber(ctx, slide, k.value, k.unit, { x: body.x, y: top, w: lw, h: numH }, { pt, valign: 'bottom', color: k.trend === 'down' ? ctx.pal.negative : ctx.pal.primary });
+  P.ctxText(ctx, slide, k.label || '', { x: body.x, y: top + numH + 0.1, w: lw, h: 0.45, fontSize: ctx.scale.body + 2, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display });
+  if (k.delta) P.ctxText(ctx, slide, k.delta, { x: body.x, y: top + numH + 0.58, w: lw, h: 0.35, fontSize: ctx.scale.body, color: k.trend === 'down' ? ctx.pal.negative : k.trend === 'up' ? ctx.pal.positive : ctx.pal.ink_muted, bold: true });
+  const rx = body.x + lw + 0.6, rw = body.w - lw - 0.6;
+  const paras = [k.context, k.comparison].filter(Boolean);
+  if (paras.length) P.callout(ctx, slide, paras, { x: rx, y: body.y + body.h * 0.18, w: rw, h: body.h * 0.64 }, { maxPt: ctx.scale.body + 4, minPt: ctx.scale.body, bold: true, color: ctx.pal.accent, textColor: ctx.pal.ink, valign: 'middle' });
+}
+
+// ---------------------------------------------------------------- tam_nested
+// 중첩 사각형 (TAM ⊃ SAM ⊃ SOM): 바깥에서 안으로 어두워진다. 오른쪽에 값·산출 방법·시사점
+function tam_nested(ctx, slide, s, body) {
+  const k = c(s);
+  const rings = (k.rings || []).slice(0, 4);
+  if (!rings.length) { ctx.warn('tam_nested: rings 비어 있음', {}); return; }
+  const n = rings.length;
+  const size = Math.min(body.h, body.w * 0.46);
+  const ox = body.x, oy = body.y + (body.h - size) / 2;
+  const fills = [ctx.pal.surface, ctx.pal.primary_soft, ctx.pal.primary, ctx.pal.accent];
+  rings.forEach((r, i) => {
+    const f = 1 - i * (0.72 / Math.max(1, n - 1)) * 0.95; // 1 → ~0.3
+    const w = size * f, h = size * f;
+    const x = ox, y = oy + size - h; // 왼쪽 아래 정렬
+    const fill = fills[Math.min(i, fills.length - 1)];
+    const dark = i >= 2;
+    P.rect(ctx, slide, { x, y, w, h }, { fill, line: ctx.pal.background, lineWidth: 1.5, radius: 0 });
+    const labelY = y + 0.08;
+    // 안쪽 사각형은 좁다: 라벨+값 → 라벨만 → 생략 (값은 오른쪽 목록에 항상 있다)
+    const full = `${r.label || ''}  ${r.value || ''}`;
+    const wFull = textWidthIn(full, ctx.scale.body, ctx.font.numeral, true) + 0.1;
+    const wLabel = textWidthIn(r.label || '', ctx.scale.body - 1, ctx.font.body, true) + 0.1;
+    if (wFull <= w - 0.2) P.ctxText(ctx, slide, [{ text: r.label || '', options: { bold: true, fontSize: ctx.scale.body - 1, color: dark ? ctx.pal.on_primary : ctx.pal.ink } }, { text: r.value ? `  ${r.value}` : '', options: { bold: true, fontSize: ctx.scale.body + 1, color: dark ? ctx.pal.on_primary : ctx.pal.primary, fontFace: ctx.font.numeral } }], { x: x + 0.12, y: labelY, w: w - 0.2, h: 0.32, fontSize: ctx.scale.body, singleLine: true });
+    else if (wLabel <= w - 0.2) P.ctxText(ctx, slide, r.label || '', { x: x + 0.12, y: labelY, w: w - 0.2, h: 0.32, fontSize: ctx.scale.body - 1, bold: true, color: dark ? ctx.pal.on_primary : ctx.pal.ink, singleLine: true });
+  });
+  const rx = body.x + size + 0.6, rw = body.w - size - 0.6;
+  let y = body.y;
+  rings.forEach((r, i) => {
+    const rowH = 0.62;
+    P.ctxText(ctx, slide, [{ text: r.label || '', options: { bold: true, color: ctx.pal.ink, fontSize: ctx.scale.body } }, { text: r.value ? `   ${r.value}` : '', options: { bold: true, color: ctx.pal.primary, fontSize: ctx.scale.body + 2, fontFace: ctx.font.numeral } }], { x: rx, y, w: rw, h: 0.32, fontSize: ctx.scale.body });
+    if (r.note) P.ctxText(ctx, slide, r.note, { x: rx, y: y + 0.3, w: rw, h: 0.3, fontSize: Math.max(ctx.scale.body_min, ctx.scale.caption + 1), color: ctx.pal.ink_muted, singleLine: true });
+    P.hline(ctx, slide, rx, y + rowH - 0.04, rw, { color: ctx.pal.line_faint });
+    y += rowH;
+  });
+  if (k.method) {
+    P.label(ctx, slide, '산출 방법', { x: rx, y: y + 0.1, w: rw, h: 0.22 });
+    const avail = Math.max(0.4, body.y + body.h - (y + 0.36) - (k.implication ? 1.1 : 0.1));
+    const mh = Math.min(avail, heightFor([k.method], rw, ctx.scale.body - 1, Object.assign({ lineHeight: ctx.tok.typography.line_height.body }, B(ctx))) + 0.1);
+    P.fitBox(ctx, slide, [k.method], { x: rx, y: y + 0.36, w: rw, h: mh, name: 'method' }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min, textOptions: { color: ctx.pal.ink_muted } });
+  }
+  if (k.implication) P.callout(ctx, slide, k.implication, { x: rx, y: body.y + body.h - 0.9, w: rw, h: 0.9 }, { maxPt: ctx.scale.body, minPt: ctx.scale.body_min, bold: true });
+}
+
+// ---------------------------------------------------------------- logo_wall
+// 로고·레퍼런스 격자 (≤12). 셀 크기 동일, contain 배치, 테두리 없음. 로고는 승인 자산만.
+function logo_wall(ctx, slide, s, body) {
+  const k = c(s);
+  const logos = (k.logos || []).slice(0, 12);
+  if (!logos.length) { ctx.warn('logo_wall: logos 비어 있음', {}); return; }
+  const n = logos.length;
+  const ncol = k.columns || (n <= 4 ? n : n <= 8 ? 4 : 6);
+  const nrow = Math.ceil(n / ncol);
+  const capH = k.caption ? 0.5 : 0;
+  const gap = 0.3;
+  const cw = (body.w - gap * (ncol - 1)) / ncol;
+  const ch = Math.min(1.6, (body.h - capH - gap * (nrow - 1)) / nrow);
+  const top = body.y + Math.max(0, (body.h - capH - (ch * nrow + gap * (nrow - 1))) / 2);
+  logos.forEach((id, i) => {
+    const col = i % ncol, row = Math.floor(i / ncol);
+    const box = { x: body.x + col * (cw + gap) + 0.15, y: top + row * (ch + gap) + 0.15, w: cw - 0.3, h: ch - 0.3 };
+    const name = typeof id === 'string' ? id : id.image;
+    const p = ctx.asset(name);
+    if (p) slide.addImage({ path: p, x: box.x, y: box.y, w: box.w, h: box.h, sizing: { type: 'contain', w: box.w, h: box.h }, objectName: name });
+    else { P.rect(ctx, slide, box, { fill: ctx.pal.surface, radius: 0 }); P.ctxText(ctx, slide, typeof id === 'string' ? id : (id.label || id.image), { x: box.x, y: box.y, w: box.w, h: box.h, fontSize: ctx.scale.caption, color: ctx.pal.ink_faint, align: 'center', valign: 'middle' }); ctx.warn(`로고 자산 '${name}' 없음 — 회색 자리표시`, {}); }
+    if (typeof id === 'object' && id.label && p) P.ctxText(ctx, slide, id.label, { x: box.x, y: box.y + box.h - 0.02, w: box.w, h: 0.24, fontSize: ctx.scale.caption - 1, color: ctx.pal.ink_faint, align: 'center', singleLine: true });
+  });
+  if (k.caption) P.fitBox(ctx, slide, [k.caption], { x: body.x, y: body.y + body.h - capH + 0.1, w: body.w, h: capH - 0.1, name: 'caption' }, { maxPt: ctx.scale.body, minPt: ctx.scale.body_min, textOptions: { color: ctx.pal.ink_muted, align: 'center' } });
+}
+
+// ---------------------------------------------------------------- before_after
+// 현재 → 이후. 왼쪽은 흐리게, 오른쪽은 주조 면. 숫자가 있으면 큰 숫자로 대비
+function before_after(ctx, slide, s, body) {
+  const k = c(s);
+  const b = k.before || {}, a = k.after || {};
+  const arrowW = 0.7;
+  const cw = (body.w - arrowW) / 2;
+  const L = { x: body.x, y: body.y, w: cw, h: body.h }, R = { x: body.x + cw + arrowW, y: body.y, w: cw, h: body.h };
+  P.rect(ctx, slide, L, { fill: ctx.pal.surface, radius: 0 });
+  P.rect(ctx, slide, R, { fill: ctx.pal.primary_soft, radius: 0 });
+  const mid = body.y + body.h / 2;
+  P.arrow(ctx, slide, body.x + cw + 0.12, mid, body.x + cw + arrowW - 0.12, mid, { color: ctx.pal.accent, width: 2 });
+  if (k.arrow_label) P.ctxText(ctx, slide, k.arrow_label, { x: body.x + cw - 0.3, y: mid - 0.5, w: arrowW + 0.6, h: 0.3, fontSize: ctx.scale.caption, bold: true, color: ctx.pal.accent, align: 'center', singleLine: true });
+  [[L, b, false], [R, a, true]].forEach(([box, side, after]) => {
+    const pad = 0.3;
+    let y = box.y + pad;
+    P.label(ctx, slide, side.label || (after ? '이후' : '현재'), { x: box.x + pad, y, w: box.w - 2 * pad, h: 0.24 }, { color: after ? ctx.pal.primary : ctx.pal.ink_muted });
+    y += 0.34;
+    if (side.metric) {
+      P.bigNumber(ctx, slide, side.metric, side.metric_unit || '', { x: box.x + pad, y, w: box.w - 2 * pad, h: 1.0 }, { pt: Math.round(ctx.scale.hero_number * 0.6), valign: 'bottom', color: after ? ctx.pal.primary : ctx.pal.ink_muted });
+      y += 1.05;
+      if (side.metric_label) { P.ctxText(ctx, slide, side.metric_label, { x: box.x + pad, y, w: box.w - 2 * pad, h: 0.3, fontSize: ctx.scale.caption + 1, color: ctx.pal.ink_muted }); y += 0.4; }
+    }
+    const pts = (side.points || []).slice(0, 4);
+    if (pts.length) P.bulletList(ctx, slide, pts, { x: box.x + pad, y, w: box.w - 2 * pad, h: box.y + box.h - y - pad, name: after ? 'after' : 'before' }, { maxPt: ctx.scale.body, minPt: ctx.scale.body_min, color: after ? ctx.pal.ink : ctx.pal.ink_muted });
+  });
+}
+
+// ---------------------------------------------------------------- kpi_bento
+// 불균등 격자: 큰 숫자 하나(왼쪽 전체 높이) + 작은 셀 2~5개. 카드 테두리 없이 헤어라인으로만 나눈다
+function kpi_bento(ctx, slide, s, body) {
+  const k = c(s);
+  const hero = k.hero;
+  const cells = (k.cells || []).slice(0, 5);
+  if (!hero && !cells.length) { ctx.warn('kpi_bento: hero/cells 없음', {}); return; }
+  const noteH = k.note ? 0.5 : 0;
+  const H = body.h - noteH;
+  const heroW = hero ? body.w * 0.42 : 0;
+  if (hero) {
+    const pt = Math.round(ctx.scale.hero_number * 1.0);
+    const numH = (pt * 1.05) / 72;
+    const top = body.y + Math.max(0.2, (H - numH - 1.0) / 2);
+    P.bigNumber(ctx, slide, hero.value, hero.unit, { x: body.x, y: top, w: heroW - 0.3, h: numH }, { pt, valign: 'bottom' });
+    P.ctxText(ctx, slide, hero.label || '', { x: body.x, y: top + numH + 0.08, w: heroW - 0.3, h: 0.45, fontSize: ctx.scale.body + 1, bold: true, color: ctx.pal.ink });
+    if (hero.delta) P.ctxText(ctx, slide, hero.delta, { x: body.x, y: top + numH + 0.55, w: heroW - 0.3, h: 0.35, fontSize: ctx.scale.body, color: hero.trend === 'down' ? ctx.pal.negative : hero.trend === 'up' ? ctx.pal.positive : ctx.pal.ink_muted, bold: true });
+    P.vline(ctx, slide, body.x + heroW - 0.15, body.y + 0.1, H - 0.2, { color: ctx.pal.line });
+  }
+  const gx = body.x + heroW + (hero ? 0.3 : 0);
+  const gw = body.w - heroW - (hero ? 0.3 : 0);
+  const n = cells.length;
+  const ncol = n <= 1 ? 1 : n <= 4 ? 2 : 3;
+  const nrow = Math.ceil(n / ncol);
+  const cw = gw / ncol, ch = H / Math.max(1, nrow);
+  cells.forEach((m, i) => {
+    const col = i % ncol, row = Math.floor(i / ncol);
+    const x = gx + col * cw, y = body.y + row * ch;
+    const pt = Math.round(ctx.scale.hero_number * (nrow >= 3 ? 0.42 : 0.55));
+    const numH = (pt * 1.05) / 72;
+    P.bigNumber(ctx, slide, m.value, m.unit, { x: x + 0.2, y: y + 0.15, w: cw - 0.4, h: numH }, { pt, valign: 'bottom', color: ctx.pal.ink });
+    P.ctxText(ctx, slide, m.label || '', { x: x + 0.2, y: y + 0.2 + numH, w: cw - 0.4, h: 0.3, fontSize: ctx.scale.body - 1, bold: true, color: ctx.pal.ink });
+    if (m.delta) P.ctxText(ctx, slide, m.delta, { x: x + 0.2, y: y + 0.5 + numH, w: cw - 0.4, h: 0.3, fontSize: ctx.scale.caption + 1, color: m.trend === 'down' ? ctx.pal.negative : m.trend === 'up' ? ctx.pal.positive : ctx.pal.ink_muted, bold: true });
+    if (row < nrow - 1) P.hline(ctx, slide, x + 0.2, y + ch - 0.02, cw - 0.4, { color: ctx.pal.line_faint });
+    if (col > 0) P.vline(ctx, slide, x, y + 0.15, ch - 0.3, { color: ctx.pal.line_faint });
+  });
+  if (k.note) P.fitBox(ctx, slide, [k.note], { x: body.x, y: body.y + body.h - noteH + 0.12, w: body.w, h: noteH - 0.12, name: 'note' }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min, textOptions: { color: ctx.pal.ink_muted } });
+}
+
 function custom(ctx, slide, s, body) {
   const fn = ctx.hooks && (ctx.hooks[s.number] || ctx.hooks[String(s.number)]);
   if (!fn) { ctx.warn(`custom 슬라이드 ${s.number}: hooks 파일에 핸들러가 없음 — 빈 본문`, {}); return; }
 }
 
-module.exports = { cover, agenda, executive_summary, section_divider, hero_metric, evidence_chart, comparison, process, roadmap, architecture, matrix, case_study, recommendation, points, statement, data_table, image_focus, team, pricing_or_budget, conclusion, appendix, custom, columns };
+module.exports = { cover, agenda, executive_summary, section_divider, hero_metric, evidence_chart, comparison, process, roadmap, architecture, matrix, case_study, recommendation, points, statement, data_table, image_focus, team, pricing_or_budget, conclusion, appendix, small_multiples, big_number_stage, tam_nested, logo_wall, before_after, kpi_bento, custom, columns };

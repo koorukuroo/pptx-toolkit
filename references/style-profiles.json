@@ -1,150 +1,1854 @@
 {
-  "version": "0.2.0",
-  "_doc": "스타일 프로파일 = 디자인 토큰의 출발점. 특정 기관·회사의 브랜드가 아니며 로고·고유 템플릿을 모방하지 않는다. 색은 6자리 hex(# 없음). 길이 단위 inch, 글자 pt. 설명은 references/style-profiles.md 참조.",
+  "version": "0.3.0",
+  "_doc": "스타일 프로파일 = 디자인 토큰의 출발점. 특정 기관·회사의 브랜드가 아니며 로고·고유 템플릿을 모방하지 않는다. 색은 6자리 hex(# 없음). 길이 단위 inch, 글자 pt. 설명은 references/style-profiles.md 참조. meta(mood·occasion·formality 1~5·density·best_for·avoid_for)는 Director 의 자동 라우팅용. typography 는 CJK 행간(절대 em)·자간(em). backgrounds 는 아키타입별 기본 배경.",
   "profiles": {
     "government_kr": {
       "label": "정부·공공기관 보고",
       "intent": "중앙·지방정부 보고, 공공기관 제안·심의 자료. 신뢰·절제·근거 중심. 흰 배경, 정부청색 계열 주조, 빨강은 경고·핵심 강조에만.",
-      "use_when": ["부처·지자체·의회 보고", "공공기관 제안서·심의자료", "정책 추진계획", "국비 사업계획"],
+      "use_when": [
+        "부처·지자체·의회 보고",
+        "공공기관 제안서·심의자료",
+        "정책 추진계획",
+        "국비 사업계획"
+      ],
       "tokens": {
-        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.6, "right": 0.6, "top": 0.45, "bottom": 0.4 }, "grid_columns": 12, "gutter": 0.16 },
-        "fonts": { "display": "Paperlogy", "body": "Paperlogy", "fallback": ["Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "bold", "body": "regular", "emphasis": "bold" } },
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.6,
+            "right": 0.6,
+            "top": 0.45,
+            "bottom": 0.4
+          },
+          "grid_columns": 12,
+          "gutter": 0.16
+        },
+        "fonts": {
+          "display": "Paperlogy",
+          "body": "Paperlogy",
+          "fallback": [
+            "Pretendard",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Paperlogy",
+          "weights": {
+            "title": "bold",
+            "body": "regular",
+            "emphasis": "bold"
+          }
+        },
         "type": {
-          "live":     { "cover_title": 44, "section_title": 40, "title": 28, "subtitle": 16, "body": 18, "body_min": 14, "caption": 12, "source": 10, "hero_number": 72, "kicker": 11, "table": 14 },
-          "pre_read": { "cover_title": 40, "section_title": 36, "title": 24, "subtitle": 14, "body": 15, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 60, "kicker": 10, "table": 12 },
-          "hybrid":   { "cover_title": 42, "section_title": 38, "title": 26, "subtitle": 15, "body": 16, "body_min": 13, "caption": 11, "source": 9,  "hero_number": 64, "kicker": 10, "table": 13 }
+          "live": {
+            "cover_title": 44,
+            "section_title": 40,
+            "title": 28,
+            "subtitle": 16,
+            "body": 18,
+            "body_min": 14,
+            "caption": 12,
+            "source": 10,
+            "hero_number": 72,
+            "kicker": 11,
+            "table": 14
+          },
+          "pre_read": {
+            "cover_title": 40,
+            "section_title": 36,
+            "title": 24,
+            "subtitle": 14,
+            "body": 15,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 60,
+            "kicker": 10,
+            "table": 12
+          },
+          "hybrid": {
+            "cover_title": 42,
+            "section_title": 38,
+            "title": 26,
+            "subtitle": 15,
+            "body": 16,
+            "body_min": 13,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 64,
+            "kicker": 10,
+            "table": 13
+          }
         },
         "colors": {
-          "background": "FFFFFF", "surface": "F4F5F6", "surface_strong": "E6E8EA",
-          "ink": "1E2124", "ink_muted": "58616A", "ink_faint": "8A949E", "line": "CDD1D5", "line_faint": "E6E8EA",
-          "primary": "003764", "primary_soft": "D8E5FD", "secondary": "346FB2", "accent": "E4032E", "accent_soft": "FBE9EC",
-          "positive": "228738", "warning": "9E6A00", "negative": "DE3412", "info": "0B78CB",
-          "on_primary": "FFFFFF", "dark_background": "052561", "on_dark": "FFFFFF"
+          "background": "FFFFFF",
+          "surface": "F4F5F6",
+          "surface_strong": "E6E8EA",
+          "ink": "1E2124",
+          "ink_muted": "58616A",
+          "ink_faint": "8A949E",
+          "line": "CDD1D5",
+          "line_faint": "E6E8EA",
+          "primary": "003764",
+          "primary_soft": "D8E5FD",
+          "secondary": "346FB2",
+          "accent": "E4032E",
+          "accent_soft": "FBE9EC",
+          "positive": "228738",
+          "warning": "9E6A00",
+          "negative": "DE3412",
+          "info": "0B78CB",
+          "on_primary": "FFFFFF",
+          "dark_background": "052561",
+          "on_dark": "FFFFFF"
         },
-        "ratios": { "background": 0.6, "secondary": 0.3, "accent": 0.1, "point_max": 0.05 },
-        "chart": { "palette": ["003764", "346FB2", "86AFF9", "B1B8BE", "CDD1D5"], "highlight": "E4032E", "muted": "B1B8BE", "positive": "228738", "negative": "DE3412", "gridline": "E6E8EA", "label_pt": 12, "direct_labels": true },
-        "geometry": { "radius": 0, "line_width": 0.75, "shadow": false, "divider": "hairline" },
-        "title": { "style": "chip", "chip_numerals": "roman", "align": "left", "max_lines": 2, "kicker": "section" },
-        "footer": { "left": "organization", "right": "page_number", "source_above_footer": true, "confidentiality": true },
-        "imagery": { "treatment": "documentary", "scrim": "0C1824", "scrim_transparency": 45, "avoid": ["홍보용 스톡", "악수 사진", "강한 듀오톤 필터"] },
-        "cover": { "variant": "light-left", "band_color": "003764" },
-        "list": { "markers": ["□", "○", "-", "·"], "numbering": ["1.", "가.", "1)", "가)"] }
+        "ratios": {
+          "background": 0.6,
+          "secondary": 0.3,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "003764",
+            "346FB2",
+            "86AFF9",
+            "B1B8BE",
+            "CDD1D5"
+          ],
+          "highlight": "E4032E",
+          "muted": "B1B8BE",
+          "positive": "228738",
+          "negative": "DE3412",
+          "gridline": "E6E8EA",
+          "label_pt": 12,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 0,
+          "line_width": 0.75,
+          "shadow": false,
+          "divider": "hairline"
+        },
+        "title": {
+          "style": "chip",
+          "chip_numerals": "roman",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "section"
+        },
+        "footer": {
+          "left": "organization",
+          "right": "page_number",
+          "source_above_footer": true,
+          "confidentiality": true
+        },
+        "imagery": {
+          "treatment": "documentary",
+          "scrim": "0C1824",
+          "scrim_transparency": 45,
+          "avoid": [
+            "홍보용 스톡",
+            "악수 사진",
+            "강한 듀오톤 필터"
+          ]
+        },
+        "cover": {
+          "variant": "light-left",
+          "band_color": "003764"
+        },
+        "list": {
+          "markers": [
+            "□",
+            "○",
+            "-",
+            "·"
+          ],
+          "numbering": [
+            "1.",
+            "가.",
+            "1)",
+            "가)"
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.2,
+            "heading": 1.25,
+            "body": 1.4,
+            "body_long": 1.5,
+            "caption": 1.3
+          },
+          "tracking_em": {
+            "display": -0.01,
+            "body": 0,
+            "kicker": 0.06,
+            "numeral": -0.02
+          }
+        },
+        "backgrounds": {
+          "cover": "light",
+          "section_divider": "surface",
+          "statement": "surface"
+        }
+      },
+      "meta": {
+        "mood": "신뢰·절제",
+        "occasion": "보고·심의",
+        "formality": 5,
+        "density": "medium",
+        "best_for": [
+          "부처·지자체 보고",
+          "공공기관 심의자료",
+          "국비 사업계획"
+        ],
+        "avoid_for": [
+          "제품 런칭",
+          "투자 피치",
+          "강연"
+        ]
       }
     },
     "public_policy": {
       "label": "정책연구·프리리드 보고서",
       "intent": "연구보고서·정책자료·사전 배포용(pre-read). 읽기용 밀도, 완결 문장 제목, 출처 철저.",
-      "use_when": ["정책 백서", "연구 브리핑", "공청회 요약", "사전 배포 자료"],
+      "use_when": [
+        "정책 백서",
+        "연구 브리핑",
+        "공청회 요약",
+        "사전 배포 자료"
+      ],
       "tokens": {
-        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.62, "right": 0.62, "top": 0.45, "bottom": 0.42 }, "grid_columns": 12, "gutter": 0.16 },
-        "fonts": { "display": "Paperlogy", "body": "Pretendard", "fallback": ["Paperlogy", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "bold", "body": "regular", "emphasis": "bold" } },
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.62,
+            "right": 0.62,
+            "top": 0.45,
+            "bottom": 0.42
+          },
+          "grid_columns": 12,
+          "gutter": 0.16
+        },
+        "fonts": {
+          "display": "Paperlogy",
+          "body": "Pretendard",
+          "fallback": [
+            "Paperlogy",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Paperlogy",
+          "weights": {
+            "title": "bold",
+            "body": "regular",
+            "emphasis": "bold"
+          }
+        },
         "type": {
-          "live":     { "cover_title": 42, "section_title": 38, "title": 26, "subtitle": 15, "body": 17, "body_min": 14, "caption": 12, "source": 10, "hero_number": 64, "kicker": 11, "table": 13 },
-          "pre_read": { "cover_title": 38, "section_title": 34, "title": 22, "subtitle": 14, "body": 14, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 56, "kicker": 10, "table": 12 },
-          "hybrid":   { "cover_title": 40, "section_title": 36, "title": 24, "subtitle": 14, "body": 15, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 60, "kicker": 10, "table": 12 }
+          "live": {
+            "cover_title": 42,
+            "section_title": 38,
+            "title": 26,
+            "subtitle": 15,
+            "body": 17,
+            "body_min": 14,
+            "caption": 12,
+            "source": 10,
+            "hero_number": 64,
+            "kicker": 11,
+            "table": 13
+          },
+          "pre_read": {
+            "cover_title": 38,
+            "section_title": 34,
+            "title": 22,
+            "subtitle": 14,
+            "body": 14,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 56,
+            "kicker": 10,
+            "table": 12
+          },
+          "hybrid": {
+            "cover_title": 40,
+            "section_title": 36,
+            "title": 24,
+            "subtitle": 14,
+            "body": 15,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 60,
+            "kicker": 10,
+            "table": 12
+          }
         },
         "colors": {
-          "background": "FFFFFF", "surface": "F2F5F7", "surface_strong": "E3EAF0",
-          "ink": "1D2733", "ink_muted": "64707D", "ink_faint": "97A2AD", "line": "D6DEE5", "line_faint": "E8EEF2",
-          "primary": "173F5F", "primary_soft": "DCE7F0", "secondary": "2F7DA1", "accent": "C65A3A", "accent_soft": "F8E8E2",
-          "positive": "2E7D5B", "warning": "A36B00", "negative": "B33A3A", "info": "2F7DA1",
-          "on_primary": "FFFFFF", "dark_background": "122F47", "on_dark": "FFFFFF"
+          "background": "FFFFFF",
+          "surface": "F2F5F7",
+          "surface_strong": "E3EAF0",
+          "ink": "1D2733",
+          "ink_muted": "64707D",
+          "ink_faint": "97A2AD",
+          "line": "D6DEE5",
+          "line_faint": "E8EEF2",
+          "primary": "173F5F",
+          "primary_soft": "DCE7F0",
+          "secondary": "2F7DA1",
+          "accent": "C65A3A",
+          "accent_soft": "F8E8E2",
+          "positive": "2E7D5B",
+          "warning": "A36B00",
+          "negative": "B33A3A",
+          "info": "2F7DA1",
+          "on_primary": "FFFFFF",
+          "dark_background": "122F47",
+          "on_dark": "FFFFFF"
         },
-        "ratios": { "background": 0.6, "secondary": 0.3, "accent": 0.1, "point_max": 0.05 },
-        "chart": { "palette": ["173F5F", "2F7DA1", "79A9BF", "BFD3DD", "DCE7F0"], "highlight": "C65A3A", "muted": "BFD3DD", "positive": "2E7D5B", "negative": "B33A3A", "gridline": "E8EEF2", "label_pt": 11, "direct_labels": true },
-        "geometry": { "radius": 0, "line_width": 0.75, "shadow": false, "divider": "hairline" },
-        "title": { "style": "plain", "align": "left", "max_lines": 2, "kicker": "section" },
-        "footer": { "left": "document_title", "right": "page_number", "source_above_footer": true, "confidentiality": false },
-        "imagery": { "treatment": "editorial", "scrim": "122F47", "scrim_transparency": 40, "avoid": ["홍보용 스톡"] },
-        "cover": { "variant": "light-left", "band_color": "173F5F" },
-        "list": { "markers": ["•", "–", "·"], "numbering": ["1.", "1)", "(1)"] }
+        "ratios": {
+          "background": 0.6,
+          "secondary": 0.3,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "173F5F",
+            "2F7DA1",
+            "79A9BF",
+            "BFD3DD",
+            "DCE7F0"
+          ],
+          "highlight": "C65A3A",
+          "muted": "BFD3DD",
+          "positive": "2E7D5B",
+          "negative": "B33A3A",
+          "gridline": "E8EEF2",
+          "label_pt": 11,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 0,
+          "line_width": 0.75,
+          "shadow": false,
+          "divider": "hairline"
+        },
+        "title": {
+          "style": "plain",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "section"
+        },
+        "footer": {
+          "left": "document_title",
+          "right": "page_number",
+          "source_above_footer": true,
+          "confidentiality": false
+        },
+        "imagery": {
+          "treatment": "editorial",
+          "scrim": "122F47",
+          "scrim_transparency": 40,
+          "avoid": [
+            "홍보용 스톡"
+          ]
+        },
+        "cover": {
+          "variant": "light-left",
+          "band_color": "173F5F"
+        },
+        "list": {
+          "markers": [
+            "•",
+            "–",
+            "·"
+          ],
+          "numbering": [
+            "1.",
+            "1)",
+            "(1)"
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.2,
+            "heading": 1.25,
+            "body": 1.45,
+            "body_long": 1.55,
+            "caption": 1.3
+          },
+          "tracking_em": {
+            "display": -0.01,
+            "body": 0,
+            "kicker": 0.06,
+            "numeral": -0.02
+          }
+        },
+        "backgrounds": {
+          "cover": "light",
+          "section_divider": "surface",
+          "statement": "surface"
+        }
+      },
+      "meta": {
+        "mood": "차분·학술",
+        "occasion": "읽기용 보고서",
+        "formality": 4,
+        "density": "high",
+        "best_for": [
+          "정책 백서",
+          "연구 브리핑",
+          "사전 배포 자료"
+        ],
+        "avoid_for": [
+          "무대 발표",
+          "영업"
+        ]
       }
     },
     "consulting_grade": {
       "label": "컨설팅 그레이드 임원 보고",
       "intent": "답 먼저(answer-first), 액션 타이틀, 슬라이드당 결론 하나와 그것을 증명하는 전시물 하나. 출처·단위·가정 표시.",
-      "use_when": ["경영진·이사회 보고", "전략 분석", "사업계획·비즈니스 케이스", "실사·진단 보고"],
+      "use_when": [
+        "경영진·이사회 보고",
+        "전략 분석",
+        "사업계획·비즈니스 케이스",
+        "실사·진단 보고"
+      ],
       "tokens": {
-        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.55, "right": 0.55, "top": 0.4, "bottom": 0.38 }, "grid_columns": 12, "gutter": 0.14 },
-        "fonts": { "display": "Paperlogy", "body": "Pretendard", "fallback": ["Paperlogy", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "bold", "body": "regular", "emphasis": "semibold" } },
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.55,
+            "right": 0.55,
+            "top": 0.4,
+            "bottom": 0.38
+          },
+          "grid_columns": 12,
+          "gutter": 0.14
+        },
+        "fonts": {
+          "display": "Paperlogy",
+          "body": "Pretendard",
+          "fallback": [
+            "Paperlogy",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Paperlogy",
+          "weights": {
+            "title": "bold",
+            "body": "regular",
+            "emphasis": "semibold"
+          }
+        },
         "type": {
-          "live":     { "cover_title": 42, "section_title": 38, "title": 26, "subtitle": 15, "body": 17, "body_min": 14, "caption": 12, "source": 10, "hero_number": 72, "kicker": 10, "table": 13 },
-          "pre_read": { "cover_title": 38, "section_title": 34, "title": 22, "subtitle": 13, "body": 14, "body_min": 11, "caption": 10, "source": 8,  "hero_number": 60, "kicker": 9,  "table": 11 },
-          "hybrid":   { "cover_title": 40, "section_title": 36, "title": 24, "subtitle": 14, "body": 15, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 64, "kicker": 10, "table": 12 }
+          "live": {
+            "cover_title": 42,
+            "section_title": 38,
+            "title": 26,
+            "subtitle": 15,
+            "body": 17,
+            "body_min": 14,
+            "caption": 12,
+            "source": 10,
+            "hero_number": 72,
+            "kicker": 10,
+            "table": 13
+          },
+          "pre_read": {
+            "cover_title": 38,
+            "section_title": 34,
+            "title": 22,
+            "subtitle": 13,
+            "body": 14,
+            "body_min": 11,
+            "caption": 10,
+            "source": 8,
+            "hero_number": 60,
+            "kicker": 9,
+            "table": 11
+          },
+          "hybrid": {
+            "cover_title": 40,
+            "section_title": 36,
+            "title": 24,
+            "subtitle": 14,
+            "body": 15,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 64,
+            "kicker": 10,
+            "table": 12
+          }
         },
         "colors": {
-          "background": "FFFFFF", "surface": "F3F4F5", "surface_strong": "E4E7EA",
-          "ink": "20252B", "ink_muted": "626A73", "ink_faint": "9AA3AC", "line": "D9DDE1", "line_faint": "ECEEF0",
-          "primary": "0B3558", "primary_soft": "DCE6F0", "secondary": "1B8A6B", "accent": "C77B30", "accent_soft": "F8EBDD",
-          "positive": "1B8A6B", "warning": "C77B30", "negative": "B3261E", "info": "2F6FAD",
-          "on_primary": "FFFFFF", "dark_background": "0B3558", "on_dark": "FFFFFF"
+          "background": "FFFFFF",
+          "surface": "F3F4F5",
+          "surface_strong": "E4E7EA",
+          "ink": "20252B",
+          "ink_muted": "626A73",
+          "ink_faint": "9AA3AC",
+          "line": "D9DDE1",
+          "line_faint": "ECEEF0",
+          "primary": "0B3558",
+          "primary_soft": "DCE6F0",
+          "secondary": "1B8A6B",
+          "accent": "C77B30",
+          "accent_soft": "F8EBDD",
+          "positive": "1B8A6B",
+          "warning": "C77B30",
+          "negative": "B3261E",
+          "info": "2F6FAD",
+          "on_primary": "FFFFFF",
+          "dark_background": "0B3558",
+          "on_dark": "FFFFFF"
         },
-        "ratios": { "background": 0.6, "secondary": 0.3, "accent": 0.1, "point_max": 0.05 },
-        "chart": { "palette": ["0B3558", "1B8A6B", "6E8FAB", "B9C6D2", "D9DDE1"], "highlight": "C77B30", "muted": "B9C6D2", "positive": "1B8A6B", "negative": "B3261E", "gridline": "ECEEF0", "label_pt": 11, "direct_labels": true },
-        "geometry": { "radius": 0, "line_width": 0.75, "shadow": false, "divider": "hairline" },
-        "title": { "style": "plain", "align": "left", "max_lines": 2, "kicker": "tracker" },
-        "footer": { "left": "document_title", "right": "page_number", "source_above_footer": true, "confidentiality": true, "exhibit_numbers": true },
-        "imagery": { "treatment": "rare-editorial", "scrim": "0B3558", "scrim_transparency": 40, "avoid": ["본문 페이지의 사진", "아이콘 행"] },
-        "cover": { "variant": "dark-left", "band_color": "0B3558" },
-        "list": { "markers": ["•", "–", "·"], "numbering": ["1.", "a.", "i."] }
+        "ratios": {
+          "background": 0.6,
+          "secondary": 0.3,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "0B3558",
+            "1B8A6B",
+            "6E8FAB",
+            "B9C6D2",
+            "D9DDE1"
+          ],
+          "highlight": "C77B30",
+          "muted": "B9C6D2",
+          "positive": "1B8A6B",
+          "negative": "B3261E",
+          "gridline": "ECEEF0",
+          "label_pt": 11,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 0,
+          "line_width": 0.75,
+          "shadow": false,
+          "divider": "hairline"
+        },
+        "title": {
+          "style": "plain",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "tracker"
+        },
+        "footer": {
+          "left": "document_title",
+          "right": "page_number",
+          "source_above_footer": true,
+          "confidentiality": true,
+          "exhibit_numbers": true
+        },
+        "imagery": {
+          "treatment": "rare-editorial",
+          "scrim": "0B3558",
+          "scrim_transparency": 40,
+          "avoid": [
+            "본문 페이지의 사진",
+            "아이콘 행"
+          ]
+        },
+        "cover": {
+          "variant": "dark-left",
+          "band_color": "0B3558"
+        },
+        "list": {
+          "markers": [
+            "•",
+            "–",
+            "·"
+          ],
+          "numbering": [
+            "1.",
+            "a.",
+            "i."
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.2,
+            "heading": 1.25,
+            "body": 1.4,
+            "body_long": 1.5,
+            "caption": 1.3
+          },
+          "tracking_em": {
+            "display": -0.01,
+            "body": 0,
+            "kicker": 0.08,
+            "numeral": -0.02
+          }
+        },
+        "backgrounds": {
+          "cover": "dark",
+          "section_divider": "dark",
+          "statement": "dark"
+        }
+      },
+      "meta": {
+        "mood": "단호·분석적",
+        "occasion": "임원·이사회",
+        "formality": 5,
+        "density": "medium",
+        "best_for": [
+          "전략 보고",
+          "사업계획",
+          "실사·진단"
+        ],
+        "avoid_for": [
+          "문화·감성 콘텐츠",
+          "강연"
+        ]
       }
     },
     "paperlogy_business": {
       "label": "한국형 실무 제안·영업·내부 보고",
       "intent": "강한 숫자, 간결한 카피, 기준선과 덩어리, 과감한 트리밍. 빠르고 일관된 제작.",
-      "use_when": ["기업 제안서", "영업 자료", "내부 보고", "교육 자료"],
+      "use_when": [
+        "기업 제안서",
+        "영업 자료",
+        "내부 보고",
+        "교육 자료"
+      ],
       "tokens": {
-        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.58, "right": 0.58, "top": 0.44, "bottom": 0.4 }, "grid_columns": 12, "gutter": 0.14 },
-        "fonts": { "display": "Paperlogy", "body": "Paperlogy", "fallback": ["Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "extrabold", "body": "regular", "emphasis": "bold" } },
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.58,
+            "right": 0.58,
+            "top": 0.44,
+            "bottom": 0.4
+          },
+          "grid_columns": 12,
+          "gutter": 0.14
+        },
+        "fonts": {
+          "display": "Paperlogy",
+          "body": "Paperlogy",
+          "fallback": [
+            "Pretendard",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Paperlogy",
+          "weights": {
+            "title": "extrabold",
+            "body": "regular",
+            "emphasis": "bold"
+          }
+        },
         "type": {
-          "live":     { "cover_title": 48, "section_title": 44, "title": 30, "subtitle": 16, "body": 18, "body_min": 14, "caption": 12, "source": 10, "hero_number": 84, "kicker": 11, "table": 14 },
-          "pre_read": { "cover_title": 40, "section_title": 36, "title": 24, "subtitle": 14, "body": 15, "body_min": 12, "caption": 11, "source": 9,  "hero_number": 64, "kicker": 10, "table": 12 },
-          "hybrid":   { "cover_title": 44, "section_title": 40, "title": 27, "subtitle": 15, "body": 16, "body_min": 13, "caption": 11, "source": 9,  "hero_number": 72, "kicker": 10, "table": 13 }
+          "live": {
+            "cover_title": 48,
+            "section_title": 44,
+            "title": 30,
+            "subtitle": 16,
+            "body": 18,
+            "body_min": 14,
+            "caption": 12,
+            "source": 10,
+            "hero_number": 84,
+            "kicker": 11,
+            "table": 14
+          },
+          "pre_read": {
+            "cover_title": 40,
+            "section_title": 36,
+            "title": 24,
+            "subtitle": 14,
+            "body": 15,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 64,
+            "kicker": 10,
+            "table": 12
+          },
+          "hybrid": {
+            "cover_title": 44,
+            "section_title": 40,
+            "title": 27,
+            "subtitle": 15,
+            "body": 16,
+            "body_min": 13,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 72,
+            "kicker": 10,
+            "table": 13
+          }
         },
         "colors": {
-          "background": "FFFFFF", "surface": "F4F5F7", "surface_strong": "E7E9EE",
-          "ink": "191D22", "ink_muted": "666D75", "ink_faint": "9CA3AB", "line": "D9DCE0", "line_faint": "ECEEF1",
-          "primary": "1E3A5F", "primary_soft": "DEE6F2", "secondary": "2E7D74", "accent": "FF5A3D", "accent_soft": "FFE7E1",
-          "positive": "2E7D74", "warning": "D08A17", "negative": "D64545", "info": "2F6FAD",
-          "on_primary": "FFFFFF", "dark_background": "14202E", "on_dark": "FFFFFF"
+          "background": "FFFFFF",
+          "surface": "F4F5F7",
+          "surface_strong": "E7E9EE",
+          "ink": "191D22",
+          "ink_muted": "666D75",
+          "ink_faint": "9CA3AB",
+          "line": "D9DCE0",
+          "line_faint": "ECEEF1",
+          "primary": "1E3A5F",
+          "primary_soft": "DEE6F2",
+          "secondary": "2E7D74",
+          "accent": "FF5A3D",
+          "accent_soft": "FFE7E1",
+          "positive": "2E7D74",
+          "warning": "D08A17",
+          "negative": "D64545",
+          "info": "2F6FAD",
+          "on_primary": "FFFFFF",
+          "dark_background": "14202E",
+          "on_dark": "FFFFFF"
         },
-        "ratios": { "background": 0.6, "secondary": 0.3, "accent": 0.1, "point_max": 0.05 },
-        "chart": { "palette": ["1E3A5F", "2E7D74", "7C94B0", "BCC7D4", "D9DCE0"], "highlight": "FF5A3D", "muted": "BCC7D4", "positive": "2E7D74", "negative": "D64545", "gridline": "ECEEF1", "label_pt": 12, "direct_labels": true },
-        "geometry": { "radius": 4, "line_width": 1, "shadow": false, "divider": "hairline" },
-        "title": { "style": "plain", "align": "left", "max_lines": 2, "kicker": "section" },
-        "footer": { "left": "organization", "right": "page_number", "source_above_footer": true, "confidentiality": false },
-        "imagery": { "treatment": "decisive-crop", "scrim": "14202E", "scrim_transparency": 45, "avoid": ["여러 장 썸네일 나열"] },
-        "cover": { "variant": "image-or-dark", "band_color": "1E3A5F" },
-        "list": { "markers": ["•", "–", "·"], "numbering": ["01", "02", "03"] }
+        "ratios": {
+          "background": 0.6,
+          "secondary": 0.3,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "1E3A5F",
+            "2E7D74",
+            "7C94B0",
+            "BCC7D4",
+            "D9DCE0"
+          ],
+          "highlight": "FF5A3D",
+          "muted": "BCC7D4",
+          "positive": "2E7D74",
+          "negative": "D64545",
+          "gridline": "ECEEF1",
+          "label_pt": 12,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 4,
+          "line_width": 1,
+          "shadow": false,
+          "divider": "hairline"
+        },
+        "title": {
+          "style": "plain",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "section"
+        },
+        "footer": {
+          "left": "organization",
+          "right": "page_number",
+          "source_above_footer": true,
+          "confidentiality": false
+        },
+        "imagery": {
+          "treatment": "decisive-crop",
+          "scrim": "14202E",
+          "scrim_transparency": 45,
+          "avoid": [
+            "여러 장 썸네일 나열"
+          ]
+        },
+        "cover": {
+          "variant": "image-or-dark",
+          "band_color": "1E3A5F"
+        },
+        "list": {
+          "markers": [
+            "•",
+            "–",
+            "·"
+          ],
+          "numbering": [
+            "01",
+            "02",
+            "03"
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.18,
+            "heading": 1.25,
+            "body": 1.4,
+            "body_long": 1.5,
+            "caption": 1.3
+          },
+          "tracking_em": {
+            "display": -0.015,
+            "body": 0,
+            "kicker": 0.06,
+            "numeral": -0.03
+          }
+        },
+        "backgrounds": {
+          "cover": "dark",
+          "section_divider": "dark",
+          "statement": "dark"
+        }
+      },
+      "meta": {
+        "mood": "또렷·실무적",
+        "occasion": "제안·영업·내부",
+        "formality": 3,
+        "density": "medium",
+        "best_for": [
+          "기업 제안서",
+          "영업 자료",
+          "내부 보고",
+          "교육"
+        ],
+        "avoid_for": [
+          "학술 보고서",
+          "의회 보고"
+        ]
       }
     },
     "executive_keynote": {
       "label": "키노트·강연·비전 발표",
       "intent": "발표자 중심, 슬라이드당 한 메시지, 큰 글자, 어두운 배경 허용, 본문 밀도 최소.",
-      "use_when": ["컨퍼런스 키노트", "비전 발표", "제품 공개", "강연"],
+      "use_when": [
+        "컨퍼런스 키노트",
+        "비전 발표",
+        "제품 공개",
+        "강연"
+      ],
       "tokens": {
-        "canvas": { "layout": "LAYOUT_WIDE", "width": 13.333, "height": 7.5, "margin": { "left": 0.7, "right": 0.7, "top": 0.55, "bottom": 0.5 }, "grid_columns": 12, "gutter": 0.16 },
-        "fonts": { "display": "Paperlogy", "body": "Paperlogy", "fallback": ["Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Arial"], "numeral": "Paperlogy", "weights": { "title": "extrabold", "body": "regular", "emphasis": "bold" } },
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.7,
+            "right": 0.7,
+            "top": 0.55,
+            "bottom": 0.5
+          },
+          "grid_columns": 12,
+          "gutter": 0.16
+        },
+        "fonts": {
+          "display": "Paperlogy",
+          "body": "Paperlogy",
+          "fallback": [
+            "Pretendard",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Paperlogy",
+          "weights": {
+            "title": "extrabold",
+            "body": "regular",
+            "emphasis": "bold"
+          }
+        },
         "type": {
-          "live":     { "cover_title": 56, "section_title": 52, "title": 36, "subtitle": 20, "body": 22, "body_min": 18, "caption": 14, "source": 11, "hero_number": 110, "kicker": 12, "table": 16 },
-          "pre_read": { "cover_title": 48, "section_title": 44, "title": 30, "subtitle": 16, "body": 18, "body_min": 14, "caption": 12, "source": 10, "hero_number": 84, "kicker": 11, "table": 14 },
-          "hybrid":   { "cover_title": 52, "section_title": 48, "title": 32, "subtitle": 18, "body": 20, "body_min": 16, "caption": 13, "source": 10, "hero_number": 96, "kicker": 11, "table": 15 }
+          "live": {
+            "cover_title": 56,
+            "section_title": 52,
+            "title": 36,
+            "subtitle": 20,
+            "body": 22,
+            "body_min": 18,
+            "caption": 14,
+            "source": 11,
+            "hero_number": 110,
+            "kicker": 12,
+            "table": 16
+          },
+          "pre_read": {
+            "cover_title": 48,
+            "section_title": 44,
+            "title": 30,
+            "subtitle": 16,
+            "body": 18,
+            "body_min": 14,
+            "caption": 12,
+            "source": 10,
+            "hero_number": 84,
+            "kicker": 11,
+            "table": 14
+          },
+          "hybrid": {
+            "cover_title": 52,
+            "section_title": 48,
+            "title": 32,
+            "subtitle": 18,
+            "body": 20,
+            "body_min": 16,
+            "caption": 13,
+            "source": 10,
+            "hero_number": 96,
+            "kicker": 11,
+            "table": 15
+          }
         },
         "colors": {
-          "background": "0C1824", "surface": "15232F", "surface_strong": "1E2E3C",
-          "ink": "FFFFFF", "ink_muted": "C7D0D8", "ink_faint": "8FA1B2", "line": "2C3C4B", "line_faint": "1E2E3C",
-          "primary": "47C8FF", "primary_soft": "163B4D", "secondary": "7C5CFF", "accent": "FFB13B", "accent_soft": "3D3016",
-          "positive": "4FD1A5", "warning": "FFB13B", "negative": "FF6B6B", "info": "47C8FF",
-          "on_primary": "0C1824", "dark_background": "0C1824", "on_dark": "FFFFFF", "light_background": "FFFFFF", "light_ink": "18212A"
+          "background": "0C1824",
+          "surface": "15232F",
+          "surface_strong": "1E2E3C",
+          "ink": "FFFFFF",
+          "ink_muted": "C7D0D8",
+          "ink_faint": "8FA1B2",
+          "line": "2C3C4B",
+          "line_faint": "1E2E3C",
+          "primary": "47C8FF",
+          "primary_soft": "163B4D",
+          "secondary": "7C5CFF",
+          "accent": "FFB13B",
+          "accent_soft": "3D3016",
+          "positive": "4FD1A5",
+          "warning": "FFB13B",
+          "negative": "FF6B6B",
+          "info": "47C8FF",
+          "on_primary": "0C1824",
+          "dark_background": "0C1824",
+          "on_dark": "FFFFFF",
+          "light_background": "FFFFFF",
+          "light_ink": "18212A"
         },
-        "ratios": { "background": 0.7, "secondary": 0.2, "accent": 0.1, "point_max": 0.05 },
-        "chart": { "palette": ["47C8FF", "7C5CFF", "8FA1B2", "4A5B6B", "2C3C4B"], "highlight": "FFB13B", "muted": "4A5B6B", "positive": "4FD1A5", "negative": "FF6B6B", "gridline": "1E2E3C", "label_pt": 13, "direct_labels": true },
-        "geometry": { "radius": 0, "line_width": 1, "shadow": false, "divider": "none" },
-        "title": { "style": "plain", "align": "left", "max_lines": 2, "kicker": "none" },
-        "footer": { "left": "none", "right": "none", "source_above_footer": true, "confidentiality": false },
-        "imagery": { "treatment": "full-bleed-hero", "scrim": "0C1824", "scrim_transparency": 35, "avoid": ["작은 썸네일", "장식용 일러스트"] },
-        "cover": { "variant": "dark-center", "band_color": "0C1824" },
-        "list": { "markers": ["—"], "numbering": ["01", "02", "03"] }
+        "ratios": {
+          "background": 0.7,
+          "secondary": 0.2,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "47C8FF",
+            "7C5CFF",
+            "8FA1B2",
+            "4A5B6B",
+            "2C3C4B"
+          ],
+          "highlight": "FFB13B",
+          "muted": "4A5B6B",
+          "positive": "4FD1A5",
+          "negative": "FF6B6B",
+          "gridline": "1E2E3C",
+          "label_pt": 13,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 0,
+          "line_width": 1,
+          "shadow": false,
+          "divider": "none"
+        },
+        "title": {
+          "style": "plain",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "none"
+        },
+        "footer": {
+          "left": "none",
+          "right": "none",
+          "source_above_footer": true,
+          "confidentiality": false
+        },
+        "imagery": {
+          "treatment": "full-bleed-hero",
+          "scrim": "0C1824",
+          "scrim_transparency": 35,
+          "avoid": [
+            "작은 썸네일",
+            "장식용 일러스트"
+          ]
+        },
+        "cover": {
+          "variant": "dark-center",
+          "band_color": "0C1824"
+        },
+        "list": {
+          "markers": [
+            "—"
+          ],
+          "numbering": [
+            "01",
+            "02",
+            "03"
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.15,
+            "heading": 1.2,
+            "body": 1.4,
+            "body_long": 1.5,
+            "caption": 1.3
+          },
+          "tracking_em": {
+            "display": -0.02,
+            "body": 0,
+            "kicker": 0.1,
+            "numeral": -0.03
+          }
+        },
+        "backgrounds": {
+          "all": "dark"
+        }
+      },
+      "meta": {
+        "mood": "극적·비전",
+        "occasion": "무대",
+        "formality": 2,
+        "density": "low",
+        "best_for": [
+          "컨퍼런스 키노트",
+          "제품 공개",
+          "비전 발표"
+        ],
+        "avoid_for": [
+          "pre_read",
+          "표·수치 중심 보고"
+        ]
+      }
+    },
+    "editorial_report": {
+      "label": "에디토리얼 보고서·백서",
+      "intent": "문화·공공기관 백서, 연차보고, 에세이형 정책 보고. 따뜻한 종이색 바탕에 명조 제목, 강조색은 주사(朱砂) 하나. 읽는 속도를 늦추는 긴 호흡의 자료.",
+      "use_when": [
+        "연차보고서",
+        "문화·예술기관 백서",
+        "정책 에세이",
+        "재단·협회 보고"
+      ],
+      "tokens": {
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.62,
+            "right": 0.62,
+            "top": 0.45,
+            "bottom": 0.42
+          },
+          "grid_columns": 12,
+          "gutter": 0.16
+        },
+        "fonts": {
+          "display": "Nanum Myeongjo",
+          "body": "Pretendard",
+          "fallback": [
+            "KoPub Batang",
+            "Noto Serif KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Paperlogy",
+          "weights": {
+            "title": "extrabold",
+            "body": "regular",
+            "emphasis": "bold"
+          }
+        },
+        "type": {
+          "live": {
+            "cover_title": 42,
+            "section_title": 38,
+            "title": 26,
+            "subtitle": 15,
+            "body": 17,
+            "body_min": 14,
+            "caption": 12,
+            "source": 10,
+            "hero_number": 64,
+            "kicker": 11,
+            "table": 13
+          },
+          "pre_read": {
+            "cover_title": 38,
+            "section_title": 34,
+            "title": 22,
+            "subtitle": 14,
+            "body": 14,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 56,
+            "kicker": 10,
+            "table": 12
+          },
+          "hybrid": {
+            "cover_title": 40,
+            "section_title": 36,
+            "title": 24,
+            "subtitle": 14,
+            "body": 15,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 60,
+            "kicker": 10,
+            "table": 12
+          }
+        },
+        "colors": {
+          "background": "F4EFE4",
+          "surface": "EDE6D8",
+          "surface_strong": "E2D9C7",
+          "ink": "24201B",
+          "ink_muted": "5E564C",
+          "ink_faint": "8F8779",
+          "line": "CFC6B5",
+          "line_faint": "E2D9C7",
+          "primary": "3C3A36",
+          "primary_soft": "E2D9C7",
+          "secondary": "6B5E4F",
+          "accent": "C8372D",
+          "accent_soft": "F1D9D3",
+          "positive": "4F7A4A",
+          "warning": "A8711E",
+          "negative": "B5372A",
+          "info": "4E6A82",
+          "on_primary": "F4EFE4",
+          "dark_background": "2A2622",
+          "on_dark": "F4EFE4"
+        },
+        "ratios": {
+          "background": 0.6,
+          "secondary": 0.3,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "3C3A36",
+            "6B5E4F",
+            "9A8E7C",
+            "C4B9A5",
+            "E2D9C7"
+          ],
+          "highlight": "C8372D",
+          "muted": "C4B9A5",
+          "positive": "4F7A4A",
+          "negative": "B5372A",
+          "gridline": "E2D9C7",
+          "label_pt": 11,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 0,
+          "line_width": 0.75,
+          "shadow": false,
+          "divider": "hairline"
+        },
+        "title": {
+          "style": "plain",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "section"
+        },
+        "footer": {
+          "left": "document_title",
+          "right": "page_number",
+          "source_above_footer": true,
+          "confidentiality": false
+        },
+        "imagery": {
+          "treatment": "editorial",
+          "scrim": "2A2622",
+          "scrim_transparency": 40,
+          "avoid": [
+            "홍보용 스톡",
+            "강한 채도 필터"
+          ]
+        },
+        "cover": {
+          "variant": "light-left",
+          "band_color": "3C3A36"
+        },
+        "list": {
+          "markers": [
+            "—",
+            "·"
+          ],
+          "numbering": [
+            "1.",
+            "1)",
+            "(1)"
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.25,
+            "heading": 1.3,
+            "body": 1.5,
+            "body_long": 1.6,
+            "caption": 1.35
+          },
+          "tracking_em": {
+            "display": 0,
+            "body": 0,
+            "kicker": 0.08,
+            "numeral": -0.02
+          }
+        },
+        "backgrounds": {
+          "cover": "light",
+          "section_divider": "surface",
+          "statement": "surface"
+        }
+      },
+      "meta": {
+        "mood": "따뜻·정제",
+        "occasion": "읽기용 보고서·전시",
+        "formality": 4,
+        "density": "medium",
+        "best_for": [
+          "연차보고",
+          "백서",
+          "문화기관 발표"
+        ],
+        "avoid_for": [
+          "숫자 중심 임원 보고",
+          "영업 제안"
+        ]
+      }
+    },
+    "research_dense": {
+      "label": "고밀도 연구·분석 리포트",
+      "intent": "pre_read 전용. 표·차트·각주가 많은 연구 리포트. 색은 한 가족의 명도 계단으로만 쓰고 강조는 한 곳. 글자 크기 하한 11pt, 본문 두 열 허용.",
+      "use_when": [
+        "시장·기술 조사 보고서",
+        "실사 보고",
+        "데이터 분석 리포트",
+        "학회·연구과제 발표(배포용)"
+      ],
+      "tokens": {
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.62,
+            "right": 0.62,
+            "top": 0.45,
+            "bottom": 0.42
+          },
+          "grid_columns": 12,
+          "gutter": 0.16
+        },
+        "fonts": {
+          "display": "Pretendard",
+          "body": "Pretendard",
+          "fallback": [
+            "Paperlogy",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Pretendard",
+          "weights": {
+            "title": "bold",
+            "body": "regular",
+            "emphasis": "semibold"
+          }
+        },
+        "type": {
+          "live": {
+            "cover_title": 40,
+            "section_title": 36,
+            "title": 24,
+            "subtitle": 14,
+            "body": 15,
+            "body_min": 13,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 56,
+            "kicker": 10,
+            "table": 12
+          },
+          "pre_read": {
+            "cover_title": 36,
+            "section_title": 32,
+            "title": 21,
+            "subtitle": 13,
+            "body": 13,
+            "body_min": 11,
+            "caption": 10,
+            "source": 8,
+            "hero_number": 48,
+            "kicker": 9,
+            "table": 11
+          },
+          "hybrid": {
+            "cover_title": 38,
+            "section_title": 34,
+            "title": 22,
+            "subtitle": 13,
+            "body": 14,
+            "body_min": 12,
+            "caption": 10,
+            "source": 9,
+            "hero_number": 52,
+            "kicker": 10,
+            "table": 11
+          }
+        },
+        "colors": {
+          "background": "FFFFFF",
+          "surface": "F3F5F8",
+          "surface_strong": "E4E9EF",
+          "ink": "1C2430",
+          "ink_muted": "59657A",
+          "ink_faint": "8C97A8",
+          "line": "D3DAE3",
+          "line_faint": "E9EDF2",
+          "primary": "23405F",
+          "primary_soft": "DEE6F0",
+          "secondary": "4C6E8F",
+          "accent": "B4532C",
+          "accent_soft": "F6E4DC",
+          "positive": "2F7A5A",
+          "warning": "9C6A10",
+          "negative": "A83A32",
+          "info": "4C6E8F",
+          "on_primary": "FFFFFF",
+          "dark_background": "17283A",
+          "on_dark": "FFFFFF"
+        },
+        "ratios": {
+          "background": 0.6,
+          "secondary": 0.3,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "23405F",
+            "4C6E8F",
+            "7F9BB5",
+            "B3C4D4",
+            "DCE4EC"
+          ],
+          "highlight": "B4532C",
+          "muted": "B3C4D4",
+          "positive": "2F7A5A",
+          "negative": "A83A32",
+          "gridline": "E9EDF2",
+          "label_pt": 10,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 0,
+          "line_width": 0.75,
+          "shadow": false,
+          "divider": "hairline"
+        },
+        "title": {
+          "style": "plain",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "tracker"
+        },
+        "footer": {
+          "left": "document_title",
+          "right": "page_number",
+          "source_above_footer": true,
+          "confidentiality": true,
+          "exhibit_numbers": true
+        },
+        "imagery": {
+          "treatment": "editorial",
+          "scrim": "122F47",
+          "scrim_transparency": 40,
+          "avoid": [
+            "홍보용 스톡"
+          ]
+        },
+        "cover": {
+          "variant": "light-left",
+          "band_color": "23405F"
+        },
+        "list": {
+          "markers": [
+            "•",
+            "–",
+            "·"
+          ],
+          "numbering": [
+            "1.",
+            "1)",
+            "(1)"
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.2,
+            "heading": 1.25,
+            "body": 1.5,
+            "body_long": 1.6,
+            "caption": 1.35
+          },
+          "tracking_em": {
+            "display": -0.01,
+            "body": 0,
+            "kicker": 0.06,
+            "numeral": -0.01
+          }
+        },
+        "backgrounds": {
+          "cover": "light",
+          "section_divider": "surface",
+          "statement": "surface"
+        }
+      },
+      "meta": {
+        "mood": "객관·치밀",
+        "occasion": "읽기용 분석 리포트",
+        "formality": 4,
+        "density": "high",
+        "best_for": [
+          "조사 보고서",
+          "분석 리포트",
+          "부록이 많은 자료"
+        ],
+        "avoid_for": [
+          "live 발표",
+          "키노트",
+          "영업 제안"
+        ]
+      }
+    },
+    "two_font_consulting": {
+      "label": "두 글꼴 컨설팅 (명조 제목·고딕 본문)",
+      "intent": "consulting_grade 의 구조(액션 타이틀·전시물·트래커)를 유지하되 제목만 명조로 바꿔 권위와 온도를 더한 변형. 법률·금융·자문 보고에 맞는다.",
+      "use_when": [
+        "자문 보고서",
+        "법률·회계 자문",
+        "금융기관 임원 보고",
+        "학술적 톤의 전략 보고"
+      ],
+      "tokens": {
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.55,
+            "right": 0.55,
+            "top": 0.4,
+            "bottom": 0.38
+          },
+          "grid_columns": 12,
+          "gutter": 0.14
+        },
+        "fonts": {
+          "display": "Nanum Myeongjo",
+          "body": "Pretendard",
+          "fallback": [
+            "KoPub Batang",
+            "Noto Serif KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Paperlogy",
+          "weights": {
+            "title": "extrabold",
+            "body": "regular",
+            "emphasis": "semibold"
+          }
+        },
+        "type": {
+          "live": {
+            "cover_title": 42,
+            "section_title": 38,
+            "title": 26,
+            "subtitle": 15,
+            "body": 17,
+            "body_min": 14,
+            "caption": 12,
+            "source": 10,
+            "hero_number": 72,
+            "kicker": 10,
+            "table": 13
+          },
+          "pre_read": {
+            "cover_title": 38,
+            "section_title": 34,
+            "title": 22,
+            "subtitle": 13,
+            "body": 14,
+            "body_min": 11,
+            "caption": 10,
+            "source": 8,
+            "hero_number": 60,
+            "kicker": 9,
+            "table": 11
+          },
+          "hybrid": {
+            "cover_title": 40,
+            "section_title": 36,
+            "title": 24,
+            "subtitle": 14,
+            "body": 15,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 64,
+            "kicker": 10,
+            "table": 12
+          }
+        },
+        "colors": {
+          "background": "FFFFFF",
+          "surface": "F3F4F5",
+          "surface_strong": "E4E7EA",
+          "ink": "20252B",
+          "ink_muted": "626A73",
+          "ink_faint": "9AA3AC",
+          "line": "D9DDE1",
+          "line_faint": "ECEEF0",
+          "primary": "0D2E55",
+          "primary_soft": "DFE5EC",
+          "secondary": "3F5F7A",
+          "accent": "A46E00",
+          "accent_soft": "F2E8D8",
+          "positive": "1B8A6B",
+          "warning": "A46E00",
+          "negative": "B3261E",
+          "info": "2F6FAD",
+          "on_primary": "FFFFFF",
+          "dark_background": "0D2E55",
+          "on_dark": "FFFFFF"
+        },
+        "ratios": {
+          "background": 0.6,
+          "secondary": 0.3,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "0D2E55",
+            "3F5F7A",
+            "7A93A8",
+            "B6C4D0",
+            "DDE3E9"
+          ],
+          "highlight": "A46E00",
+          "muted": "B6C4D0",
+          "positive": "1B8A6B",
+          "negative": "B3261E",
+          "gridline": "ECEEF0",
+          "label_pt": 11,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 0,
+          "line_width": 0.75,
+          "shadow": false,
+          "divider": "hairline"
+        },
+        "title": {
+          "style": "plain",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "tracker"
+        },
+        "footer": {
+          "left": "document_title",
+          "right": "page_number",
+          "source_above_footer": true,
+          "confidentiality": true,
+          "exhibit_numbers": true
+        },
+        "imagery": {
+          "treatment": "rare-editorial",
+          "scrim": "0B3558",
+          "scrim_transparency": 40,
+          "avoid": [
+            "본문 페이지의 사진",
+            "아이콘 행"
+          ]
+        },
+        "cover": {
+          "variant": "dark-left",
+          "band_color": "0B3558"
+        },
+        "list": {
+          "markers": [
+            "•",
+            "–",
+            "·"
+          ],
+          "numbering": [
+            "1.",
+            "a.",
+            "i."
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.25,
+            "heading": 1.3,
+            "body": 1.4,
+            "body_long": 1.5,
+            "caption": 1.3
+          },
+          "tracking_em": {
+            "display": 0,
+            "body": 0,
+            "kicker": 0.08,
+            "numeral": -0.02
+          }
+        },
+        "backgrounds": {
+          "cover": "dark",
+          "section_divider": "dark",
+          "statement": "dark"
+        }
+      },
+      "meta": {
+        "mood": "권위·정제",
+        "occasion": "임원·자문",
+        "formality": 5,
+        "density": "medium",
+        "best_for": [
+          "자문 보고",
+          "금융·법률",
+          "이사회"
+        ],
+        "avoid_for": [
+          "제품 런칭",
+          "젊은 소비자 브랜드"
+        ]
+      }
+    },
+    "institutional_pitch": {
+      "label": "기관 투자·IR 제안",
+      "intent": "투자자·심사역 대상 피치. 3열 대구, 중첩 시장(TAM), 2×2, 큰 숫자. 짙은 남색 + 절제된 금속색 강조. 과장 금지(hype-claim lint 엄격).",
+      "use_when": [
+        "투자 제안(IR)",
+        "정부 지원사업 심사 발표",
+        "사내 신사업 심의",
+        "파트너십 제안"
+      ],
+      "tokens": {
+        "canvas": {
+          "layout": "LAYOUT_WIDE",
+          "width": 13.333,
+          "height": 7.5,
+          "margin": {
+            "left": 0.58,
+            "right": 0.58,
+            "top": 0.44,
+            "bottom": 0.4
+          },
+          "grid_columns": 12,
+          "gutter": 0.14
+        },
+        "fonts": {
+          "display": "Paperlogy",
+          "body": "Pretendard",
+          "fallback": [
+            "Paperlogy",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            "Malgun Gothic",
+            "Arial"
+          ],
+          "numeral": "Paperlogy",
+          "weights": {
+            "title": "bold",
+            "body": "regular",
+            "emphasis": "bold"
+          }
+        },
+        "type": {
+          "live": {
+            "cover_title": 48,
+            "section_title": 44,
+            "title": 30,
+            "subtitle": 16,
+            "body": 18,
+            "body_min": 14,
+            "caption": 12,
+            "source": 10,
+            "hero_number": 84,
+            "kicker": 11,
+            "table": 14
+          },
+          "pre_read": {
+            "cover_title": 40,
+            "section_title": 36,
+            "title": 24,
+            "subtitle": 14,
+            "body": 15,
+            "body_min": 12,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 64,
+            "kicker": 10,
+            "table": 12
+          },
+          "hybrid": {
+            "cover_title": 44,
+            "section_title": 40,
+            "title": 27,
+            "subtitle": 15,
+            "body": 16,
+            "body_min": 13,
+            "caption": 11,
+            "source": 9,
+            "hero_number": 72,
+            "kicker": 10,
+            "table": 13
+          }
+        },
+        "colors": {
+          "background": "FFFFFF",
+          "surface": "F2F4F7",
+          "surface_strong": "E3E7ED",
+          "ink": "161C26",
+          "ink_muted": "5A6473",
+          "ink_faint": "8E98A6",
+          "line": "D5DBE3",
+          "line_faint": "E9EDF2",
+          "primary": "0F2A47",
+          "primary_soft": "DCE4EE",
+          "secondary": "2E5C8A",
+          "accent": "B8862B",
+          "accent_soft": "F5EBD6",
+          "positive": "1F7A5C",
+          "warning": "B8862B",
+          "negative": "B23A3A",
+          "info": "2E5C8A",
+          "on_primary": "FFFFFF",
+          "dark_background": "0F2A47",
+          "on_dark": "FFFFFF"
+        },
+        "ratios": {
+          "background": 0.6,
+          "secondary": 0.3,
+          "accent": 0.1,
+          "point_max": 0.05
+        },
+        "chart": {
+          "palette": [
+            "0F2A47",
+            "2E5C8A",
+            "6F8FB0",
+            "B2C2D4",
+            "DCE4EE"
+          ],
+          "highlight": "B8862B",
+          "muted": "B2C2D4",
+          "positive": "1F7A5C",
+          "negative": "B23A3A",
+          "gridline": "E9EDF2",
+          "label_pt": 12,
+          "direct_labels": true
+        },
+        "geometry": {
+          "radius": 0,
+          "line_width": 0.75,
+          "shadow": false,
+          "divider": "hairline"
+        },
+        "title": {
+          "style": "plain",
+          "align": "left",
+          "max_lines": 2,
+          "kicker": "tracker"
+        },
+        "footer": {
+          "left": "organization",
+          "right": "page_number",
+          "source_above_footer": true,
+          "confidentiality": true
+        },
+        "imagery": {
+          "treatment": "decisive-crop",
+          "scrim": "0F2A47",
+          "scrim_transparency": 45,
+          "avoid": [
+            "스톡 악수 사진",
+            "팀 단체사진 벽"
+          ]
+        },
+        "cover": {
+          "variant": "dark-left",
+          "band_color": "0F2A47"
+        },
+        "list": {
+          "markers": [
+            "•",
+            "–",
+            "·"
+          ],
+          "numbering": [
+            "01",
+            "02",
+            "03"
+          ]
+        },
+        "typography": {
+          "line_height": {
+            "title": 1.18,
+            "heading": 1.25,
+            "body": 1.4,
+            "body_long": 1.5,
+            "caption": 1.3
+          },
+          "tracking_em": {
+            "display": -0.015,
+            "body": 0,
+            "kicker": 0.08,
+            "numeral": -0.03
+          }
+        },
+        "backgrounds": {
+          "cover": "dark",
+          "section_divider": "dark",
+          "statement": "dark"
+        }
+      },
+      "meta": {
+        "mood": "확신·절제",
+        "occasion": "투자·심사",
+        "formality": 4,
+        "density": "medium",
+        "best_for": [
+          "IR 피치",
+          "신사업 심의",
+          "지원사업 발표"
+        ],
+        "avoid_for": [
+          "정책 백서",
+          "교육 자료"
+        ]
       }
     }
   }

@@ -5,18 +5,19 @@ Director(스킬)가 쓰는 중간 명세. 내용·논리·시각 의도를 담�
 
 ```json
 {
-  "version": "0.2",
+  "version": "0.3",
   "metadata": {
     "title": "…", "subtitle": "…", "organization": "…", "presenter": "…", "date": "2026. 10.",
     "audience": "누가·직급", "success_condition": "이 자료 후 청중이 이해·결정할 것",
     "delivery_mode": "live | pre_read | hybrid", "duration_minutes": 20,
-    "language": "ko-KR", "confidentiality": "대외비", "sticker": "DRAFT"
+    "language": "ko-KR", "confidentiality": "대외비", "sticker": "DRAFT",
+    "audience_state": { "initial": "지금 청중이 믿는 것", "desired": "자료를 본 뒤 믿고 결정할 것" }
   },
   "route": { "deck_type": "consulting_executive", "style_profile": "consulting_grade", "brand_mode": "neutral", "communication_mode": "pyramid" },
   "design_tokens": {},
   "assets": { "logo": "path.png", "images": { "site": "assets/photo.jpg" } },
   "evidence": [ { "id": "E1", "claim": "…", "kind": "fact|estimate|interpretation|recommendation|user_provided", "confidence": "high|medium|low", "source": "…", "period": "…" } ],
-  "slides": [ { "number": 1, "section": "…", "archetype": "…", "title": "…", "takeaway": "…", "content": { }, "evidence_ids": ["E1"], "source_note": "…", "speaker_notes": "…", "exhibit": 1, "sticker": "…", "background": "light|dark|surface", "appendix": false } ]
+  "slides": [ { "number": 1, "section": "…", "archetype": "…", "role": "hook|context|tension|method|proof|takeaway", "title": "…", "takeaway": "…", "content": { }, "evidence_ids": ["E1"], "source_note": "…", "speaker_notes": "…", "exhibit": 1, "sticker": "…", "background": "light|dark|surface", "appendix": false } ]
 }
 ```
 
@@ -37,6 +38,7 @@ Director(스킬)가 쓰는 중간 명세. 내용·논리·시각 의도를 담�
 | `sticker` | 이 슬라이드만 DRAFT/예시 표시 |
 | `background` | 기본값을 덮어쓰기 (예: 강조 슬라이드를 dark로) |
 | `appendix` | true면 lint의 본문 규칙 완화 |
+| `role` | 서사 역할. 하나라도 쓰면 lint가 hook(왜 지금)·proof(근거)·takeaway(남길 것) 커버리지를 검사한다 (pre_read는 context·proof·takeaway) |
 
 ## 아키타입별 content 요약 (전체는 `slide-archetypes.json`)
 
@@ -45,7 +47,13 @@ Director(스킬)가 쓰는 중간 명세. 내용·논리·시각 의도를 담�
 - `executive_summary` {answer, points:[{heading, detail}] (3~5), decision}
 - `section_divider` {number, subtitle, image}
 - `hero_metric` {metrics:[{value, unit, label, delta, trend}] (≤3), context, comparison}
-- `evidence_chart` {chart:{type, categories, series:[{name, values, kind?, secondary?}], unit, highlight, value_format, show_values, y_max}, insight, callouts (≤3), layout}
+- `evidence_chart` {chart:{type?, relation?, categories, series:[{name, values, kind?, secondary?, dashed?}], unit, highlight, target:{label,value}?, value_format, show_values, y_max, legend_pos?}, insight, callouts (≤3), layout} — `relation` 이 있으면 type 생략 가능 (`data-visualization.md`)
+- `small_multiples` {charts:[{title, chart}] (2~6), columns?, shared_y (true), y_max?, note?}
+- `big_number_stage` {value, unit, label, delta?, trend?, context, comparison?}
+- `kpi_bento` {hero:{value, unit, label, delta, trend}, cells:[…] (2~5), note?}
+- `tam_nested` {rings:[{label, value, note}] (3~4, 바깥→안), method?, implication?}
+- `before_after` {before:{label, metric?, metric_unit?, metric_label?, points[]}, after:{…}, arrow_label?}
+- `logo_wall` {logos:[asset id | {image, label}] (≤12), columns?, caption?}
 - `comparison` {columns, rows:[{criterion, cells}], winner, verdict}
 - `process` {steps:[{title, detail, owner}] (≤6), style: numbered|chevron|timeline}
 - `roadmap` {phases:[{name, period, items, milestone}] (≤4), horizon}
@@ -62,6 +70,12 @@ Director(스킬)가 쓰는 중간 명세. 내용·논리·시각 의도를 담�
 - `conclusion` {statement, takeaways (≤3), next_steps:[{label, owner, when}], contact}
 - `appendix` {paragraphs, table:{columns, rows}, items}
 - `custom` — hooks.js의 `[number]` 핸들러가 그린다 (`examples/proposal-hooks.js`)
+
+## 서사 역할 (`role`)과 발표자 노트
+
+- hook(왜 지금 이 이야기인가) → context(배경·현재 상태) → tension(문제·격차) → method(어떻게) → proof(근거) → takeaway(남길 것·결정). `executive_summary` 는 takeaway 를 앞에 두는 예외다.
+- `metadata.audience_state` 에 청중의 시작 상태와 목표 상태를 적으면 Director 가 hook·takeaway 문장을 그 간격으로 쓴다.
+- `speaker_notes` 는 live/hybrid 에서 200~400자: 첫 문장은 큐(이 장에서 말할 한 가지), 마지막 문장은 다음 장으로의 전환. lint `notes-length` 가 범위를 알려 준다.
 
 ## 글자량 가이드
 

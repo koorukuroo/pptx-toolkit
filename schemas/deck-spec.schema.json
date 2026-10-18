@@ -1,63 +1,188 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://core.today/schemas/pptx-toolkit/deck-spec.schema.json",
-  "title": "pptx-toolkit deck specification v0.2",
+  "title": "pptx-toolkit deck specification v0.3",
   "type": "object",
-  "required": ["metadata", "route", "slides"],
+  "required": [
+    "metadata",
+    "route",
+    "slides"
+  ],
   "properties": {
-    "version": { "type": "string" },
+    "version": {
+      "type": "string"
+    },
     "metadata": {
       "type": "object",
-      "required": ["title", "audience", "success_condition", "delivery_mode"],
+      "required": [
+        "title",
+        "audience",
+        "success_condition",
+        "delivery_mode"
+      ],
       "properties": {
-        "title": { "type": "string", "maxLength": 120 },
-        "subtitle": { "type": "string" },
-        "organization": { "type": "string" },
-        "presenter": { "type": "string" },
-        "date": { "type": "string" },
-        "audience": { "type": "string" },
-        "success_condition": { "type": "string" },
-        "delivery_mode": { "enum": ["live", "pre_read", "hybrid"] },
-        "duration_minutes": { "type": "number", "minimum": 1 },
-        "target_slide_count": { "type": "integer", "minimum": 1 },
-        "language": { "type": "string" },
-        "confidentiality": { "type": "string" },
-        "sticker": { "type": "string" },
-        "document_id": { "type": "string" }
+        "title": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "organization": {
+          "type": "string"
+        },
+        "presenter": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "audience": {
+          "type": "string"
+        },
+        "success_condition": {
+          "type": "string"
+        },
+        "delivery_mode": {
+          "enum": [
+            "live",
+            "pre_read",
+            "hybrid"
+          ]
+        },
+        "duration_minutes": {
+          "type": "number",
+          "minimum": 1
+        },
+        "target_slide_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "language": {
+          "type": "string"
+        },
+        "confidentiality": {
+          "type": "string"
+        },
+        "sticker": {
+          "type": "string"
+        },
+        "document_id": {
+          "type": "string"
+        },
+        "audience_state": {
+          "type": "object",
+          "properties": {
+            "initial": {
+              "type": "string"
+            },
+            "desired": {
+              "type": "string"
+            }
+          },
+          "description": "청중의 시작 상태와 자료를 본 뒤의 목표 상태 (서사 설계)"
+        }
       }
     },
     "route": {
       "type": "object",
-      "required": ["deck_type", "style_profile", "brand_mode"],
+      "required": [
+        "deck_type",
+        "style_profile",
+        "brand_mode"
+      ],
       "properties": {
-        "deck_type": { "enum": ["government_briefing", "public_policy_report", "consulting_executive", "proposal_bid", "product_intro", "training_lecture", "keynote_story", "template_fill", "redesign_existing"] },
-        "style_profile": { "type": "string" },
-        "brand_mode": { "enum": ["provided", "derived", "neutral"] },
-        "communication_mode": { "enum": ["pyramid", "briefing", "narrative", "instructional", "showcase"] }
+        "deck_type": {
+          "enum": [
+            "government_briefing",
+            "public_policy_report",
+            "consulting_executive",
+            "proposal_bid",
+            "product_intro",
+            "training_lecture",
+            "keynote_story",
+            "template_fill",
+            "redesign_existing"
+          ]
+        },
+        "style_profile": {
+          "type": "string"
+        },
+        "brand_mode": {
+          "enum": [
+            "provided",
+            "derived",
+            "neutral"
+          ]
+        },
+        "communication_mode": {
+          "enum": [
+            "pyramid",
+            "briefing",
+            "narrative",
+            "instructional",
+            "showcase"
+          ]
+        }
       },
       "additionalProperties": false
     },
-    "design_tokens": { "type": "object" },
+    "design_tokens": {
+      "type": "object"
+    },
     "assets": {
       "type": "object",
       "properties": {
-        "logo": { "type": "string" },
-        "images": { "type": "object" }
+        "logo": {
+          "type": "string"
+        },
+        "images": {
+          "type": "object"
+        }
       }
     },
     "evidence": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "claim", "kind", "confidence"],
+        "required": [
+          "id",
+          "claim",
+          "kind",
+          "confidence"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "claim": { "type": "string" },
-          "kind": { "enum": ["fact", "estimate", "interpretation", "recommendation", "user_provided"] },
-          "confidence": { "enum": ["high", "medium", "low"] },
-          "source": { "type": "string" },
-          "period": { "type": "string" },
-          "notes": { "type": "string" }
+          "id": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "fact",
+              "estimate",
+              "interpretation",
+              "recommendation",
+              "user_provided"
+            ]
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "period": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
         }
       }
     },
@@ -66,25 +191,92 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["number", "archetype", "title"],
+        "required": [
+          "number",
+          "archetype",
+          "title"
+        ],
         "properties": {
-          "number": { "type": "integer", "minimum": 1 },
-          "section": { "type": "string" },
-          "archetype": { "type": "string" },
-          "title": { "type": "string", "maxLength": 140 },
-          "takeaway": { "type": "string" },
-          "kicker": { "type": "string" },
-          "body": { "type": "array", "items": { "type": "string" } },
-          "content": { "type": "object" },
-          "evidence_ids": { "type": "array", "items": { "type": "string" } },
-          "source_note": { "type": "string" },
-          "speaker_notes": { "type": "string" },
-          "sticker": { "type": "string" },
-          "exhibit": { "type": ["string", "integer"] },
-          "variant": { "type": "string" },
-          "background": { "enum": ["light", "dark", "surface"] },
-          "appendix": { "type": "boolean" },
-          "qa": { "type": "array", "items": { "type": "string" } }
+          "number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "section": {
+            "type": "string"
+          },
+          "archetype": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 140
+          },
+          "takeaway": {
+            "type": "string"
+          },
+          "kicker": {
+            "type": "string"
+          },
+          "body": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "content": {
+            "type": "object"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "source_note": {
+            "type": "string"
+          },
+          "speaker_notes": {
+            "type": "string"
+          },
+          "sticker": {
+            "type": "string"
+          },
+          "exhibit": {
+            "type": [
+              "string",
+              "integer"
+            ]
+          },
+          "variant": {
+            "type": "string"
+          },
+          "background": {
+            "enum": [
+              "light",
+              "dark",
+              "surface"
+            ]
+          },
+          "appendix": {
+            "type": "boolean"
+          },
+          "qa": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "enum": [
+              "hook",
+              "context",
+              "tension",
+              "method",
+              "proof",
+              "takeaway"
+            ],
+            "description": "서사 역할 — lint role-coverage 가 hook/proof/takeaway 커버리지를 검사"
+          }
         }
       }
     }
