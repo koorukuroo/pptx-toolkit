@@ -48,8 +48,8 @@ def inventory(path: str) -> Dict[str, Any]:
                     continue
                 inner_w = s.w - s.insets[0] - s.insets[2]
                 inner_h = s.h - s.insets[1] - s.insets[3]
-                lines, need = estimate_lines(s.runs, inner_w) if s.runs else (0, 0.0)
-                sizes = sorted({pt for t, pt in s.runs if t.strip()})
+                lines, need = estimate_lines(s.runs, inner_w, s.para_spacing) if s.runs else (0, 0.0)
+                sizes = sorted({r[1] for r in s.runs if r[0].strip()})
                 paras = [p for p in s.text.split("\n")]
                 items.append({
                     "id": s.sid, "name": s.name, "kind": s.kind, "placeholder": s.is_placeholder or None,

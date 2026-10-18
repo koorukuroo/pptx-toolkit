@@ -20,6 +20,16 @@ level: error(게이트 차단) / warning(사용자에게 보고) / info
   duration-mismatch       발표 시간 대비 슬라이드 수 (1.5~2분/장) — warning
   notes-missing           live/hybrid 인데 speaker_notes 없는 본문 슬라이드 — info
   takeaway-missing        본문 슬라이드에 takeaway 없음 — info
+  --- 'AI 티' 검사 ---
+  emoji-in-text           이모지 사용 — warning (아이콘·이모지 대신 숫자·단어·선)
+  manual-bullet           문자열 앞에 수동 글머리(•, -, □ …) — warning (렌더러가 글머리를 그리므로 이중 표기)
+  hype-claim              근거 없는 과장 수치·수식어 (10배, 99.9%, 획기적, 세계 최초 …) — evidence_ids 없으면 warning
+  page-number-in-text     본문에 '3/12', 'p.3' 같은 쪽번호 표기 — info (푸터가 처리)
+  emphasis-overuse        한 슬라이드에 강조(emphasis·highlight_rows·bold) 4개 이상 — warning
+  sequence-nonsequential  points 헤딩이 01/02/03 로 시작하는데 순서 의미가 없음 — info
+  hangul-italic           design_tokens.fonts.weights 에 italic — error (CJK 합성 기울임 금지)
+  notes-length            live/hybrid speaker_notes 길이가 80자 미만·600자 초과 — info (권장 200~400자, 큐 단어·전환 문장)
+  role-coverage           slides[].role 을 쓰는 덱에서 hook/proof/takeaway 역할이 비어 있음 — warning
 """
 from __future__ import annotations
 
@@ -36,11 +46,47 @@ TOPIC_LABELS = [
 ]
 VERB_ENDINGS = re.compile(r"(다|요|함|됨|임|음|됩니다|합니다|입니다|있습니다|없습니다|합니다\.|한다|된다|있다|없다|이다|하자|필요|가능|중)\s*[.!?]?$")
 NON_CONTENT = {"cover", "section_divider", "agenda", "appendix", "statement", "custom"}
-NUMERIC_ARCHETYPES = {"evidence_chart", "data_table", "hero_metric", "pricing_or_budget"}
+NUMERIC_ARCHETYPES = {"evidence_chart", "data_table", "hero_metric", "pricing_or_budget", "small_multiples", "big_number_stage", "kpi_bento", "tam_nested"}
 THANKS = re.compile(r"^(감사합니다|고맙습니다|thank you|thanks|q\s*&\s*a|questions\??|끝)\W*$", re.IGNORECASE)
 ACRONYM = re.compile(r"\b[A-Z]{2,6}\b")
 COMMON_ACRONYMS = {"AI", "IT", "KPI", "ROI", "PPT", "PDF", "API", "SDK", "UI", "UX", "CEO", "CTO", "R&D", "IoT", "LLM", "GPT", "SaaS", "B2B", "B2C", "OK", "QR", "URL", "TV", "USB", "CPU", "GPU", "ESG", "SNS", "POC", "PoC", "MVP", "TF", "M&A", "KR", "US", "EU", "UN", "OECD", "GDP", "CAGR", "YoY", "QoQ", "FY", "MOU", "RFP", "KRW", "USD"}
 FAKE_PRECISION = re.compile(r"\d+\.\d{2,}\s*%")
+EMOJI = re.compile("[\U0001F300-\U0001FAFF\U0001F000-\U0001F2FF\u2600-\u26FF\u2700-\u27BF\u2B50\u2B55\u231A-\u231B\u23E9-\u23FA\u25AA\u25FB-\u25FE]")
+MANUAL_BULLET = re.compile(r"^\s*(?:[•·▪■●◦‣⁃□○◇◆▶►▷]|[-–—]\s|\*\s|\d+[.)]\s)")
+HYPE = re.compile(r"(\d+\s*배\s*(빠른|향상|증가|개선|성장|효율)|99\.9+\s*%|100\s*%\s*(보장|달성|자동)|획기적|혁신적|압도적|세계\s*최초|업계\s*최초|국내\s*최초|무한|완벽|즉시\s*ROI|게임\s*체인저|패러다임)")
+PAGE_IN_TEXT = re.compile(r"(^|[\s(\[])(\d{1,2}\s*/\s*\d{1,2}|p\.\s*\d+|페이지\s*\d+|\d+\s*페이지)([\s)\].,]|$)")
+ROLES = {"hook", "context", "tension", "method", "proof", "takeaway"}
+
+
+def _strings(v, out: List[str], key: str = "") -> None:
+    if isinstance(v, str):
+        out.append(v)
+    elif isinstance(v, dict):
+        for k, vv in v.items():
+            if k in ("image", "images", "logo", "logos", "evidence_ids"):
+                continue
+            _strings(vv, out, k)
+    elif isinstance(v, list):
+        for vv in v:
+            _strings(vv, out, key)
+
+
+def _list_strings(content: Dict[str, Any]) -> List[str]:
+    """글머리로 그려지는 문자열(수동 글머리 검사 대상)."""
+    out: List[str] = []
+    for key in ("callouts", "items", "points", "flows", "assumptions", "exclusions", "takeaways", "paragraphs", "steps", "reasons"):
+        v = content.get(key)
+        if isinstance(v, list):
+            for it in v:
+                if isinstance(it, str):
+                    out.append(it)
+                elif isinstance(it, dict):
+                    for kk in ("detail", "heading", "label", "text", "title"):
+                        if isinstance(it.get(kk), str):
+                            out.append(it[kk])
+                elif isinstance(it, list):
+                    out.extend([x for x in it if isinstance(x, str)])
+    return out
 
 
 def _chars(s: Any) -> int:
@@ -74,7 +120,7 @@ def contrast(a: str, b: str) -> float:
 
 
 def _count_items(content: Dict[str, Any]) -> int:
-    for key in ("points", "steps", "phases", "layers", "members", "items", "rows", "metrics", "reasons", "columns"):
+    for key in ("points", "steps", "phases", "layers", "members", "items", "rows", "metrics", "reasons", "columns", "charts", "rings", "logos", "cells"):
         v = content.get(key)
         if isinstance(v, list):
             return len(v)
@@ -178,6 +224,57 @@ def lint_spec(spec: Dict[str, Any], schema_errors: List[str]) -> Dict[str, Any]:
             add("fake-precision", "info", "소수점 2자리 이상 비율 — 의사결정에 필요한 자릿수만", n)
         if mode in ("live", "hybrid") and is_content and not (s.get("speaker_notes") or "").strip():
             add("notes-missing", "info", "speaker_notes 없음", n)
+        elif mode in ("live", "hybrid") and is_content:
+            ln = len(re.sub(r"\s+", "", s.get("speaker_notes") or ""))
+            if ln < 80 or ln > 600:
+                add("notes-length", "info", f"speaker_notes {ln}자 — 권장 200~400자 (큐 단어 + 전환 문장)", n)
+        # --- AI 티 검사 ---
+        strs: List[str] = []
+        _strings(content, strs)
+        strs += [title] + list(s.get("body") or [])
+        joined = "\n".join(strs)
+        if EMOJI.search(joined):
+            add("emoji-in-text", "warning", "이모지 사용 — 숫자·단어·선으로 위계를 만든다", n)
+        bad_bullets = [x for x in _list_strings(content) + list(s.get("body") or []) if MANUAL_BULLET.match(x)]
+        if bad_bullets:
+            add("manual-bullet", "warning", f"수동 글머리 문자 {len(bad_bullets)}건 (예: '{bad_bullets[0][:20]}') — 렌더러가 글머리를 그리므로 지운다", n)
+        if not (s.get("evidence_ids") or []) and is_content:
+            m = HYPE.search(joined)
+            if m:
+                add("hype-claim", "warning", f"근거 없는 과장 표현 '{m.group(0)}' — evidence 를 붙이거나 구체 수치·조건으로 바꾼다", n)
+        if PAGE_IN_TEXT.search(joined):
+            add("page-number-in-text", "info", "본문에 쪽번호 표기 — 푸터가 처리한다", n)
+        emph = 0
+        for it in content.get("items") or []:
+            if isinstance(it, dict) and it.get("emphasis"):
+                emph += 1
+        emph += len(content.get("highlight_rows") or []) if isinstance(content.get("highlight_rows"), list) else 0
+        for key in ("points", "reasons", "steps"):
+            for it in content.get(key) or []:
+                if isinstance(it, dict) and it.get("bold"):
+                    emph += 1
+        if emph >= 4:
+            add("emphasis-overuse", "warning", f"강조 {emph}곳 — 한 슬라이드에 강조는 1~3곳", n)
+        if arch == "points":
+            heads = [p.get("heading", "") for p in content.get("points") or [] if isinstance(p, dict)]
+            if heads and all(re.match(r"^\s*0?\d[.)]?\s", h) for h in heads):
+                add("sequence-nonsequential", "info", "points 헤딩에 번호 — 순서 의미가 있으면 process 아키타입, 아니면 번호를 뺀다(렌더러가 번호를 그린다)", n)
+    # CJK: 기울임 금지
+    weights = ((spec.get("design_tokens") or {}).get("fonts") or {}).get("weights") or {}
+    if any("italic" in str(v).lower() or "oblique" in str(v).lower() for v in weights.values()):
+        add("hangul-italic", "error", "글꼴 굵기에 italic — 한글은 합성 기울임이라 금지. bold·색으로 강조")
+    # 서사 역할 커버리지 (role 을 하나라도 쓰면 검사)
+    roles = [s.get("role") for s in slides if s.get("role")]
+    if roles:
+        bad = [r for r in roles if r not in ROLES]
+        if bad:
+            add("role-coverage", "warning", f"알 수 없는 role {sorted(set(bad))} (가능: {sorted(ROLES)})")
+        need = {"hook", "proof", "takeaway"} if mode != "pre_read" else {"context", "proof", "takeaway"}
+        missing = sorted(need - set(roles))
+        if missing:
+            add("role-coverage", "warning", f"서사 역할 {missing} 이 비어 있음 — hook(왜 지금)·proof(근거)·takeaway(남길 것)은 모든 덱에 필요")
+        if "proof" in roles and "takeaway" in roles and roles.index("takeaway") < roles.index("proof"):
+            add("role-coverage", "info", "takeaway 가 proof 보다 먼저 나옴 — 답 먼저(executive_summary)는 예외지만 결론 슬라이드는 근거 뒤에")
     # 마무리
     last = slides[-1]
     last_title = (last.get("title") or "").strip()

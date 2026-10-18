@@ -1,6 +1,6 @@
 'use strict';
 // 슬라이드 프레임: 마스터(배경·푸터·쪽번호), 킥커/트래커, 액션 타이틀, 스티커, 본문 영역 계산, 출처·노트.
-const { fitText } = require('./text');
+const { fitText, spacingMultiple } = require('./text');
 const P = require('./primitives');
 
 const ROMAN = ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ', 'Ⅶ', 'Ⅷ', 'Ⅸ', 'Ⅹ', 'Ⅺ', 'Ⅻ'];
@@ -22,7 +22,7 @@ function palette(tok, bg) {
     });
   }
   if (bg === 'surface') return Object.assign({}, c, { background: c.surface, surface: c.surface_strong, primary_soft: c.primary_soft });
-  if (tok.profile === 'executive_keynote' && c.light_background && bg === 'light') {
+  if (c.light_background && c.light_ink && bg === 'light' && c.background === c.dark_background) {
     // 키노트 프로파일은 기본이 어두움. 'light' 요청 시 밝은 팔레트
     return Object.assign({}, c, { background: c.light_background, ink: c.light_ink, ink_muted: '5B6977', ink_faint: '8A97A4', line: 'D5DBE1', line_faint: 'E9EDF1', surface: 'F3F5F7', surface_strong: 'E6EAEE', primary: '0F4C81', primary_soft: 'DCE8F3', on_primary: 'FFFFFF' });
   }
@@ -37,13 +37,14 @@ function shade(hex, amount) {
 
 function defaultBackground(ctx, slideSpec) {
   if (slideSpec.background) return slideSpec.background;
-  const prof = ctx.tok.profile;
+  const bgs = ctx.tok.backgrounds || {};
   const a = slideSpec.archetype;
-  if (prof === 'executive_keynote') return 'dark';
-  if (a === 'cover') return ctx.tok.cover.variant.startsWith('dark') || ctx.tok.cover.variant === 'image-or-dark' ? 'dark' : 'light';
-  if (a === 'section_divider') return ['consulting_grade', 'paperlogy_business'].includes(prof) ? 'dark' : 'surface';
-  if (a === 'statement') return ['government_kr', 'public_policy'].includes(prof) ? 'surface' : 'dark';
-  return 'light';
+  if (bgs.all) return bgs.all;
+  if (a === 'cover') return bgs.cover || (ctx.tok.cover.variant.startsWith('dark') || ctx.tok.cover.variant === 'image-or-dark' ? 'dark' : 'light');
+  if (bgs[a]) return bgs[a];
+  if (a === 'section_divider') return 'surface';
+  if (a === 'statement') return 'dark';
+  return bgs.default || 'light';
 }
 
 // 마스터 정의 — 배경별 1개. 푸터·쪽번호는 마스터에, 제목은 placeholder.
@@ -63,7 +64,7 @@ function defineMasters(ctx) {
     if (leftText && !['cover'].includes(bg)) objects.push({ text: { text: leftText, options: Object.assign({ x: M.left, y: footY, w: W * 0.45, h: footH, align: 'left' }, footOpts) } });
     if (F.confidentiality && meta.confidentiality) objects.push({ text: { text: meta.confidentiality, options: Object.assign({ x: W * 0.35, y: footY, w: W * 0.3, h: footH, align: 'center' }, footOpts) } });
     const titleY = M.top + (tok.title.kicker !== 'none' ? 0.3 : 0);
-    const titleH = (2 * ctx.scale.title * 1.2) / 72 + 0.08;
+    const titleH = (2 * ctx.scale.title * tok.typography.line_height.title) / 72 + 0.08;
     objects.push({ placeholder: { options: { name: 'title', type: 'title', x: M.left + chipShift, y: titleY, w: W - M.left - M.right - chipShift - (meta.sticker ? 1.4 : 0), h: titleH, bold: tok.fonts.titleBold, color: pal.ink, fontFace: ctx.font.display, margin: 0, valign: 'top', align: tok.title.align || 'left', lang: 'ko-KR' }, text: '' } });
     const def = { title: `TK_${bg.toUpperCase()}`, background: { color: pal.background }, objects };
     if (F.right === 'page_number') def.slideNumber = { x: W - M.right - 0.6, y: footY, w: 0.6, h: footH, fontSize: Math.max(8, ctx.scale.source - 1), color: pal.ink_faint, fontFace: ctx.font.body, align: 'right', margin: 0, valign: 'middle' };
@@ -122,10 +123,12 @@ function begin(ctx, slideSpec, opts = {}) {
   // 제목 (액션 타이틀) — 2줄 안에 들어가도록 title pt에서 최대 6pt까지 축소
   const title = (slideSpec.title || '').trim();
   const titleW = W - M.left - M.right - master.chipShift - (sticker ? 1.5 : 0);
-  const fit = fitText([title], titleW, master.titleH, ctx.scale.title, ctx.scale.title - 6, { lineHeight: 1.2, paraGapEm: 0 });
+  const tlh = tok.typography.line_height.title;
+  const fit = fitText([title], titleW, master.titleH, ctx.scale.title, ctx.scale.title - 6, { lineHeight: tlh, paraGapEm: 0, face: ctx.font.display, bold: tok.fonts.titleBold });
   if (!fit.fits || fit.lines > 2) ctx.warn(`제목이 2줄을 넘음(추정 ${fit.lines}줄, ${fit.pt}pt): "${title.slice(0, 40)}…" — 45자 이내로 줄인다`, {});
   if (fit.pt < ctx.scale.title) ctx.info(`제목 ${ctx.scale.title}→${fit.pt}pt 축소 (2줄 맞춤): "${title.slice(0, 30)}…"`);
-  slide.addText(title, { placeholder: 'title', fontSize: fit.pt, lineSpacingMultiple: 1.0, lang: 'ko-KR' });
+  const trk = Math.round(fit.pt * (tok.typography.tracking_em.display || 0) * 10) / 10;
+  slide.addText(title, Object.assign({ placeholder: 'title', fontSize: fit.pt, lineSpacingMultiple: spacingMultiple(tlh, ctx.font.display, tok.fonts.titleBold), lang: 'ko-KR' }, trk ? { charSpacing: trk } : {}));
   const bodyTop = master.titleY + master.titleH + (opts.bodyGap != null ? opts.bodyGap : 0.22);
   body.y = bodyTop;
   body.h = (hasSource ? sourceY - 0.1 : frame.footerY - 0.18) - bodyTop;

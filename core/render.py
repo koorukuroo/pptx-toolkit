@@ -242,10 +242,44 @@ def contact_sheet(pdf: Path, out_png: Path, cols: int = 4, thumb_w: int = 320, d
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def render(pptx: str, out_dir: str, engine: str = "libreoffice", dpi: int = 110, contact: bool = True, keep_pdf: bool = True) -> Dict[str, object]:
+def deck_fonts(pptx: Path) -> List[str]:
+    """덱이 참조하는 글꼴(테마 major/minor + run 의 latin/ea) 목록."""
+    import re
+    import zipfile
+
+    fams: List[str] = []
+    try:
+        with zipfile.ZipFile(pptx) as z:
+            for n in z.namelist():
+                if re.match(r"ppt/(theme|slides|slideLayouts|slideMasters)/.*\.xml$", n):
+                    data = z.read(n).decode("utf-8", errors="ignore")
+                    for m in re.finditer(r'<a:(?:latin|ea) typeface="([^"+]+)"', data):
+                        f = m.group(1).strip()
+                        if f and f not in fams:
+                            fams.append(f)
+    except Exception:  # noqa: BLE001
+        pass
+    return fams
+
+
+def font_environment(pptx: Path, engine: str) -> Dict[str, object]:
+    """렌더 신뢰 프로토콜: 덱 글꼴로 프로브를 렌더해 한글이 그려지는지 확인."""
+    from .probe import probe
+
+    fams = [f for f in deck_fonts(pptx) if f.lower() not in ("arial", "calibri", "symbol", "wingdings")] or ["Paperlogy"]
+    try:
+        r = probe(engine, fams[:6])
+    except Exception as e:  # noqa: BLE001
+        return {"ok": None, "error": str(e), "fonts": fams}
+    missing = [f for f, ok in r.get("hangul_drawn", {}).items() if not ok]
+    return {"ok": not missing, "engine": engine, "fonts": fams, "hangul_blank": missing, "cached": r.get("cached", False), "ink": r.get("ink")}
+
+
+def render(pptx: str, out_dir: str, engine: str = "libreoffice", dpi: int = 110, contact: bool = True, keep_pdf: bool = True, check_fonts: bool = True) -> Dict[str, object]:
     src = Path(pptx).resolve()
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
+    env: Optional[Dict[str, object]] = font_environment(src, engine) if check_fonts else None
     if engine == "powerpoint":
         pdf = to_pdf_powerpoint(src, out)
     elif engine == "libreoffice":
@@ -259,6 +293,10 @@ def render(pptx: str, out_dir: str, engine: str = "libreoffice", dpi: int = 110,
     if not keep_pdf:
         pdf.unlink()
         result.pop("pdf")
+    if env is not None:
+        result["font_environment"] = env
+        if env.get("ok") is False:
+            result["warning"] = f"렌더 환경 실패: 이 엔진에서 한글이 그려지지 않는 글꼴 {env.get('hangul_blank')} — 아래 PNG의 빈 칸·줄바꿈은 신뢰할 수 없다. 폰트를 설치하거나 --engine powerpoint 로 다시 렌더한다"
     if engine == "libreoffice":
         result["note"] = "LibreOffice 렌더는 근사치다(줄바꿈·자간). 폰트가 설치돼 있으면 폭은 거의 정확하다. 최종 확인은 PowerPoint/Keynote에서."
     return result
@@ -273,10 +311,11 @@ def main(argv: List[str]) -> int:
     ap.add_argument("--engine", choices=["libreoffice", "powerpoint"], default="libreoffice")
     ap.add_argument("--dpi", type=int, default=110)
     ap.add_argument("--no-contact", action="store_true")
+    ap.add_argument("--no-probe", action="store_true", help="글꼴 환경 프로브 생략")
     a = ap.parse_args(argv)
     out = a.out or (str(Path(a.pptx).with_suffix("")) + ".render")
     try:
-        r = render(a.pptx, out, a.engine, a.dpi, not a.no_contact)
+        r = render(a.pptx, out, a.engine, a.dpi, not a.no_contact, check_fonts=not a.no_probe)
     except Exception as e:  # noqa: BLE001
         print(json.dumps({"ok": False, "error": str(e)}, ensure_ascii=False))
         return 1

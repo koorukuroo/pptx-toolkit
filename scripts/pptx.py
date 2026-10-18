@@ -30,6 +30,7 @@ sys.path.insert(0, str(ROOT))
 
 from core import check as _check  # noqa: E402
 from core import extract as _extract  # noqa: E402
+from core import fontmetrics as _fontmetrics  # noqa: E402
 from core import fonts as _fonts  # noqa: E402
 from core import inspect as _inspect  # noqa: E402
 from core import lint as _lint  # noqa: E402
@@ -84,6 +85,36 @@ def cmd_build(argv):
     out = {"ok": chk["ok"] and ins["ok"], "output": a.out, "build": build, "check": chk, "inspect": {"ok": ins["ok"], "errors": ins["errors"], "warnings": ins["warnings"], "findings": ins["findings"]}}
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0 if out["ok"] else 1
+
+
+def cmd_probe(argv):
+    from core import probe
+
+    return probe.main(argv)
+
+
+def cmd_inherit(argv):
+    from core import inherit
+
+    return inherit.main(argv)
+
+
+def cmd_directions(argv):
+    from core import directions
+
+    return directions.main(argv)
+
+
+def cmd_palette(argv):
+    from core import palette
+
+    return palette.main(argv)
+
+
+def cmd_variety(argv):
+    from core import variety
+
+    return variety.main(argv)
 
 
 def cmd_bleed(argv):
@@ -149,7 +180,7 @@ def cmd_qa(argv):
         margin = min(tokens["canvas"]["margin"]["left"], tokens["canvas"]["margin"]["right"]) * 0.6
     report["gates"]["check"] = _check.check(a.pptx)
     report["gates"]["inspect"] = _inspect.inspect_file(a.pptx, min_font=min_font, note_font=note_font, margin=margin)
-    report["gates"]["audit"] = audit.audit(a.pptx)
+    report["gates"]["audit"] = audit.audit(a.pptx, a.spec)
     if a.bleed:
         from core import bleed
 
@@ -187,8 +218,38 @@ def cmd_pack(argv):
 
 
 def cmd_profiles(argv):
+    import argparse
+
+    ap = argparse.ArgumentParser(prog="pptx.py profiles")
+    ap.add_argument("--match", default=None, help="메타로 거르기: 예 'occasion=투자' 'density=high' 'formality>=4' (콤마로 여러 조건)")
+    a = ap.parse_args(argv)
     profs = specio.load_profiles()
-    out = {k: {"label": v["label"], "intent": v["intent"], "use_when": v["use_when"], "fonts": v["tokens"]["fonts"]["display"] + " / " + v["tokens"]["fonts"]["body"], "primary": v["tokens"]["colors"]["primary"], "accent": v["tokens"]["colors"]["accent"]} for k, v in profs.items()}
+    out = {k: {"label": v["label"], "intent": v["intent"], "use_when": v["use_when"], "meta": v.get("meta", {}), "fonts": v["tokens"]["fonts"]["display"] + " / " + v["tokens"]["fonts"]["body"], "primary": v["tokens"]["colors"]["primary"], "accent": v["tokens"]["colors"]["accent"], "background": v["tokens"]["colors"]["background"]} for k, v in profs.items()}
+    if a.match:
+        import re as _re
+
+        def ok(meta):
+            for cond in a.match.split(","):
+                m = _re.match(r"\s*(\w+)\s*(>=|<=|=|>|<)\s*(.+?)\s*$", cond)
+                if not m:
+                    continue
+                key, op, val = m.groups()
+                have = meta.get(key)
+                if have is None:
+                    return False
+                if op == "=":
+                    hay = " ".join(have) if isinstance(have, list) else str(have)
+                    if val not in hay:
+                        return False
+                else:
+                    try:
+                        h, v = float(have), float(val)
+                    except (TypeError, ValueError):
+                        return False
+                    if not {">=": h >= v, "<=": h <= v, ">": h > v, "<": h < v}[op]:
+                        return False
+            return True
+        out = {k: v for k, v in out.items() if ok(v["meta"])}
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0
 
@@ -236,11 +297,17 @@ COMMANDS = {
     "inspect": _inspect.main,
     "render": _render.main,
     "bleed": cmd_bleed,
+    "probe": cmd_probe,
+    "variety": cmd_variety,
+    "palette": cmd_palette,
+    "directions": cmd_directions,
+    "inherit": cmd_inherit,
     "extract": _extract.main,
     "inventory": cmd_inventory,
     "replace": cmd_replace,
     "slides": cmd_slides,
     "fonts": _fonts.main,
+    "fontmetrics": _fontmetrics.main,
     "template": cmd_template,
     "audit": cmd_audit,
     "qa": cmd_qa,

@@ -2,7 +2,9 @@
 
   out-of-bounds     도형이 슬라이드 밖으로 나감 (허용 오차 0.02in)
   text-overlap      텍스트 도형끼리 겹침 (둘 다 글자가 있고, 교집합이 작은 쪽 면적의 15% 초과)
-  text-overflow     글자량 추정으로 텍스트 상자 넘침 (한글 1.0em·영숫자 0.55em·공백 0.3em, 줄높이 1.2)
+  text-overflow     글자량 추정으로 텍스트 상자 넘침 (설치 폰트의 실제 글자 폭·행간, 어절 단위 줄바꿈; 폰트 없으면 평균 계수)
+  bottom-zone       12pt 초과 본문 텍스트가 슬라이드 바닥 0.5in 안에 걸침 (발표 UI·프로젝터 마스킹 영역) (경고)
+  hangul-italic     한글 run 에 기울임 (CJK 글꼴은 합성 기울임이라 품질 저하) (경고)
   font-too-small    본문 글자 크기 하한 미만 (기본 12pt, --min-font로 조정; 출처/각주 9pt 허용 --note-font)
   image-low-res     표시 크기 대비 유효 DPI < 110
   image-stretched   원본 비율과 표시 비율 차이 > 8% (크롭 srcRect 없음)
@@ -21,9 +23,12 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
+from . import fontmetrics as FM
 from .package import NS, Package, emu_to_in, emu_to_pt, image_dimensions, q, text_of
 
 TOL_IN = 0.02
+SAFETY = 0.98  # 줄바꿈 폭 안전 여유 (scripts/lib/text.js 와 동일)
+BOTTOM_ZONE_IN = 0.5
 
 
 @dataclass
@@ -36,7 +41,9 @@ class Shape:
     w: float
     h: float
     text: str = ""
-    runs: List[Tuple[str, float]] = field(default_factory=list)  # (text, pt)
+    runs: List[Tuple] = field(default_factory=list)  # (text, pt, face, bold)
+    para_spacing: List[float] = field(default_factory=list)  # 문단별 lnSpc 배수 (spcPct/100000), 기본 1.0
+    italic_hangul: bool = False
     is_placeholder: str = ""
     insets: Tuple[float, float, float, float] = (0.1, 0.05, 0.1, 0.05)  # l,t,r,b in
     autofit: str = ""
@@ -79,96 +86,147 @@ def _xfrm(el) -> Optional[Tuple[float, float, float, float]]:
     return (bx, by, bw, bh)
 
 
-def _runs(txbody, default_pt: float) -> List[Tuple[str, float]]:
-    runs: List[Tuple[str, float]] = []
+def _run_face(rpr, default_face: str) -> str:
+    if rpr is None:
+        return default_face
+    for tag in ("a:ea", "a:latin"):
+        el = rpr.find(tag, NS)
+        if el is not None and el.get("typeface") and not el.get("typeface").startswith("+"):
+            return el.get("typeface")
+    return default_face
+
+
+def _runs(txbody, default_pt: float, default_face: str = "", shape: Optional["Shape"] = None) -> List[Tuple]:
+    """(text, pt, face, bold) 목록. 문단 경계는 ("\n", pt, face, False). shape 가 있으면 문단 행간·한글 기울임도 기록."""
+    runs: List[Tuple] = []
+    lst_face = default_face
+    lst = txbody.find("a:lstStyle", NS)
+    if lst is not None:
+        d = lst.find(".//a:defRPr", NS)
+        if d is not None:
+            lst_face = _run_face(d, default_face)
     for p in txbody.findall("a:p", NS):
+        ppr = p.find("a:pPr", NS)
+        spc = 1.0
+        p_face = lst_face
+        if ppr is not None:
+            ln = ppr.find("a:lnSpc/a:spcPct", NS)
+            if ln is not None and ln.get("val"):
+                spc = int(ln.get("val")) / 100000.0
+            d = ppr.find("a:defRPr", NS)
+            if d is not None:
+                p_face = _run_face(d, lst_face)
+        if shape is not None:
+            shape.para_spacing.append(spc)
         for node in p:
             if node.tag == q("a:r"):
                 rpr = node.find("a:rPr", NS)
                 sz = rpr.get("sz") if rpr is not None else None
                 pt = int(sz) / 100 if sz else default_pt
                 t = node.find("a:t", NS)
-                runs.append((t.text or "" if t is not None else "", pt))
+                text = (t.text or "") if t is not None else ""
+                bold = rpr is not None and rpr.get("b") == "1"
+                if shape is not None and rpr is not None and rpr.get("i") == "1" and re.search(r"[가-힣]", text):
+                    shape.italic_hangul = True
+                runs.append((text, pt, _run_face(rpr, p_face), bold))
             elif node.tag == q("a:br"):
-                runs.append(("\n", default_pt))
+                runs.append(("\n", default_pt, p_face, False))
             elif node.tag == q("a:fld"):
                 t = node.find("a:t", NS)
                 rpr = node.find("a:rPr", NS)
                 sz = rpr.get("sz") if rpr is not None else None
-                runs.append((t.text or "" if t is not None else "", int(sz) / 100 if sz else default_pt))
-        runs.append(("\n", default_pt))
+                runs.append(((t.text or "") if t is not None else "", int(sz) / 100 if sz else default_pt, _run_face(rpr, p_face), False))
+        runs.append(("\n", default_pt, p_face, False))
     if runs and runs[-1][0] == "\n":
         runs.pop()
     return runs
 
 
-def _char_em(ch: str) -> float:
-    o = ord(ch)
-    if ch == " ":
-        return 0.3
-    if 0xAC00 <= o <= 0xD7A3 or 0x3130 <= o <= 0x318F or 0x4E00 <= o <= 0x9FFF or 0x3000 <= o <= 0x303F or 0xFF00 <= o <= 0xFFEF:
-        return 1.0
-    if ch.isdigit():
-        return 0.58
-    if ch.isupper():
-        return 0.68
-    if ch in ".,:;'|!il":
-        return 0.3
-    return 0.55
+def _char_em(ch: str, face: Optional[str] = None, bold: bool = False) -> float:
+    return FM.width_em(ch, face, bold)
 
 
-def estimate_lines(runs: List[Tuple[str, float]], width_in: float) -> Tuple[int, float]:
-    """(총 줄 수, 필요한 높이 in). 줄높이 1.2em. 단어 단위 줄바꿈 근사(한글은 글자 단위)."""
+def estimate_lines(runs: List[Tuple], width_in: float, para_spacing: Optional[List[float]] = None) -> Tuple[int, float]:
+    """(총 줄 수, 필요한 높이 in). 어절(공백) 단위 줄바꿈, 폭 2% 여유, 행간 = 글자 크기 × 폰트 고유 행간 × 문단 spcPct.
+    runs 항목은 (text, pt) 또는 (text, pt, face, bold)."""
     if width_in <= 0:
         return (0, 0.0)
+    W = width_in * SAFETY
     total_lines = 0
     height = 0.0
-    # 문단 분리
-    paras: List[List[Tuple[str, float]]] = [[]]
-    for text, pt in runs:
+    paras: List[List[Tuple[str, float, Optional[str], bool]]] = [[]]
+    for r in runs:
+        text, pt = r[0], r[1]
+        face = r[2] if len(r) > 2 else None
+        bold = bool(r[3]) if len(r) > 3 else False
         pieces = text.split("\n")
         for i, piece in enumerate(pieces):
             if i > 0:
                 paras.append([])
             if piece:
-                paras[-1].append((piece, pt))
-    for para in paras:
+                paras[-1].append((piece, pt, face, bold))
+    for pi, para in enumerate(paras):
+        spc = para_spacing[pi] if para_spacing and pi < len(para_spacing) else 1.0
         if not para:
             pt = runs[0][1] if runs else 12
+            face = runs[0][2] if runs and len(runs[0]) > 2 else None
             total_lines += 1
-            height += pt * 1.2 / 72
+            height += pt * FM.line_height_em(face) * spc / 72
             continue
-        max_pt = max(pt for _, pt in para)
+        max_pt = max(pt for _, pt, _, _ in para)
+        lh_em = max(FM.line_height_em(face, bold) for _, _, face, bold in para)
         line_w = 0.0
         lines = 1
-        for text, pt in para:
+        for text, pt, face, bold in para:
             em_in = pt / 72
-            # 토큰: 공백 기준 단어, 한글은 글자마다 끊김 허용
-            tokens = re.findall(r"\s+|[A-Za-z0-9.,%()'\-/:+]+|.", text)
-            for tok in tokens:
-                tw = sum(_char_em(c) for c in tok) * em_in
+            for tok in re.findall(r"\s+|\S+", text):
+                tw = sum(_char_em(c, face, bold) for c in tok) * em_in
                 if tok.isspace():
-                    line_w += tw
+                    if line_w > 0:
+                        line_w += tw
                     continue
-                if tw > width_in:
-                    # 긴 토큰은 글자 단위로
+                if line_w + tw > W and line_w > 0:
+                    lines += 1
+                    line_w = 0.0
+                if tw > W:
                     for c in tok:
-                        cw = _char_em(c) * em_in
-                        if line_w + cw > width_in and line_w > 0:
+                        cw = _char_em(c, face, bold) * em_in
+                        if line_w + cw > W and line_w > 0:
                             lines += 1
                             line_w = 0.0
                         line_w += cw
                     continue
-                if line_w + tw > width_in and line_w > 0:
-                    lines += 1
-                    line_w = 0.0
                 line_w += tw
         total_lines += lines
-        height += lines * max_pt * 1.2 / 72
+        height += lines * max_pt * lh_em * spc / 72
     return total_lines, height
 
 
-def _collect(container, pkg: Package, part: str, out: List[Shape], offset=(0.0, 0.0), scale=(1.0, 1.0), default_pt=18.0) -> None:
+def theme_fonts(pkg: Package) -> Tuple[str, str]:
+    """(major latin, minor latin) — 테마 글꼴. 없으면 ('', '')."""
+    for n in pkg.names:
+        if re.match(r"ppt/theme/theme\d+\.xml$", n):
+            try:
+                root = pkg.xml(n)
+            except Exception:  # noqa: BLE001
+                continue
+            fs = root.find(".//a:fontScheme", NS)
+            if fs is None:
+                continue
+            def pick(kind):
+                el = fs.find(f"a:{kind}", NS)
+                if el is None:
+                    return ""
+                for t in ("a:ea", "a:latin"):
+                    x = el.find(t, NS)
+                    if x is not None and x.get("typeface"):
+                        return x.get("typeface")
+                return ""
+            return pick("majorFont"), pick("minorFont")
+    return "", ""
+
+
+def _collect(container, pkg: Package, part: str, out: List[Shape], offset=(0.0, 0.0), scale=(1.0, 1.0), default_pt=18.0, fonts: Tuple[str, str] = ("", "")) -> None:
     for child in list(container):
         tag = child.tag.split("}")[-1]
         if tag == "grpSp":
@@ -186,7 +244,7 @@ def _collect(container, pkg: Package, part: str, out: List[Shape], offset=(0.0, 
                     ox = offset[0] + emu_to_in(int(off.get("x", 0))) * scale[0] - emu_to_in(int(choff.get("x", 0))) * sx
                     oy = offset[1] + emu_to_in(int(off.get("y", 0))) * scale[1] - emu_to_in(int(choff.get("y", 0))) * sy
                     o2, s2 = (ox, oy), (sx, sy)
-            _collect(child, pkg, part, out, o2, s2, default_pt)
+            _collect(child, pkg, part, out, o2, s2, default_pt, fonts)
             continue
         if tag not in ("sp", "pic", "graphicFrame", "cxnSp"):
             continue
@@ -226,8 +284,8 @@ def _collect(container, pkg: Package, part: str, out: List[Shape], offset=(0.0, 
         filled = sppr is not None and sppr.find("a:solidFill", NS) is not None
         s = Shape(sid, name, "shape", x, y, w, h, is_placeholder=phtype, filled=filled)
         if txb is not None:
-            runs = _runs(txb, default_pt)
-            text = "".join(t for t, _ in runs)
+            runs = _runs(txb, default_pt, fonts[0] if phtype in ("title", "ctrTitle") else fonts[1], s)
+            text = "".join(r[0] for r in runs)
             s.runs = runs
             s.text = text
             if text.strip():
@@ -257,6 +315,8 @@ def inspect_file(path: str, min_font: float = 12.0, note_font: float = 9.0, marg
         summary["slide_size_in"] = [round(W, 3), round(H, 3)]
         slides = pkg.slides()
         summary["slides"] = len(slides)
+        fonts = theme_fonts(pkg)
+        summary["theme_fonts"] = {"major": fonts[0], "minor": fonts[1], "metrics": {f: (FM.find(f) is not None) for f in set(fonts) if f}}
         min_font_seen = 999.0
         for ref in slides:
             if not pkg.has(ref.part):
@@ -265,7 +325,7 @@ def inspect_file(path: str, min_font: float = 12.0, note_font: float = 9.0, marg
             tree = root.find("p:cSld/p:spTree", NS)
             shapes: List[Shape] = []
             if tree is not None:
-                _collect(tree, pkg, ref.part, shapes)
+                _collect(tree, pkg, ref.part, shapes, fonts=fonts)
             n = ref.index
 
             def add(code: str, s: Optional[Shape], msg: str, level: str = "error", **kw) -> None:
@@ -282,12 +342,16 @@ def inspect_file(path: str, min_font: float = 12.0, note_font: float = 9.0, marg
                     if not (full_bleed and s.x >= -0.05 and s.y >= -0.05):
                         add("out-of-bounds", s, f"슬라이드 밖으로 {max(0, -s.x, -s.y, s.x2 - W, s.y2 - H):.2f}in 이탈")
                 elif margin > 0 and s.kind in ("text", "table", "chart") and not full_bleed:
-                    small = s.kind == "text" and max([pt for t, pt in s.runs if t.strip()] or [99]) <= 11  # 푸터·출처는 여백 안에 둘 수 있다
+                    small = s.kind == "text" and max([r[1] for r in s.runs if r[0].strip()] or [99]) <= 11  # 푸터·출처는 여백 안에 둘 수 있다
                     if not small and (s.x < margin - TOL_IN or s.x2 > W - margin + TOL_IN or s.y < margin * 0.6 - TOL_IN or s.y2 > H - margin * 0.6 + TOL_IN):
                         add("margin-violation", s, f"안전 여백 {margin}in 침범", level="warning")
                 # fonts
                 if s.kind == "text":
-                    sizes = [pt for t, pt in s.runs if t.strip()]
+                    sizes = [r[1] for r in s.runs if r[0].strip()]
+                    if s.italic_hangul:
+                        add("hangul-italic", s, "한글에 기울임 — CJK 글꼴은 합성 기울임이라 품질이 떨어진다. 굵기·색으로 강조", level="warning")
+                    if sizes and max(sizes) > 12 and s.y2 > H - BOTTOM_ZONE_IN + TOL_IN and s.y < H - BOTTOM_ZONE_IN and not full_bleed:
+                        add("bottom-zone", s, f"본문 텍스트가 바닥 {BOTTOM_ZONE_IN}in 안에 걸침 (발표 UI·투사 마스킹 영역)", level="warning")
                     if sizes:
                         mn = min(sizes)
                         min_font_seen = min(min_font_seen, mn)
@@ -301,7 +365,7 @@ def inspect_file(path: str, min_font: float = 12.0, note_font: float = 9.0, marg
                     if s.wrap and s.autofit != "resize":
                         inner_w = s.w - s.insets[0] - s.insets[2]
                         inner_h = s.h - s.insets[1] - s.insets[3]
-                        lines, need_h = estimate_lines(s.runs, inner_w)
+                        lines, need_h = estimate_lines(s.runs, inner_w, s.para_spacing)
                         if inner_h > 0 and need_h > inner_h * 1.08 + 0.02:
                             add("text-overflow", s, f"추정 {lines}줄·{need_h:.2f}in 필요, 상자 {inner_h:.2f}in", level="error" if need_h > inner_h * 1.3 else "warning", estimate=True)
                         if s.is_placeholder in ("title", "ctrTitle") and lines >= 3:

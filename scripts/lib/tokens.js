@@ -4,7 +4,18 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+const FM = require('./fontmetrics');
+
 const ROOT = path.resolve(__dirname, '..', '..');
+
+// CJK 타이포그래피 기본값 — 프로파일 tokens.typography 가 덮어쓴다. line_height 는 글자 크기 대비 절대 em,
+// tracking_em 은 자간(em; 한글 display 는 -0.02 이하로 내리지 않는다), 본문 한 줄 권장 글자 수.
+const TYPOGRAPHY_DEFAULTS = {
+  line_height: { title: 1.2, heading: 1.25, body: 1.4, body_long: 1.5, caption: 1.3, hero: 0.95 },
+  tracking_em: { display: -0.01, body: 0, kicker: 0.06, numeral: -0.02 },
+  line_length_chars: { min: 22, max: 38 },
+  italic_hangul: false,
+};
 const PROFILES = JSON.parse(fs.readFileSync(path.join(ROOT, 'references', 'style-profiles.json'), 'utf8')).profiles;
 const ARCHETYPES = JSON.parse(fs.readFileSync(path.join(ROOT, 'references', 'slide-archetypes.json'), 'utf8')).archetypes;
 
@@ -58,10 +69,11 @@ const ALIASES = {
 };
 
 function hasFont(family) {
+  if (FM.hasFamily(family)) return true; // name 테이블 기준 (정확)
   const key = family.toLowerCase().replace(/[\s_-]+/g, ' ').trim();
   const needles = ALIASES[key] || [key.replace(/\s+/g, '')];
   const files = fontFiles();
-  return needles.some((n) => files.some((f) => f.replace(/[\s_-]+/g, '').startsWith(n)));
+  return needles.some((n) => files.some((f) => f.replace(/[\s_-]+/g, '').includes(n)));
 }
 
 function resolveFont(preferred, fallback) {
@@ -92,7 +104,11 @@ function resolveTokens(spec) {
     warnings: [disp, body].filter((r) => r.substituted || r.missing).map((r) => (r.missing ? `폰트 '${r.requested}'와 대체 폰트 모두 미설치 — 수신 PC 폰트로 렌더됨` : `폰트 '${r.requested}' 미설치 → '${r.use}' 사용`)),
   };
   t.fonts.titleBold = weightToBold(t.fonts.weights && t.fonts.weights.title);
+  t.typography = deepMerge(TYPOGRAPHY_DEFAULTS, t.typography || {});
+  t.backgrounds = t.backgrounds || {};
+  // 모드별 행간 미세 조정: 읽기용은 조금 넓게
+  if (mode === 'pre_read' && !(spec.design_tokens && spec.design_tokens.typography)) t.typography.line_height.body = Math.max(t.typography.line_height.body, 1.45);
   return t;
 }
 
-module.exports = { PROFILES, ARCHETYPES, ROOT, deepMerge, resolveTokens, hasFont, resolveFont };
+module.exports = { PROFILES, ARCHETYPES, ROOT, deepMerge, resolveTokens, hasFont, resolveFont, TYPOGRAPHY_DEFAULTS };

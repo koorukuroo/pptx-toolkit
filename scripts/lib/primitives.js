@@ -1,11 +1,22 @@
 'use strict';
 // 공통 그리기 프리미티브. 모든 좌표 inch, 글자 pt, 색 6자리 hex.
-const { fitText, heightFor, linesFor } = require('./text');
+const { fitText, heightFor, linesFor, spacingMultiple } = require('./text');
+
+// 타이포 옵션: 종류별 행간(절대 em)·폰트·굵기 → fitText/heightFor 의 opts 와 lineSpacingMultiple
+function typo(ctx, kind, face, bold) {
+  const T = ctx.tok.typography;
+  const lh = T.line_height[kind] || T.line_height.body;
+  const f = face || (kind === 'title' || kind === 'heading' ? ctx.font.display : ctx.font.body);
+  return { lineHeight: lh, face: f, bold: !!bold, multiple: spacingMultiple(lh, f, !!bold) };
+}
 
 function ctxText(ctx, slide, text, opts) {
   const o = Object.assign({ isTextBox: true, margin: 0, fontFace: ctx.font.body, color: ctx.pal.ink, lang: 'ko-KR', valign: 'top', align: 'left' }, opts);
   if (o.font === 'display') { o.fontFace = ctx.font.display; delete o.font; }
   if (o.font === 'numeral') { o.fontFace = ctx.font.numeral; delete o.font; }
+  if (o.italic && ctx.tok.typography && !ctx.tok.typography.italic_hangul && /[가-힣]/.test(JSON.stringify(text))) { delete o.italic; ctx.info('한글 기울임 제거 (CJK 규칙)'); }
+  // 단일 행 라벨: 줄바꿈 금지 + 폭 여유 — 한 글자만 다음 줄로 떨어지는 사고 방지
+  if (o.singleLine) { o.wrap = false; delete o.singleLine; }
   slide.addText(text, o);
   return o;
 }
@@ -15,12 +26,15 @@ function fitBox(ctx, slide, paragraphs, box, opts = {}) {
   const paras = Array.isArray(paragraphs) ? paragraphs : [String(paragraphs || '')];
   const maxPt = opts.maxPt || ctx.scale.body;
   const minPt = opts.minPt || ctx.scale.body_min;
-  const lh = opts.lineHeight || 1.25;
+  const to = opts.textOptions || {};
+  const face = to.fontFace || (to.font === 'display' ? ctx.font.display : ctx.font.body);
+  const ty = typo(ctx, opts.kind || 'body', face, to.bold);
+  const lh = opts.lineHeight || ty.lineHeight;
   const paraGapEm = opts.paraGapEm == null ? 0.4 : opts.paraGapEm;
-  const r = fitText(paras, box.w, box.h, maxPt, minPt, { lineHeight: lh, paraGapEm });
+  const r = fitText(paras, box.w, box.h, maxPt, minPt, { lineHeight: lh, paraGapEm, face, bold: ty.bold });
   if (!r.fits) ctx.warn(`텍스트 넘침 추정: ${box.name || ''} 필요 ${r.needIn.toFixed(2)}in > 상자 ${box.h.toFixed(2)}in (최소 ${minPt}pt). 글자를 줄이거나 슬라이드를 나눈다`, { text: paras.join(' ').slice(0, 50) });
   const runs = paras.map((p, i) => ({ text: p, options: Object.assign({ breakLine: i < paras.length - 1 }, opts.runOptions ? opts.runOptions(i, p) : {}) }));
-  const o = Object.assign({ x: box.x, y: box.y, w: box.w, h: box.h, fontSize: r.pt, lineSpacingMultiple: lh / 1.2, paraSpaceAfter: Math.round(r.pt * paraGapEm) }, opts.textOptions || {});
+  const o = Object.assign({ x: box.x, y: box.y, w: box.w, h: box.h, fontSize: r.pt, lineSpacingMultiple: spacingMultiple(lh, face, ty.bold), paraSpaceAfter: Math.round(r.pt * paraGapEm) }, to);
   if (opts.bullets) {
     runs.forEach((run, i) => { run.options.bullet = opts.bullets(i) || true; run.options.indentLevel = opts.indent ? opts.indent(i) : 0; });
     delete o.paraSpaceAfter;
@@ -37,10 +51,11 @@ function bulletList(ctx, slide, items, box, opts = {}) {
   const codes = markers.map((m) => m.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'));
   const maxPt = opts.maxPt || ctx.scale.body;
   const minPt = opts.minPt || ctx.scale.body_min;
-  const lh = opts.lineHeight || 1.25;
+  const face = (opts.textOptions && opts.textOptions.fontFace) || ctx.font.body;
+  const lh = opts.lineHeight || ctx.tok.typography.line_height.body;
   const paraGapEm = opts.paraGapEm == null ? 0.45 : opts.paraGapEm;
   // 들여쓰기 폭 고려: 레벨당 0.28in
-  const r = fitText(list.map((it) => it.text), box.w - 0.3, box.h, maxPt, minPt, { lineHeight: lh, paraGapEm });
+  const r = fitText(list.map((it) => it.text), box.w - 0.3, box.h, maxPt, minPt, { lineHeight: lh, paraGapEm, face, bold: list.some((it) => it.bold) });
   if (!r.fits) ctx.warn(`목록 넘침 추정: ${box.name || ''} 필요 ${r.needIn.toFixed(2)}in > 상자 ${box.h.toFixed(2)}in`, { text: list[0].text.slice(0, 40) });
   const runs = list.map((it, i) => ({
     text: it.text,
@@ -54,7 +69,7 @@ function bulletList(ctx, slide, items, box, opts = {}) {
       fontSize: (it.level || 0) > 0 ? Math.max(minPt, r.pt - 1) : r.pt,
     },
   }));
-  ctxText(ctx, slide, runs, Object.assign({ x: box.x, y: box.y, w: box.w, h: box.h, fontSize: r.pt, lineSpacingMultiple: lh / 1.2 }, opts.textOptions || {}));
+  ctxText(ctx, slide, runs, Object.assign({ x: box.x, y: box.y, w: box.w, h: box.h, fontSize: r.pt, lineSpacingMultiple: spacingMultiple(lh, face, false) }, opts.textOptions || {}));
   return r;
 }
 
@@ -84,7 +99,7 @@ function arrow(ctx, slide, x1, y1, x2, y2, opts = {}) {
 function bigNumber(ctx, slide, value, unit, box, opts = {}) {
   const pt = opts.pt || ctx.scale.hero_number;
   const unitPt = Math.round(pt * 0.38);
-  const runs = [{ text: String(value), options: { fontSize: pt, bold: true, color: opts.color || ctx.pal.primary, fontFace: ctx.font.numeral, charSpacing: -2 } }];
+  const runs = [{ text: String(value), options: { fontSize: pt, bold: true, color: opts.color || ctx.pal.primary, fontFace: ctx.font.numeral, charSpacing: Math.round(pt * (ctx.tok.typography.tracking_em.numeral || 0) * 10) / 10 } }];
   if (unit) runs.push({ text: unit, options: { fontSize: unitPt, bold: true, color: opts.color || ctx.pal.primary, fontFace: ctx.font.numeral } });
   ctxText(ctx, slide, runs, { x: box.x, y: box.y, w: box.w, h: box.h, valign: opts.valign || 'bottom', align: opts.align || 'left', lineSpacingMultiple: 0.9, fontSize: pt });
 }
@@ -96,7 +111,7 @@ function numeral(ctx, slide, n, box, opts = {}) {
 
 // 작은 대문자 라벨 (kicker / 섹션 라벨 / exhibit)
 function label(ctx, slide, text, box, opts = {}) {
-  ctxText(ctx, slide, text, { x: box.x, y: box.y, w: box.w, h: box.h, fontSize: opts.pt || ctx.scale.kicker, bold: opts.bold != null ? opts.bold : true, color: opts.color || ctx.pal.ink_muted, charSpacing: opts.spacing == null ? 1 : opts.spacing, valign: 'middle', align: opts.align || 'left', fontFace: ctx.font.body });
+  ctxText(ctx, slide, text, { x: box.x, y: box.y, w: box.w, h: box.h, fontSize: opts.pt || ctx.scale.kicker, bold: opts.bold != null ? opts.bold : true, color: opts.color || ctx.pal.ink_muted, charSpacing: opts.spacing == null ? Math.round((opts.pt || ctx.scale.kicker) * ctx.tok.typography.tracking_em.kicker * 10) / 10 : opts.spacing, valign: 'middle', align: opts.align || 'left', fontFace: ctx.font.body, singleLine: !opts.wrap });
 }
 
 // 헤딩 + 본문 블록 — 세로로 heading 아래 detail. 반환: 실제 사용 높이
@@ -104,8 +119,9 @@ function headingDetail(ctx, slide, heading, detail, box, opts = {}) {
   const hPt = opts.headingPt || Math.round(ctx.scale.body + 2);
   const dPt = opts.detailPt || ctx.scale.body - 1;
   const dMin = opts.detailMin || ctx.scale.body_min;
-  const hH = heightFor([heading], box.w, hPt, { lineHeight: 1.2 }) + 0.04;
-  ctxText(ctx, slide, heading, { x: box.x, y: box.y, w: box.w, h: hH, fontSize: hPt, bold: true, color: opts.headingColor || ctx.pal.ink, fontFace: ctx.font.display, lineSpacingMultiple: 1.0 });
+  const ht = typo(ctx, 'heading', ctx.font.display, true);
+  const hH = heightFor([heading], box.w, hPt, { lineHeight: ht.lineHeight, face: ht.face, bold: true }) + 0.04;
+  ctxText(ctx, slide, heading, { x: box.x, y: box.y, w: box.w, h: hH, fontSize: hPt, bold: true, color: opts.headingColor || ctx.pal.ink, fontFace: ctx.font.display, lineSpacingMultiple: ht.multiple });
   let used = hH;
   if (detail) {
     const dBox = { x: box.x, y: box.y + hH + 0.06, w: box.w, h: Math.max(0.3, box.h - hH - 0.06), name: box.name };
@@ -163,4 +179,4 @@ function image(ctx, slide, assetId, box, opts = {}) {
   return true;
 }
 
-module.exports = { ctxText, fitBox, bulletList, rect, hline, vline, arrow, bigNumber, numeral, label, headingDetail, sourceNote, callout, table, image, heightFor, linesFor };
+module.exports = { ctxText, fitBox, bulletList, rect, hline, vline, arrow, bigNumber, numeral, label, headingDetail, sourceNote, callout, table, image, heightFor, linesFor, typo };
