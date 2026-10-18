@@ -1,6 +1,6 @@
 # 기관 템플릿 워크플로우 (Template Compiler) — 승인 양식이 디자인 선호보다 우선한다
 
-두 가지 경로가 있다.
+세 가지 경로가 있다.
 
 ## A. 기관 파일을 **직접 채우기** (`deck_type: template_fill`) — 양식·마스터·푸터를 그대로 보존
 
@@ -38,6 +38,22 @@
 
 기관 지침서에 색상 값·글꼴·여백이 명시돼 있으면 파생값 대신 지침 값을 쓴다.
 
+## C. 생성한 덱을 기관 양식에 **이식** (`inherit`) — 마스터·로고·배경·푸터 그래픽을 물려받고 내용은 우리가 그린다
+
+```
+1. 계약      pptx.py template 양식.pptx -o template-contract.json
+2. 빌드      spec.design_tokens 에 계약의 canvas(크기·margin = safe_area_in)와 fonts 를 넣고 평소처럼 build
+             ※ 슬라이드 크기가 양식과 다르면 inherit 가 중단한다
+3. 이식      pptx.py inherit out.pptx 양식.pptx -o 결과.pptx [--layout "제목만"] [--cover-layout "표지"] [--footer "문구"]
+             - 생성 슬라이드를 양식 패키지에 복사하고 레이아웃 rel 을 양식 레이아웃으로 교체 (차트·xlsx·이미지·노트 함께 복사)
+             - 생성 덱의 어두운 표지·구분 배경은 슬라이드 배경으로 옮겨 유지
+             - 양식 레이아웃에 쪽번호 자리표시자가 있으면 각 슬라이드에 넣어 양식 위치·서식을 따름
+             - 양식의 기존 슬라이드는 제거 (--keep-template-slides 로 앞에 유지)
+4. 게이트    check 자동 → qa 결과.pptx → render 로 양식 그래픽과 본문 겹침 확인 (겹치면 margin 조정 후 2부터)
+```
+
+A 는 양식의 자리표시자에 글을 채우는 것(디자인 전부 양식), B 는 양식 색만 빌리는 것, C 는 양식의 틀 안에 우리 레이아웃을 넣는 것이다. 기관이 "양식 그대로"라고 하면 A, "양식 느낌으로 보기 좋게"라면 C 가 보통 답이다.
+
 ## 계약(template-contract.json)에서 Director가 읽어야 할 것
 
 | 필드 | 쓰임 |
@@ -47,7 +63,7 @@
 | `safe_area_in` | 본문이 들어갈 영역. 이 밖에 요소를 두지 않는다 |
 | `masters[].elements[role=footer|page_number|logo_or_image]` | 고정 요소 — 건드리지 않는다 |
 | `themes[].fonts` | 양식 글꼴. 대체 폰트가 필요한지 `fonts` 커맨드로 확인 |
-| `derived_tokens` | B 경로용 |
+| `derived_tokens` | B·C 경로용 (C 는 canvas·margin 을 반드시 맞춘다) |
 
 ## 원칙
 

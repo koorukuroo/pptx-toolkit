@@ -14,7 +14,8 @@ pptx-toolkit 자체 코드(core/, scripts/, references/, examples/, tests/)는 M
 
 ## 폰트
 
-폰트 파일을 동봉하지 않는다. Paperlogy(SIL OFL), Pretendard(SIL OFL), Noto Sans KR(SIL OFL)은 사용자가 설치한다.
+폰트 파일을 동봉하지 않는다. Paperlogy(SIL OFL), Pretendard(SIL OFL), Nanum Myeongjo(SIL OFL), Noto Sans/Serif KR(SIL OFL)은 사용자가 설치한다.
+`fontmetrics` 는 설치된 폰트 파일의 폭·행간 테이블을 읽기만 하며(캐시에는 파일 경로·가족 이름·굵기만 저장) 글꼴 데이터를 복사·배포하지 않는다.
 대한민국정부상징체·HY 계열 등 사용 조건이 제한된 글꼴은 기본 폰트로 지정하지 않는다 (references/government-rules.md).
 
 ## 예제 자산
