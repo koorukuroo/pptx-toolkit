@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0",
+  "version": "0.4.0",
   "_doc": "슬라이드 아키타입 = 목적별 레이아웃 레시피. content 필드는 scripts/build.js 렌더러가 읽는 계약이다. max_chars는 본문 글자 수 상한(공백 포함, 한글 기준; 영문은 ×1.6). title_required=true면 액션 타이틀(문장형) 필수. 모든 본문 슬라이드는 role(hook/context/tension/method/proof/takeaway)을 가질 수 있다 (lint role-coverage).",
   "archetypes": {
     "cover": {
@@ -11,7 +11,10 @@
         "presenter": "string",
         "date": "string",
         "image": "asset id (optional)",
-        "tagline": "string (optional)"
+        "tagline": "string (optional)",
+        "emphasis": "string | string[] (제목에서 주조색으로 강조할 구절, image-light 표지)",
+        "document_title": "string (optional, 표지 머리줄의 정식 문서명. 기본 metadata.title)",
+        "document_id": "string (optional, 공고번호. 기본 metadata.document_id)"
       },
       "max_chars": {
         "live": 60,
@@ -30,14 +33,18 @@
         "items": [
           {
             "label": "string",
-            "detail": "string (optional)"
+            "detail": "string (optional)",
+            "pages": "string (optional, table 레이아웃의 페이지 범위)",
+            "numeral": "string (optional, 기본 로마 숫자)"
           }
-        ]
+        ],
+        "layout": "list|table (table: 구분·목차·주요 내용·페이지 표)",
+        "subtitle": "string (optional, 표 위 한 줄)"
       },
       "max_items": 7,
       "max_chars": {
-        "live": 120,
-        "pre_read": 200
+        "live": 160,
+        "pre_read": 320
       },
       "avoid": [
         "8개 이상 항목",
@@ -192,7 +199,20 @@
             "owner": "string (optional)"
           }
         ],
-        "style": "chevron|numbered|timeline (default numbered)"
+        "style": "chevron|numbered|timeline|swimlane (default numbered; lanes 가 있으면 swimlane)",
+        "lanes": [
+          {
+            "label": "string (주체: 이용자 / 운영자)",
+            "detail": "string (optional)",
+            "numbered": "bool (optional, 기본 첫 레인만 번호)",
+            "steps": [
+              {
+                "title": "string",
+                "detail": "string (optional)"
+              }
+            ]
+          }
+        ]
       },
       "max_items": 6,
       "max_chars": {
@@ -355,15 +375,28 @@
           {
             "heading": "string",
             "detail": "string",
-            "metric": "string (optional 강조 숫자)"
+            "metric": "string (optional 강조 숫자)",
+            "kicker": "string (optional, 번호 대신 위에 붙는 짧은 라벨 — 과제/방식/근거/효과)"
           }
         ],
-        "layout": "rows|columns (default rows)"
+        "layout": "rows|columns (default rows)",
+        "table": {
+          "title": "string (optional)",
+          "columns": [
+            "string"
+          ],
+          "rows": [
+            [
+              "string"
+            ]
+          ],
+          "emphasis_row": "int (optional, 0이면 첫 행을 주조색 큰 글자)"
+        }
       },
       "max_items": 4,
       "max_chars": {
-        "live": 280,
-        "pre_read": 520
+        "live": 300,
+        "pre_read": 600
       },
       "avoid": [
         "동일 크기 둥근 카드 3개",
@@ -406,12 +439,22 @@
         "unit": "string (optional)",
         "align": [
           "left|right|center (열별, optional)"
+        ],
+        "lead": {
+          "value": "string (표 위 큰 숫자·날짜)",
+          "label": "string",
+          "note": "string (optional, 오른쪽 회색)"
+        },
+        "highlight_col": "int (optional, 머리글을 주조색으로 — 예: TO-BE 열)",
+        "accent_col": "int (optional, 셀 글자를 보조색 굵게 — 예: 기대 변화 열)",
+        "col_widths": [
+          "number (optional, 열 너비 비율)"
         ]
       },
       "max_items": 10,
       "max_chars": {
-        "live": 400,
-        "pre_read": 900
+        "live": 420,
+        "pre_read": 960
       },
       "avoid": [
         "12행 초과",
@@ -500,7 +543,7 @@
       "content": {
         "statement": "string",
         "takeaways": [
-          "string (최대 3)"
+          "string | {heading, detail: string|string[], note, link} (최대 4)"
         ],
         "next_steps": [
           {
@@ -509,11 +552,14 @@
             "when": "string (optional)"
           }
         ],
-        "contact": "string (optional)"
+        "contact": "string (optional)",
+        "intro": "string (optional, statement 대신 제목 아래 1~2문장)",
+        "band": "string | string[] (optional, 맨 아래 남색 띠 약속 문장)",
+        "logo": "asset id (optional, 제목 오른쪽 승인 배지 1개)"
       },
       "max_chars": {
-        "live": 200,
-        "pre_read": 360
+        "live": 240,
+        "pre_read": 600
       },
       "avoid": [
         "감사합니다만",
@@ -581,15 +627,33 @@
       "content": {
         "value": "string",
         "unit": "string",
-        "label": "string",
+        "label": "string | string[] (두 줄이면 배열)",
         "delta": "string (optional)",
         "trend": "up|down|flat (optional)",
         "context": "string (왜 중요한지 한 문장)",
-        "comparison": "string (optional)"
+        "comparison": "string (optional)",
+        "note": {
+          "heading": "string (optional, 예외·산출 기준 소제목)",
+          "text": "string"
+        },
+        "table": {
+          "columns": [
+            "string"
+          ],
+          "rows": [
+            [
+              "string"
+            ]
+          ],
+          "row_h": "number (optional)"
+        },
+        "points": [
+          "string (optional, 표 대신 글머리 ≤5)"
+        ]
       },
       "max_chars": {
-        "live": 120,
-        "pre_read": 200
+        "live": 160,
+        "pre_read": 360
       },
       "avoid": [
         "숫자 둘 이상",
@@ -721,6 +785,41 @@
       "avoid": [
         "토큰 밖 색·폰트"
       ]
+    },
+    "screen_walkthrough": {
+      "purpose": "개발 화면·목업 한 장 + 번호 포인트 3~5개 (제안서의 '실제 화면으로 증명'). 이미지는 contain 으로 비율 유지",
+      "title_required": true,
+      "content": {
+        "image": "asset id",
+        "label": "string (이미지 위 왼쪽 라벨, 예: 플랫폼 예시 화면)",
+        "caption": "string (이미지 위 오른쪽, 예: 화면 설계안 · 예시 데이터)",
+        "points": [
+          {
+            "heading": "string",
+            "detail": "string | string[]"
+          }
+        ],
+        "layout": "image-left|image-right|image-top (default image-left)",
+        "image_ratio": "number (optional, 0.5~0.7)",
+        "frame": "bool (이미지 테두리, optional)"
+      },
+      "max_items": 5,
+      "max_chars": {
+        "live": 220,
+        "pre_read": 420
+      },
+      "avoid": [
+        "화면 여러 장 썸네일",
+        "포인트 6개 이상",
+        "이미지 위 긴 문장"
+      ]
     }
+  },
+  "_frame": {
+    "brief": "{requirement, response} — 제목 아래 요구사항·대응방안 블록 (proposal_rfp_kr 등 frame.brief 프로파일에서 권장, 다른 프로파일에서도 그려진다)",
+    "verification": "{criteria, deliverables} — 본문 아래 검증 기준·산출물",
+    "tags": "{label:'RFP', ids:['SFR-003']} — 푸터 태그 띠",
+    "xref": "'기능 조견표 · 66쪽' — 푸터 오른쪽",
+    "summary": "{label, text, style:line|band} — 본문 아래 요약 줄"
   }
 }

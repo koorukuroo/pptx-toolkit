@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://core.today/schemas/pptx-toolkit/deck-spec.schema.json",
-  "title": "pptx-toolkit deck specification v0.3",
+  "title": "pptx-toolkit deck specification v0.4",
   "type": "object",
   "required": [
     "metadata",
@@ -68,7 +68,8 @@
           "type": "string"
         },
         "document_id": {
-          "type": "string"
+          "type": "string",
+          "description": "공고번호·문서번호 (표지 머리줄에 기관명과 함께)"
         },
         "audience_state": {
           "type": "object",
@@ -276,6 +277,150 @@
               "takeaway"
             ],
             "description": "서사 역할 — lint role-coverage 가 hook/proof/takeaway 커버리지를 검사"
+          },
+          "brief": {
+            "description": "제목 아래 요구사항·대응방안 블록 (제안서형 프레임). {requirement, response} 또는 [{label, text, emphasis}]",
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "requirement": {
+                    "type": "string"
+                  },
+                  "response": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "emphasis": {
+                      "type": "boolean"
+                    },
+                    "muted": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "verification": {
+            "description": "본문 아래 검증 기준·산출물 블록. {criteria, deliverables} 또는 [{label, text, muted}]",
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "criteria": {
+                    "type": "string"
+                  },
+                  "deliverables": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "emphasis": {
+                      "type": "boolean"
+                    },
+                    "muted": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "tags": {
+            "description": "푸터 태그 줄: 관련 요구 ID. [\"SFR-003\"] 또는 {label:\"RFP\", ids:[…]}",
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "ids"
+                ]
+              }
+            ]
+          },
+          "xref": {
+            "type": "string",
+            "description": "푸터 오른쪽 참조 (예: '기능 조견표 · 66쪽')"
+          },
+          "summary": {
+            "description": "본문 아래 요약 한 줄. {label, text, style: line|band} 또는 문자열",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "style": {
+                    "enum": [
+                      "line",
+                      "band"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "footer_left": {
+            "type": "string",
+            "description": "이 슬라이드의 왼쪽 푸터 글자 (기본은 문서 제목·기관)"
           }
         }
       }

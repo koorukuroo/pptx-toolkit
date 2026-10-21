@@ -33,6 +33,7 @@
 | `notes-length` | info | live/hybrid 발표자 노트 80자 미만·600자 초과 (권장 200~400자: 큐 단어 + 전환 문장) |
 | `role-coverage` | warning | `role` 을 쓰는 덱에 hook/proof/takeaway 가 비어 있음 |
 | `layout-streak` | warning | 같은 아키타입 3장 연속 |
+| `response-no-verb` | warning | 제안서형 `brief.response` 가 서술어로 끝나지 않음 (`brief-missing`·`verification-missing`·`tags-missing` 은 info) |
 
 렌더 후에는 `variety` 가 인접 슬라이드 레이아웃 반복(`layout-repeat`), 한 장만 튀는 색(`palette-drift`), 8장 이상인데 배경 변화 없음(`no-contrast-slide`), 이전에 만든 덱과 똑같은 구성(`looks-like-previous`)을 잡는다.
 

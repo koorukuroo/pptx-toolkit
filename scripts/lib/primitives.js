@@ -121,7 +121,7 @@ function headingDetail(ctx, slide, heading, detail, box, opts = {}) {
   const dMin = opts.detailMin || ctx.scale.body_min;
   const ht = typo(ctx, 'heading', ctx.font.display, true);
   const hH = heightFor([heading], box.w, hPt, { lineHeight: ht.lineHeight, face: ht.face, bold: true }) + 0.04;
-  ctxText(ctx, slide, heading, { x: box.x, y: box.y, w: box.w, h: hH, fontSize: hPt, bold: true, color: opts.headingColor || ctx.pal.ink, fontFace: ctx.font.display, lineSpacingMultiple: ht.multiple });
+  ctxText(ctx, slide, heading, { x: box.x, y: box.y, w: box.w, h: hH, fontSize: hPt, bold: true, color: opts.headingColor || ctx.pal.ink_strong || ctx.pal.ink, fontFace: ctx.font.display, lineSpacingMultiple: ht.multiple });
   let used = hH;
   if (detail) {
     const dBox = { x: box.x, y: box.y + hH + 0.06, w: box.w, h: Math.max(0.3, box.h - hH - 0.06), name: box.name };
@@ -157,17 +157,36 @@ function table(ctx, slide, columns, rows, box, opts = {}) {
   const align = opts.align || columns.map((_, ci) => (rows.every((r) => /^[\d,.%+\-–—억만원천조$₩ ]*$/.test(String(r[ci] == null ? '' : r[ci]))) ? 'right' : 'left'));
   const B = (pt_, color) => ({ type: 'solid', pt: pt_, color });
   const none = { type: 'none' };
-  const headFill = opts.headFill || ctx.pal.surface;
-  const header = columns.map((c, ci) => ({ text: String(c), options: { bold: true, color: ctx.pal.ink, fill: { color: headFill }, align: align[ci], valign: 'middle', border: [none, none, B(1.25, ctx.pal.ink), none] } }));
+  // 표 토큰 (프로파일 tokens.table): header_fill·header_color·first_col_fill·zebra·grid(rows|all)
+  const TT = Object.assign({ header_fill: 'surface', header_color: 'ink', first_col_fill: null, zebra: false, grid: 'rows' }, ctx.tok.table || {}, opts.style || {});
+  const col = (v, fb) => (!v ? fb : /^[0-9A-Fa-f]{6}$/.test(v) ? v.toUpperCase() : (ctx.pal[v] || fb));
+  const headFill = opts.headFill || col(TT.header_fill, ctx.pal.surface);
+  const headColor = col(TT.header_color, ctx.pal.ink);
+  const headBorderColor = headFill === ctx.pal.surface ? ctx.pal.ink : ctx.pal.background;
+  const vb = TT.grid === 'all' ? B(0.5, ctx.pal.line) : none; // 세로 경계
+  const styleOf = (ri, ci) => (typeof opts.cellStyle === 'function' ? opts.cellStyle(ri, ci) || {} : {});
+  const header = columns.map((c, ci) => ({ text: String(c), options: Object.assign({ bold: true, color: headColor, fill: { color: headFill }, align: TT.header_align || align[ci], valign: 'middle', border: [none, vb, B(headFill === ctx.pal.surface ? 1.25 : 0.5, headBorderColor), vb] }, styleOf(-1, ci)) }));
+  const firstFill = col(TT.first_col_fill, null);
   const body = rows.map((r, ri) => r.map((cell, ci) => {
     const hl = (opts.highlightRows || []).includes(ri);
-    return { text: String(cell == null ? '' : cell), options: { bold: hl || (opts.boldFirstCol && ci === 0), color: hl ? ctx.pal.primary : ctx.pal.ink, fill: hl ? { color: ctx.pal.primary_soft } : { color: ctx.pal.background }, align: align[ci], valign: 'middle', border: [none, none, B(0.5, ctx.pal.line), none] } };
+    const zebra = TT.zebra && ri % 2 === 1;
+    const fill = hl ? ctx.pal.primary_soft : (ci === 0 && firstFill) ? firstFill : zebra ? ctx.pal.surface : ctx.pal.background;
+    const o = { bold: hl || (opts.boldFirstCol && ci === 0), color: hl ? ctx.pal.primary : (ci === 0 && opts.boldFirstCol ? ctx.pal.ink_strong : ctx.pal.ink), fill: { color: fill }, align: align[ci], valign: 'middle', border: [none, vb, B(0.5, ctx.pal.line), vb] };
+    return { text: String(cell == null ? '' : cell), options: Object.assign(o, styleOf(ri, ci)) };
   }));
-  const rowH = opts.rowH || Math.min(0.5, Math.max(0.32, (box.h - 0.1) / (rows.length + 1)));
+  const rowH = opts.rowH || Math.min(opts.maxRowH || 0.5, Math.max(0.32, (box.h - 0.1) / (rows.length + 1)));
   const est = rowH * (rows.length + 1);
   if (est > box.h + 0.05) ctx.warn(`표가 상자보다 큼: ${rows.length}행 ×${rowH.toFixed(2)}in = ${est.toFixed(2)}in > ${box.h.toFixed(2)}in. 행을 줄이거나 부록으로`, {});
-  slide.addTable([header, ...body], { x: box.x, y: box.y, w: box.w, colW, rowH, fontSize: pt, fontFace: ctx.font.body, color: ctx.pal.ink, margin: [0.04, 0.08, 0.04, 0.08], autoPage: false, lang: 'ko-KR' });
+  slide.addTable([header, ...body], { x: box.x, y: box.y, w: box.w, colW, rowH, fontSize: pt, fontFace: ctx.font.body, color: ctx.pal.ink, margin: [0.04, 0.1, 0.04, 0.1], autoPage: false, lang: 'ko-KR' });
   return est;
+}
+
+// 문자열 안의 강조 구간(emphasis 문자열 또는 배열)을 다른 색 run 으로 쪼갠다
+function emphasisRuns(text, emphasis, color, extra = {}) {
+  const words = (Array.isArray(emphasis) ? emphasis : [emphasis]).filter(Boolean);
+  if (!words.length) return [{ text, options: Object.assign({}, extra) }];
+  const re = new RegExp(`(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
+  return String(text).split(re).filter((p) => p.length).map((p) => ({ text: p, options: Object.assign({}, extra, words.includes(p) ? { color } : {}) }));
 }
 
 // 이미지 (cover 크롭) + 선택적 스크림
@@ -179,4 +198,4 @@ function image(ctx, slide, assetId, box, opts = {}) {
   return true;
 }
 
-module.exports = { ctxText, fitBox, bulletList, rect, hline, vline, arrow, bigNumber, numeral, label, headingDetail, sourceNote, callout, table, image, heightFor, linesFor, typo };
+module.exports = { ctxText, fitBox, bulletList, rect, hline, vline, arrow, bigNumber, numeral, label, headingDetail, sourceNote, callout, table, image, heightFor, linesFor, typo, emphasisRuns };

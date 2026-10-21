@@ -30,6 +30,11 @@ level: error(게이트 차단) / warning(사용자에게 보고) / info
   hangul-italic           design_tokens.fonts.weights 에 italic — error (CJK 합성 기울임 금지)
   notes-length            live/hybrid speaker_notes 길이가 80자 미만·600자 초과 — info (권장 200~400자, 큐 단어·전환 문장)
   role-coverage           slides[].role 을 쓰는 덱에서 hook/proof/takeaway 역할이 비어 있음 — warning
+  --- 제안서형 프레임 (프로파일 tokens.frame.brief 가 true 일 때) ---
+  brief-missing           본문 슬라이드에 brief(요구사항·대응방안) 없음 — info
+  response-no-verb        brief.response 가 서술어로 끝나지 않음 (대응방안은 "~합니다" 문장) — warning
+  verification-missing    brief 는 있는데 verification(검증 기준·산출물) 없음 — info
+  tags-missing            요구 ID 태그(tags) 없음 — info (심사위원 추적용)
 """
 from __future__ import annotations
 
@@ -149,6 +154,7 @@ def lint_spec(spec: Dict[str, Any], schema_errors: List[str]) -> Dict[str, Any]:
     evidence = {e["id"]: e for e in spec.get("evidence", [])}
 
     # 토큰 대비
+    tokens: Dict[str, Any] = {}
     try:
         tokens = resolve_tokens(spec)
         c = tokens["colors"]
@@ -163,6 +169,10 @@ def lint_spec(spec: Dict[str, Any], schema_errors: List[str]) -> Dict[str, Any]:
         add("spec-invalid", "error", f"토큰 해석 실패: {e}")
 
     title_limit = 45 if mode == "live" else (52 if mode == "hybrid" else 60)
+    frame_tok = (tokens.get("frame") or {}) if isinstance(tokens, dict) else {}
+    proposal = bool(frame_tok.get("brief"))
+    if ((tokens.get("title") or {}).get("max_lines") == 1):
+        title_limit = 30  # 한 줄 제목 (제안서형)
     streak_arch, streak_n = None, 0
     ghost: List[str] = []
     has_conclusion = False
@@ -176,12 +186,31 @@ def lint_spec(spec: Dict[str, Any], schema_errors: List[str]) -> Dict[str, Any]:
         ghost.append(f"{n:>2}. [{arch}] {title}")
         if arch in ("conclusion", "recommendation"):
             has_conclusion = True
-        # 제목 규칙
+        # 제안서형 프레임: 요구사항·대응방안·검증·태그
+        brief = s.get("brief")
+        response = ""
+        if isinstance(brief, dict):
+            response = (brief.get("response") or "").strip()
+        elif isinstance(brief, list):
+            response = " ".join((r.get("text") or "") for r in brief if isinstance(r, dict) and r.get("emphasis")).strip()
+        if proposal and arch == "conclusion" and not response:
+            response = (content.get("intro") or (content.get("band") if isinstance(content.get("band"), str) else "") or "").strip()
+        if proposal and is_content and arch not in ("conclusion", "recommendation", "executive_summary"):
+            if not brief:
+                add("brief-missing", "info", "요구사항·대응방안 블록(brief) 없음 — 제안서형은 모든 본문 장에 요구→대응을 둔다", n)
+            else:
+                if response and not VERB_ENDINGS.search(response):
+                    add("response-no-verb", "warning", f"대응방안 '{response[:30]}…' — 서술어로 끝나는 문장으로 (~합니다)", n)
+                if not s.get("verification"):
+                    add("verification-missing", "info", "검증 기준·산출물 블록(verification) 없음", n)
+            if not s.get("tags"):
+                add("tags-missing", "info", "요구 ID 태그(tags) 없음 — 심사위원이 요구사항으로 되돌아갈 수 있게", n)
+        # 제목 규칙 (제안서형에서 대응방안 문장이 주장을 담으면 제목은 짧은 토픽 허용)
         if meta.get("title_required", False) and is_content:
             t_norm = re.sub(r"[\s\d.:：\-–—()\[\]]+", " ", title).strip().lower()
-            if t_norm in {x.lower() for x in TOPIC_LABELS} or len(title) <= 8:
+            if t_norm in {x.lower() for x in TOPIC_LABELS} or (len(title) <= 8 and not response):
                 add("title-topic-label", "error", f"'{title}' — 토픽 라벨이 아니라 결론 문장(액션 타이틀)으로", n)
-            elif not VERB_ENDINGS.search(title) and not re.search(r"\b(is|are|will|can|should|must|has|have|drives|reduces|increases|requires|enables|shows|leads|needs)\b", title, re.IGNORECASE):
+            elif not response and not VERB_ENDINGS.search(title) and not re.search(r"\b(is|are|will|can|should|must|has|have|drives|reduces|increases|requires|enables|shows|leads|needs)\b", title, re.IGNORECASE):
                 add("title-no-verb", "warning", f"'{title}' — 서술어가 없어 보임. 주장을 문장으로", n)
             if len(title) > title_limit:
                 add("title-too-long", "error" if len(title) > title_limit * 1.3 else "warning", f"제목 {len(title)}자 > {title_limit}자 (2줄 상한)", n)

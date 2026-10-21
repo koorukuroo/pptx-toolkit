@@ -2,7 +2,7 @@
 
 프로파일은 `references/style-profiles.json`에 있고 `scripts/build.js`와 `core/lint.py`가 같은 파일을 읽는다. 프로파일은 **출발점**이며 `deck-spec.design_tokens`로 부분 재정의한다 (deep merge). 특정 기관·회사의 브랜드가 아니다.
 
-## 프로파일 선택 (9종)
+## 프로파일 선택 (10종)
 
 | 프로파일 | 용도 | 글꼴 (제목/본문) | 주조 | 강조 | 배경·특징 |
 |---|---|---|---|---|---|
@@ -15,6 +15,7 @@
 | `research_dense` | 조사·분석 리포트, 부록 많은 pre_read | Pretendard / Pretendard | `23405F` | `B4532C` | 흰색, 고밀도, 하한 11pt |
 | `two_font_consulting` | 자문·법률·금융 임원 보고 | Nanum Myeongjo / Pretendard | `0D2E55` | `A46E00` | consulting_grade 구조 + 명조 제목 |
 | `institutional_pitch` | IR·지원사업 심사·신사업 심의 | Paperlogy / Pretendard | `0F2A47` | `B8862B` | 흰색, 트래커, TAM·2×2·큰 숫자 |
+| `proposal_rfp_kr` | 나라장터·공공 시스템 구축 제안서, 정성평가 | Paperlogy / Pretendard | 파랑 `1D63C8` (남색 `112B50` 표 머리글) | 청록 `008C9A` | 흰색, 빵부스러기 킥커, 요구→대응→검증→산출물 고정 블록, 요구 ID 태그, 큰 쪽번호 |
 
 `pptx.py profiles`로 요약과 `meta`를 본다. `--match "occasion=투자"`, `--match "density=high,formality>=4"` 로 거를 수 있다.
 
@@ -37,16 +38,18 @@ canvas      layout(LAYOUT_WIDE 13.333×7.5in) · margin{left,right,top,bottom} �
 fonts       display · body · numeral · fallback[] · weights{title,body,emphasis}
 type        {live|pre_read|hybrid}: cover_title · section_title · title · subtitle · body · body_min · caption · source · hero_number · kicker · table
 typography  line_height{title,heading,body,body_long,caption,hero} (절대 em) · tracking_em{display,body,kicker,numeral} · line_length_chars{min,max} · italic_hangul(false)
-colors      background · surface · surface_strong · ink · ink_muted · ink_faint · line · line_faint
+colors      background · surface · surface_strong · ink · ink_strong(제목·헤딩, 기본 ink) · ink_muted · ink_faint · line · line_faint
             primary · primary_soft · secondary · accent · accent_soft · positive · warning · negative · info
             on_primary · dark_background · on_dark (· light_background · light_ink: 어두운 기본 배경용)
 ratios      background 0.6 · secondary 0.3 · accent 0.1 · point_max 0.05   (KRDS 60-30-10, 강조 ≤5%)
 chart       palette[5] · highlight · muted · positive · negative · gridline · label_pt · direct_labels
 geometry    radius(pt) · line_width · shadow(false) · divider
-title       style(plain|chip) · chip_numerals(roman) · align · max_lines(2) · kicker(section|tracker|none)
-footer      left(organization|document_title|none) · right(page_number|none) · source_above_footer · confidentiality · exhibit_numbers
+title       style(plain|chip) · chip_numerals(roman) · align · max_lines(2 | 1: 한 줄 제목) · kicker(section|tracker|breadcrumb|none)
+footer      left(organization|document_title|none) · right(page_number|none) · page_number_style(display: 크고 굵은 주조색) · bottom_inset · color · source_above_footer · confidentiality · exhibit_numbers
+frame       top_rule · top_rule_accent_w · title_rule · brief · verification · tags · label_w · labels{requirement,response,criteria,deliverables} · footer_rule   (제안서형 고정 블록, references/proposal-rfp-rules.md)
+table       header_fill · header_color · first_col_fill · zebra · grid(rows|all)   (색 이름은 colors 키)
 imagery     treatment · scrim · scrim_transparency · avoid[]
-cover       variant(light-left|dark-left|dark-center|image-or-dark) · band_color
+cover       variant(light-left|dark-left|dark-center|image-or-dark|image-light) · band_color(결론 띠에도 쓰임)
 list        markers[] (□ ○ - · / • – · / —) · numbering[] ("1." "가." … / "01" "02")
 backgrounds cover · section_divider · statement · default (light|dark|surface) · all (키노트처럼 전부 어두울 때)
 ```

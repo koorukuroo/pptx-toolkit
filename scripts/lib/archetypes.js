@@ -27,6 +27,32 @@ function cover(ctx, slide, s, body) {
   const dark = ctx.pal.dark;
   const titlePt = ctx.scale.cover_title;
   const lines = [meta.organization || k.organization, k.date || meta.date, k.presenter || meta.presenter].filter(Boolean);
+  if (variant === 'image-light') {
+    // 밝은 사진 위 왼쪽 상단 타이포 (제안서형). 흰 스크림으로 글자 영역을 확보하고 제목의 핵심 구절만 주조색
+    if (img) P.image(ctx, slide, img, { x: 0, y: 0, w: W, h: H });
+    else P.rect(ctx, slide, { x: 0, y: 0, w: W, h: H }, { fill: ctx.pal.surface, radius: 0 });
+    if (img) P.rect(ctx, slide, { x: 0, y: 0, w: W * 0.6, h: H * 0.6 }, { fill: { color: 'FFFFFF', transparency: 16 }, radius: 0 });
+    const tw = W * 0.56 - M.left;
+    let y = M.top + 0.28;
+    const head = [meta.organization || k.organization, meta.document_id || k.document_id].filter(Boolean).join('  |  ');
+    if (head) { P.ctxText(ctx, slide, head, { x: M.left, y, w: tw, h: 0.26, fontSize: ctx.scale.caption, color: ctx.pal.ink_muted, valign: 'middle' }); y += 0.28; }
+    const docTitle = k.document_title || (k.subtitle_above !== false ? meta.title : '');
+    if (docTitle && docTitle !== s.title) { P.ctxText(ctx, slide, docTitle, { x: M.left, y, w: tw, h: 0.32, fontSize: ctx.scale.caption + 2, bold: true, color: ctx.pal.ink, valign: 'middle' }); y += 0.42; }
+    const fit = fitText([s.title], tw, 2.2, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15 }, D(ctx)));
+    const runs = P.emphasisRuns(s.title, k.emphasis, ctx.pal.primary, { fontSize: fit.pt, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display });
+    P.ctxText(ctx, slide, runs, { x: M.left, y, w: tw, h: Math.min(2.2, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
+    y += Math.min(2.2, fit.needIn) + 0.2;
+    if (k.subtitle) {
+      P.hline(ctx, slide, M.left, y + 0.21, 0.6, { color: ctx.pal.accent, width: 2 });
+      P.ctxText(ctx, slide, k.subtitle, { x: M.left + 0.8, y, w: tw - 0.8, h: 0.42, fontSize: ctx.scale.subtitle + 1, bold: true, color: ctx.pal.ink, valign: 'middle' });
+      y += 0.5;
+    }
+    if (k.presenter || meta.presenter) P.ctxText(ctx, slide, k.presenter || meta.presenter, { x: M.left, y: y + 0.1, w: tw, h: 0.3, fontSize: ctx.scale.caption + 1, bold: true, color: ctx.pal.ink_muted, valign: 'middle' });
+    const date = k.date || meta.date;
+    if (date) P.ctxText(ctx, slide, date, { x: W - M.right - 2.4, y: M.top + 0.28, w: 2.4, h: 0.26, fontSize: ctx.scale.caption + 1, color: ctx.pal.ink_muted, align: 'right', valign: 'middle' });
+    if (ctx.asset('logo')) slide.addImage({ path: ctx.asset('logo'), x: W - M.right - 1.8, y: H - M.bottom - 0.6, h: 0.5, w: 1.8, sizing: { type: 'contain', w: 1.8, h: 0.5 } });
+    return;
+  }
   if (variant === 'light-left' || variant === 'image-or-dark' && !img && !dark) {
     // 오른쪽 색면(또는 이미지) + 왼쪽 타이포
     const fieldX = W * 0.62;
@@ -62,7 +88,27 @@ function cover(ctx, slide, s, body) {
 
 // ---------------------------------------------------------------- agenda
 function agenda(ctx, slide, s, body) {
-  const items = c(s).items || [];
+  const k = c(s);
+  const items = k.items || [];
+  if (k.layout === 'table' || items.some((it) => it.pages)) {
+    // 제안서형 목차 표: 구분(로마 숫자) · 목차 · 주요 내용 · 페이지
+    let y = body.y;
+    if (k.subtitle) { P.ctxText(ctx, slide, k.subtitle, { x: body.x, y, w: body.w, h: 0.34, fontSize: ctx.scale.body, color: ctx.pal.ink, valign: 'middle' }); y += 0.42; }
+    const cols = k.columns || ['구분', '목차', '주요 내용', '페이지'];
+    const rows = items.map((it, i) => [it.numeral || numeralText(ctx, i + 1, 'roman'), it.label || '', it.detail || '', it.pages || '']);
+    const colW = [0.8, 3.5, body.w - 0.8 - 3.5 - 1.6, 1.6];
+    const h = body.y + body.h - y;
+    const rowH = clamp((h - 0.12) / (rows.length + 1), 0.42, 0.75);
+    const cellStyle = (ri, ci) => {
+      if (ri < 0) return { align: 'center' };
+      if (ci === 0) return { bold: true, color: ctx.pal.accent, align: 'center', fontSize: ctx.scale.table + 2 };
+      if (ci === 1) return { bold: true, color: ctx.pal.ink_strong, align: 'center' };
+      if (ci === 3) return { bold: true, color: ctx.pal.primary, align: 'center', fontSize: ctx.scale.table + 2 };
+      return null;
+    };
+    P.table(ctx, slide, cols, rows, { x: body.x, y, w: body.w, h }, { colW, rowH, cellStyle, style: { grid: 'all' }, align: ['center', 'center', 'left', 'center'] });
+    return;
+  }
   const two = items.length > 5;
   const cols = two ? columns(body, 2, 0.6) : [body];
   const per = Math.ceil(items.length / cols.length);
@@ -204,7 +250,39 @@ function comparison(ctx, slide, s, body) {
 function process(ctx, slide, s, body) {
   const k = c(s);
   const steps = (k.steps || []).slice(0, 7);
-  const style = k.style || 'numbered';
+  const style = k.style || ((k.lanes || []).length ? 'swimlane' : 'numbered');
+  if (style === 'swimlane') {
+    // 주체별 레인 (이용자 / 운영자 …) × 단계: 레인 라벨 왼쪽, 단계는 연한 상자 + 번호 원, 화살표로 연결
+    const lanes = (k.lanes || []).slice(0, 3);
+    if (!lanes.length) { ctx.warn('process(swimlane): lanes 비어 있음', {}); return; }
+    const laneLabelW = 1.45, gapY = 0.3, gapX = 0.26;
+    const laneH = (body.h - gapY * (lanes.length - 1)) / lanes.length;
+    const nSteps = Math.max(1, ...lanes.map((l) => (l.steps || []).length));
+    const stepCols = columns({ x: body.x + laneLabelW, y: body.y, w: body.w - laneLabelW, h: laneH }, nSteps, gapX);
+    lanes.forEach((lane, li) => {
+      const ly = body.y + li * (laneH + gapY);
+      P.ctxText(ctx, slide, lane.label || '', { x: body.x, y: ly + 0.05, w: laneLabelW - 0.25, h: 0.5, fontSize: ctx.scale.body + 1, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, valign: 'top' });
+      if (lane.detail) P.fitBox(ctx, slide, [lane.detail], { x: body.x, y: ly + 0.58, w: laneLabelW - 0.3, h: Math.max(0.3, laneH - 0.6), name: `lane ${li + 1}` }, { maxPt: ctx.scale.caption, minPt: Math.max(8, ctx.scale.source), textOptions: { color: ctx.pal.ink_muted } });
+      const numbered = lane.numbered != null ? lane.numbered : li === 0;
+      (lane.steps || []).slice(0, nSteps).forEach((st, i) => {
+        const col = stepCols[i];
+        const box = { x: col.x, y: ly, w: col.w, h: laneH };
+        P.rect(ctx, slide, box, { fill: ctx.pal.surface });
+        let ty = box.y + 0.16;
+        if (numbered) {
+          slide.addShape(ctx.pres.ShapeType.ellipse, { x: box.x + 0.12, y: box.y + 0.12, w: 0.36, h: 0.36, fill: { color: ctx.pal.primary }, line: { type: 'none' } });
+          P.ctxText(ctx, slide, numeralText(ctx, st.number != null ? st.number : i + 1, 'pad'), { x: box.x + 0.12, y: box.y + 0.12, w: 0.36, h: 0.36, fontSize: Math.max(9, ctx.scale.caption - 1), bold: true, color: ctx.pal.on_primary, align: 'center', valign: 'middle', fontFace: ctx.font.numeral });
+          ty = box.y + 0.56;
+        }
+        if (!st.detail && !numbered) P.ctxText(ctx, slide, st.title || '', { x: box.x + 0.1, y: box.y, w: box.w - 0.2, h: box.h, fontSize: ctx.scale.body, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, align: 'center', valign: 'middle' });
+        else P.ctxText(ctx, slide, st.title || '', { x: box.x + 0.1, y: ty, w: box.w - 0.2, h: 0.36, fontSize: ctx.scale.body, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, align: 'center', valign: 'middle' });
+        if (st.detail) P.fitBox(ctx, slide, [st.detail], { x: box.x + 0.1, y: ty + 0.4, w: box.w - 0.2, h: Math.max(0.3, box.y + box.h - ty - 0.5), name: `step ${li + 1}-${i + 1}` }, { maxPt: ctx.scale.caption + 1, minPt: Math.max(8, ctx.scale.source), lineHeight: 1.3, textOptions: { color: ctx.pal.ink_muted, align: 'center' } });
+        if (i < lane.steps.length - 1 && i < nSteps - 1) P.arrow(ctx, slide, box.x + box.w + 0.03, box.y + box.h / 2, box.x + box.w + gapX - 0.03, box.y + box.h / 2, { color: ctx.pal.primary, width: 1.25 });
+      });
+    });
+    if (k.note) ctx.info('process(swimlane): note 는 summary 필드로 옮기면 프레임이 그린다');
+    return;
+  }
   const n = steps.length || 1;
   const cols = columns(body, n, 0.3);
   if (style === 'chevron') {
@@ -406,18 +484,33 @@ function points(ctx, slide, s, body) {
   const k = c(s);
   const pts = (k.points || []).slice(0, 4);
   const layout = k.layout || (pts.length >= 3 ? 'columns' : 'rows');
+  // 아래 표 (제안서형: 평가항목·배점 길잡이 등) — 본문 하단 최대 50%
+  let area = body;
+  if (k.table && k.table.columns) {
+    const rowsN = (k.table.rows || []).length;
+    const titleH = k.table.title ? 0.42 : 0;
+    const th = Math.min(body.h * 0.5, 0.4 * (rowsN + 1) + titleH + 0.1);
+    area = { x: body.x, y: body.y, w: body.w, h: body.h - th - 0.3 };
+    const ty = body.y + body.h - th;
+    P.hline(ctx, slide, body.x, ty - 0.15, body.w, { color: ctx.pal.line });
+    if (k.table.title) P.ctxText(ctx, slide, k.table.title, { x: body.x, y: ty, w: body.w, h: 0.36, fontSize: ctx.scale.body + 2, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, valign: 'middle' });
+    const tableH = th - titleH;
+    P.table(ctx, slide, k.table.columns, k.table.rows || [], { x: body.x, y: ty + titleH, w: body.w, h: tableH }, { style: { header_align: 'center', grid: 'all' }, align: k.table.columns.map(() => 'center'), rowH: Math.min(0.42, tableH / (rowsN + 1)), cellStyle: (ri, ci) => (ri === 0 && k.table.emphasis_row === 0 ? { bold: true, color: ctx.pal.primary, fontSize: ctx.scale.table + 2 } : null) });
+  }
   if (layout === 'columns') {
-    const cols = columns(body, pts.length || 1, 0.45);
+    const cols = columns(area, pts.length || 1, 0.45);
     pts.forEach((p, i) => {
       const col = cols[i];
-      if (i > 0) P.vline(ctx, slide, col.x - 0.22, col.y, col.h, { color: ctx.pal.line_faint });
+      if (i > 0 && !p.kicker) P.vline(ctx, slide, col.x - 0.22, col.y, col.h, { color: ctx.pal.line_faint });
       let y = col.y;
-      if (p.metric) { P.bigNumber(ctx, slide, p.metric, '', { x: col.x, y, w: col.w, h: 0.9 }, { pt: Math.round(ctx.scale.hero_number * 0.5), valign: 'bottom' }); y += 1.0; }
+      if (p.kicker) { P.ctxText(ctx, slide, p.kicker, { x: col.x, y, w: col.w, h: 0.34, fontSize: ctx.scale.body + 1, bold: true, color: ctx.pal.accent, valign: 'middle', singleLine: true }); y += 0.44; }
+      else if (p.metric) { P.bigNumber(ctx, slide, p.metric, '', { x: col.x, y, w: col.w, h: 0.9 }, { pt: Math.round(ctx.scale.hero_number * 0.5), valign: 'bottom' }); y += 1.0; }
       else { P.numeral(ctx, slide, numeralText(ctx, i + 1, ctx.tok.list.numbering[0] === '01' ? 'pad' : 'plain'), { x: col.x, y, w: col.w, h: 0.6 }, { pt: Math.round(ctx.scale.title * 1.0) }); y += 0.68; }
-      P.headingDetail(ctx, slide, p.heading, p.detail, { x: col.x, y, w: col.w, h: col.y + col.h - y, name: `point ${i + 1}` }, { headingPt: ctx.scale.body + 2, detailPt: ctx.scale.body - 1 });
+      P.headingDetail(ctx, slide, p.heading, p.detail, { x: col.x, y, w: col.w, h: col.y + col.h - y, name: `point ${i + 1}` }, { headingPt: p.kicker ? ctx.scale.body + 5 : ctx.scale.body + 2, detailPt: ctx.scale.body - 1 });
     });
     return;
   }
+  body = area;
   const n = pts.length || 1;
   const gap = 0.18;
   const rowH = (body.h - gap * (n - 1)) / n;
@@ -446,7 +539,81 @@ function statement(ctx, slide, s, body) {
 function data_table(ctx, slide, s, body) {
   const k = c(s);
   if (k.unit) P.label(ctx, slide, `단위: ${k.unit}`, { x: body.x, y: body.y - 0.26, w: body.w, h: 0.22 }, { align: 'right', bold: false });
-  P.table(ctx, slide, k.columns || [], k.rows || [], body, { highlightRows: k.highlight_rows || [], align: k.align, boldFirstCol: true });
+  let box = body;
+  // 리드 숫자 (제안서형: "2026.12.21  개발·설치·검수 완료") — 표 위 한 줄
+  if (k.lead && k.lead.value != null) {
+    const lh = 0.7;
+    const pt = Math.round(ctx.scale.hero_number * 0.5);
+    const vw = Math.min(body.w * 0.42, textWidthIn(String(k.lead.value), pt, ctx.font.numeral, true) + 0.35);
+    P.bigNumber(ctx, slide, k.lead.value, '', { x: body.x, y: body.y, w: vw, h: lh }, { pt, valign: 'middle' });
+    if (k.lead.label) P.ctxText(ctx, slide, k.lead.label, { x: body.x + vw + 0.15, y: body.y, w: body.w * 0.4, h: lh, fontSize: ctx.scale.body + 3, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, valign: 'middle', singleLine: true });
+    if (k.lead.note) P.ctxText(ctx, slide, k.lead.note, { x: body.x + body.w * 0.6, y: body.y, w: body.w * 0.4, h: lh, fontSize: ctx.scale.body - 1, color: ctx.pal.ink_muted, align: 'right', valign: 'middle', singleLine: true });
+    box = { x: body.x, y: body.y + lh + 0.12, w: body.w, h: body.h - lh - 0.12 };
+  }
+  const hc = k.highlight_col, ac = k.accent_col;
+  const cellStyle = (ri, ci) => {
+    if (ri === -1 && ci === hc) return { fill: { color: ctx.pal.primary }, color: ctx.pal.on_primary };
+    if (ri >= 0 && ci === ac) return { bold: true, color: ctx.pal.accent, fill: { color: ctx.pal.accent_soft || ctx.pal.surface } };
+    return null;
+  };
+  let colW;
+  if (Array.isArray(k.col_widths) && k.col_widths.length === (k.columns || []).length) {
+    const tot = k.col_widths.reduce((a, b) => a + Number(b), 0);
+    colW = k.col_widths.map((w) => (Number(w) / tot) * box.w);
+  }
+  // 행이 적으면 상자를 채우도록 행 높이를 늘린다 (셀 두 줄 기준 최대 1.05in)
+  const multi = (k.rows || []).some((r) => r.some((cell) => /\n/.test(String(cell == null ? '' : cell))));
+  P.table(ctx, slide, k.columns || [], k.rows || [], box, { highlightRows: k.highlight_rows || [], align: k.align, boldFirstCol: true, colW, maxRowH: k.row_h || (multi ? 1.05 : 0.62), cellStyle: hc != null || ac != null ? cellStyle : undefined, style: k.grid ? { grid: k.grid } : undefined });
+}
+
+// ---------------------------------------------------------------- screen_walkthrough
+// 화면(목업·스크린샷) 한 장 + 번호 포인트: 제안서의 "실제 개발 화면" 장. image-left(기본) | image-right | image-top
+function screen_walkthrough(ctx, slide, s, body) {
+  const k = c(s);
+  const layout = k.layout || 'image-left';
+  const pts = (k.points || []).slice(0, 5);
+  const headH = k.label || k.caption ? 0.3 : 0;
+  const drawImage = (box) => {
+    if (k.label) P.label(ctx, slide, k.label, { x: box.x, y: box.y, w: box.w * 0.38, h: 0.26 }, { color: ctx.pal.primary, spacing: 0, pt: ctx.scale.kicker + 1 });
+    if (k.caption) P.ctxText(ctx, slide, k.caption, { x: box.x + box.w * 0.4, y: box.y, w: box.w * 0.6, h: 0.26, fontSize: ctx.scale.caption, color: ctx.pal.ink_muted, align: 'right', valign: 'middle', singleLine: true });
+    const ib = { x: box.x, y: box.y + headH, w: box.w, h: box.h - headH };
+    if (k.image) {
+      P.image(ctx, slide, k.image, ib, { sizing: k.sizing || 'contain' });
+      if (k.frame) P.rect(ctx, slide, ib, { line: ctx.pal.line, lineWidth: 0.75, radius: 0 });
+    } else {
+      P.rect(ctx, slide, ib, { fill: ctx.pal.surface, line: ctx.pal.line, lineWidth: 0.75, radius: 0 });
+      P.ctxText(ctx, slide, k.placeholder || '화면 캡처 자리', { x: ib.x, y: ib.y, w: ib.w, h: ib.h, align: 'center', valign: 'middle', fontSize: ctx.scale.caption, color: ctx.pal.ink_faint });
+      ctx.warn('screen_walkthrough: image 없음 — 자리표시로 그림', {});
+    }
+  };
+  const numPt = ctx.scale.body + 3, headPt = ctx.scale.body + 2;
+  if (layout === 'image-top') {
+    const ih = body.h * (k.image_ratio || 0.58);
+    drawImage({ x: body.x, y: body.y, w: body.w, h: ih });
+    const py = body.y + ih + 0.25;
+    P.hline(ctx, slide, body.x, py - 0.12, body.w, { color: ctx.pal.line });
+    const cols = columns({ x: body.x, y: py, w: body.w, h: body.y + body.h - py }, pts.length || 1, 0.3);
+    pts.forEach((p, i) => {
+      const col = cols[i];
+      P.ctxText(ctx, slide, numeralText(ctx, i + 1, 'pad'), { x: col.x, y: col.y, w: 0.5, h: 0.38, fontSize: numPt, bold: true, color: ctx.pal.primary, fontFace: ctx.font.numeral, valign: 'middle' });
+      P.ctxText(ctx, slide, p.heading || '', { x: col.x + 0.5, y: col.y, w: col.w - 0.5, h: 0.38, fontSize: headPt, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, valign: 'middle', singleLine: true });
+      if (p.detail) P.fitBox(ctx, slide, Array.isArray(p.detail) ? p.detail : [p.detail], { x: col.x + 0.5, y: col.y + 0.42, w: col.w - 0.5, h: col.h - 0.42, name: `point ${i + 1}` }, { maxPt: ctx.scale.body, minPt: ctx.scale.body_min, paraGapEm: 0.1, textOptions: { color: ctx.pal.ink } });
+    });
+    return;
+  }
+  const iw = body.w * (k.image_ratio || 0.64);
+  const imgBox = layout === 'image-right' ? { x: body.x + body.w - iw, y: body.y, w: iw, h: body.h } : { x: body.x, y: body.y, w: iw, h: body.h };
+  const tx = layout === 'image-right' ? body.x : body.x + iw + 0.45;
+  const tw = body.w - iw - 0.45;
+  drawImage(imgBox);
+  const n = pts.length || 1;
+  const rowH = Math.min(1.35, (body.h - headH) / n);
+  pts.forEach((p, i) => {
+    const y = body.y + headH + i * rowH;
+    P.ctxText(ctx, slide, numeralText(ctx, i + 1, 'pad'), { x: tx, y, w: 0.55, h: 0.4, fontSize: numPt, bold: true, color: ctx.pal.primary, fontFace: ctx.font.numeral, valign: 'middle' });
+    P.ctxText(ctx, slide, p.heading || '', { x: tx + 0.55, y, w: tw - 0.55, h: 0.4, fontSize: headPt, bold: true, color: ctx.pal.primary, fontFace: ctx.font.display, valign: 'middle', singleLine: true });
+    if (p.detail) P.fitBox(ctx, slide, Array.isArray(p.detail) ? p.detail : [p.detail], { x: tx + 0.55, y: y + 0.44, w: tw - 0.55, h: rowH - 0.52, name: `point ${i + 1}` }, { maxPt: ctx.scale.body, minPt: ctx.scale.body_min, paraGapEm: 0.1, textOptions: { color: ctx.pal.ink } });
+  });
 }
 
 // ---------------------------------------------------------------- image_focus
@@ -518,22 +685,56 @@ function pricing_or_budget(ctx, slide, s, body) {
 // ---------------------------------------------------------------- conclusion
 function conclusion(ctx, slide, s, body) {
   const k = c(s);
-  const takeaways = (k.takeaways || []).slice(0, 3);
+  const tok = ctx.tok, W = tok.canvas.width, M = tok.canvas.margin;
+  const takeaways = (k.takeaways || []).slice(0, 4);
   const steps = (k.next_steps || []).slice(0, 4);
-  const topH = 1.0;
-  P.callout(ctx, slide, k.statement || s.takeaway || '', { x: body.x, y: body.y, w: body.w, h: topH }, { maxPt: ctx.scale.body + 5, minPt: ctx.scale.body, bold: true, color: ctx.pal.primary });
-  let y = body.y + topH + 0.35;
+  const bandH = k.band ? 0.95 : 0;
+  // 로고 (제안서형: 파트너 배지 등 승인 자산 1개) — 제목 오른쪽
+  if (k.logo && ctx.asset(k.logo)) slide.addImage({ path: ctx.asset(k.logo), x: W - M.right - 1.4, y: M.top + 0.25, w: 1.4, h: 1.0, sizing: { type: 'contain', w: 1.4, h: 1.0 } });
+  let y = body.y;
+  let topH;
+  if (k.intro) {
+    // 문단형 도입 (제안서형): 제목 아래 1~2문장
+    topH = Math.min(1.0, heightFor([k.intro], body.w * 0.8, ctx.scale.body + 3, Object.assign({ lineHeight: 1.4 }, B(ctx))) + 0.1);
+    P.fitBox(ctx, slide, [k.intro], { x: body.x, y, w: body.w * 0.8, h: topH, name: 'intro' }, { maxPt: ctx.scale.body + 3, minPt: ctx.scale.body, textOptions: { color: ctx.pal.ink } });
+  } else {
+    topH = 1.0;
+    P.callout(ctx, slide, k.statement || s.takeaway || '', { x: body.x, y, w: body.w, h: topH }, { maxPt: ctx.scale.body + 5, minPt: ctx.scale.body, bold: true, color: ctx.pal.primary });
+  }
+  y += topH + 0.35;
   const stepsH = steps.length ? Math.min(2.2, 0.5 + steps.length * 0.42) : 0;
-  const midH = body.h - topH - 0.35 - (stepsH ? stepsH + 0.3 : 0) - (k.contact ? 0.35 : 0);
+  const midH = body.h - topH - 0.35 - (stepsH ? stepsH + 0.3 : 0) - (k.contact ? 0.35 : 0) - (bandH ? bandH + 0.25 : 0);
   if (takeaways.length) {
     const cols = columns({ x: body.x, y, w: body.w, h: midH }, takeaways.length, 0.4);
     takeaways.forEach((t, i) => {
       const col = cols[i];
+      if (typeof t === 'object' && t) {
+        // 객체형: 번호(강조색) · 헤딩(display) · 헤어라인 · 설명 · 근거 메모 · 참조 링크
+        P.ctxText(ctx, slide, numeralText(ctx, i + 1, 'pad'), { x: col.x, y: col.y, w: col.w, h: 0.34, fontSize: ctx.scale.body + 2, bold: true, color: ctx.pal.accent, fontFace: ctx.font.numeral, valign: 'middle' });
+        const hPt = ctx.scale.body + 5;
+        const hH = heightFor([t.heading || ''], col.w, hPt, Object.assign({ lineHeight: 1.25 }, D(ctx))) + 0.06;
+        P.ctxText(ctx, slide, t.heading || '', { x: col.x, y: col.y + 0.42, w: col.w, h: hH, fontSize: hPt, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, lineSpacingMultiple: spacingMultiple(1.25, ctx.font.display, true) });
+        let yy = col.y + 0.42 + hH + 0.1;
+        P.hline(ctx, slide, col.x, yy, col.w, { color: ctx.pal.line });
+        yy += 0.16;
+        const linkH = t.link ? 0.32 : 0, noteH = t.note ? 0.3 : 0;
+        const dH = Math.max(0.4, col.y + col.h - yy - linkH - noteH - 0.1);
+        if (t.detail) P.fitBox(ctx, slide, Array.isArray(t.detail) ? t.detail : [t.detail], { x: col.x, y: yy, w: col.w, h: dH, name: `takeaway ${i + 1}` }, { maxPt: ctx.scale.body, minPt: ctx.scale.body_min, paraGapEm: 0.15, textOptions: { color: ctx.pal.ink } });
+        if (t.note) P.ctxText(ctx, slide, t.note, { x: col.x, y: col.y + col.h - linkH - noteH, w: col.w, h: noteH, fontSize: ctx.scale.caption, color: ctx.pal.ink_muted, valign: 'middle' });
+        if (t.link) P.ctxText(ctx, slide, t.link, { x: col.x, y: col.y + col.h - linkH, w: col.w, h: linkH, fontSize: ctx.scale.caption + 1, bold: true, color: ctx.pal.primary, valign: 'middle' });
+        return;
+      }
       if (i > 0) P.vline(ctx, slide, col.x - 0.2, col.y, col.h, { color: ctx.pal.line_faint });
       P.numeral(ctx, slide, numeralText(ctx, i + 1, ctx.tok.list.numbering[0] === '01' ? 'pad' : 'plain'), { x: col.x, y: col.y, w: col.w, h: 0.5 }, { pt: Math.round(ctx.scale.title * 0.85) });
       P.fitBox(ctx, slide, [t], { x: col.x, y: col.y + 0.55, w: col.w, h: col.h - 0.55, name: `takeaway ${i + 1}` }, { maxPt: ctx.scale.body, minPt: ctx.scale.body_min });
     });
     y += midH + 0.3;
+  }
+  if (k.band) {
+    // 마무리 띠: 약속 한 문장 (남색 띠 + 흰 글자)
+    const by = body.y + body.h - bandH;
+    P.rect(ctx, slide, { x: body.x, y: by, w: body.w, h: bandH }, { fill: tok.cover.band_color || ctx.pal.primary, radius: 0 });
+    P.fitBox(ctx, slide, Array.isArray(k.band) ? k.band : [k.band], { x: body.x + 0.3, y: by, w: body.w - 0.6, h: bandH, name: 'band' }, { maxPt: ctx.scale.body + 6, minPt: ctx.scale.body, lineHeight: 1.3, paraGapEm: 0, textOptions: { bold: true, color: 'FFFFFF', fontFace: ctx.font.display, align: 'center', valign: 'middle' } });
   }
   if (steps.length) {
     P.label(ctx, slide, '다음 단계', { x: body.x, y, w: body.w, h: 0.24 }, { color: ctx.pal.primary });
@@ -603,14 +804,34 @@ function small_multiples(ctx, slide, s, body) {
 function big_number_stage(ctx, slide, s, body) {
   const k = c(s);
   if (k.value == null) { ctx.warn('big_number_stage: value 없음', {}); return; }
-  const lw = body.w * 0.5;
-  const pt = Math.round(ctx.scale.hero_number * 1.35);
+  const hasTable = !!(k.table && k.table.columns);
+  const hasPoints = (k.points || []).length > 0;
+  const lw = body.w * (hasTable ? 0.36 : 0.5);
+  const pt = Math.round(ctx.scale.hero_number * (hasTable || hasPoints ? 1.0 : 1.35));
   const numH = (pt * 1.05) / 72;
-  const top = body.y + Math.max(0.1, (body.h - numH - 0.9) / 2);
+  const labelLines = Array.isArray(k.label) ? k.label : [k.label || ''];
+  const top = hasTable || hasPoints ? body.y : body.y + Math.max(0.1, (body.h - numH - 0.9) / 2);
   P.bigNumber(ctx, slide, k.value, k.unit, { x: body.x, y: top, w: lw, h: numH }, { pt, valign: 'bottom', color: k.trend === 'down' ? ctx.pal.negative : ctx.pal.primary });
-  P.ctxText(ctx, slide, k.label || '', { x: body.x, y: top + numH + 0.1, w: lw, h: 0.45, fontSize: ctx.scale.body + 2, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display });
-  if (k.delta) P.ctxText(ctx, slide, k.delta, { x: body.x, y: top + numH + 0.58, w: lw, h: 0.35, fontSize: ctx.scale.body, color: k.trend === 'down' ? ctx.pal.negative : k.trend === 'up' ? ctx.pal.positive : ctx.pal.ink_muted, bold: true });
+  const labelH = 0.4 * labelLines.length + 0.05;
+  P.ctxText(ctx, slide, labelLines.map((t, i) => ({ text: t, options: { breakLine: i < labelLines.length - 1 } })), { x: body.x, y: top + numH + 0.1, w: lw, h: labelH, fontSize: ctx.scale.body + 2, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display });
+  let ly = top + numH + 0.1 + labelH;
+  if (k.delta) { P.ctxText(ctx, slide, k.delta, { x: body.x, y: ly + 0.05, w: lw, h: 0.35, fontSize: ctx.scale.body, color: k.trend === 'down' ? ctx.pal.negative : k.trend === 'up' ? ctx.pal.positive : ctx.pal.ink_muted, bold: true }); ly += 0.45; }
+  if (k.note && (k.note.heading || k.note.text)) {
+    // 왼쪽 보조 설명: 헤어라인 + 소제목 + 설명 (예외 조건·산출 기준)
+    ly += 0.25;
+    P.hline(ctx, slide, body.x, ly, lw - 0.4, { color: ctx.pal.line });
+    ly += 0.2;
+    if (k.note.heading) { P.ctxText(ctx, slide, k.note.heading, { x: body.x, y: ly, w: lw - 0.3, h: 0.34, fontSize: ctx.scale.body, bold: true, color: ctx.pal.ink, valign: 'middle' }); ly += 0.38; }
+    if (k.note.text) P.fitBox(ctx, slide, [k.note.text], { x: body.x, y: ly, w: lw - 0.4, h: Math.max(0.4, body.y + body.h - ly), name: 'note' }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min, textOptions: { color: ctx.pal.ink_muted } });
+  }
   const rx = body.x + lw + 0.6, rw = body.w - lw - 0.6;
+  if (hasTable) {
+    const nRows = (k.table.rows || []).length + 1;
+    const rowH = Math.min(k.table.row_h || 0.85, (body.h - 0.05) / nRows);
+    P.table(ctx, slide, k.table.columns, k.table.rows || [], { x: rx, y: body.y, w: rw, h: body.h }, { boldFirstCol: true, rowH, style: { grid: 'all' } });
+    return;
+  }
+  if (hasPoints) { P.bulletList(ctx, slide, k.points.slice(0, 5), { x: rx, y: body.y + 0.1, w: rw, h: body.h - 0.1, name: 'points' }, { color: ctx.pal.ink }); return; }
   const paras = [k.context, k.comparison].filter(Boolean);
   if (paras.length) P.callout(ctx, slide, paras, { x: rx, y: body.y + body.h * 0.18, w: rw, h: body.h * 0.64 }, { maxPt: ctx.scale.body + 4, minPt: ctx.scale.body, bold: true, color: ctx.pal.accent, textColor: ctx.pal.ink, valign: 'middle' });
 }
@@ -756,4 +977,4 @@ function custom(ctx, slide, s, body) {
   if (!fn) { ctx.warn(`custom 슬라이드 ${s.number}: hooks 파일에 핸들러가 없음 — 빈 본문`, {}); return; }
 }
 
-module.exports = { cover, agenda, executive_summary, section_divider, hero_metric, evidence_chart, comparison, process, roadmap, architecture, matrix, case_study, recommendation, points, statement, data_table, image_focus, team, pricing_or_budget, conclusion, appendix, small_multiples, big_number_stage, tam_nested, logo_wall, before_after, kpi_bento, custom, columns };
+module.exports = { cover, agenda, executive_summary, section_divider, hero_metric, evidence_chart, comparison, process, roadmap, architecture, matrix, case_study, recommendation, points, statement, data_table, image_focus, team, pricing_or_budget, conclusion, appendix, small_multiples, big_number_stage, tam_nested, logo_wall, before_after, kpi_bento, screen_walkthrough, custom, columns };

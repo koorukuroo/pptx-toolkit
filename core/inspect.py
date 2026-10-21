@@ -355,9 +355,10 @@ def inspect_file(path: str, min_font: float = 12.0, note_font: float = 9.0, marg
                     if sizes:
                         mn = min(sizes)
                         min_font_seen = min(min_font_seen, mn)
-                        is_note = s.y > H - 1.0 or re.match(r"^\s*(출처|Source|주\s*[:：]|Note|※)", s.text) is not None
-                        # 짧은 라벨(킥커·축 라벨·스티커·캡션 한 줄)은 본문 하한이 아니라 주석 하한을 적용한다
-                        is_label = len(s.text.strip()) <= 20 and "\n" not in s.text.strip()
+                        # 출처·각주: 바닥 1in 안, 또는 하단 1.6in 안의 한 줄 상자(검증 블록 위 출처 줄), 또는 '출처' 로 시작
+                        is_note = s.y > H - 1.0 or (s.y > H - 1.6 and (s.y2 - s.y) <= 0.36) or re.match(r"^\s*(출처|Source|주\s*[:：]|Note|※)", s.text) is not None
+                        # 짧은 라벨(킥커·축 라벨·스티커·캡션 한 줄)과 머리 영역(0.6in 위: 빵부스러기·킥커)은 주석 하한을 적용한다
+                        is_label = (len(s.text.strip()) <= 20 and "\n" not in s.text.strip()) or s.y2 <= 0.6
                         floor = note_font if (is_note or is_label) else min_font
                         if mn < floor - 0.01:
                             add("font-too-small", s, f"{mn:g}pt < 하한 {floor:g}pt", level="error" if mn < floor - 2 else "warning")

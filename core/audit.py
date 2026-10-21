@@ -83,7 +83,7 @@ def _norm_text(s: str) -> str:
 
 
 KEY_FIELDS = {"title", "answer", "statement", "recommendation", "decision", "insight", "verdict", "implication", "caption", "subtitle"}
-SKIP_KEYS = {"image", "layout", "style", "type", "trend", "tone", "kind", "secondary", "x", "y", "emphasis", "winner", "highlight", "highlight_rows", "align", "value_format", "show_values", "show_percent", "y_max", "y_min", "hide_value_axis", "hide_unit", "relation", "columns_per_row", "shared_y", "variant", "background", "number", "evidence_ids", "speaker_notes", "takeaway", "qa", "appendix", "role", "logo", "logos", "label_pt"}
+SKIP_KEYS = {"image", "layout", "style", "type", "col_widths", "image_ratio", "row_h", "emphasis_row", "highlight_col", "accent_col", "numbered", "frame", "sizing", "subtitle_above", "trend", "tone", "kind", "secondary", "x", "y", "emphasis", "winner", "highlight", "highlight_rows", "align", "value_format", "show_values", "show_percent", "y_max", "y_min", "hide_value_axis", "hide_unit", "relation", "columns_per_row", "shared_y", "variant", "background", "number", "evidence_ids", "speaker_notes", "takeaway", "qa", "appendix", "role", "logo", "logos", "label_pt"}
 
 
 def _spec_strings(slide: Dict[str, Any]) -> List[Tuple[str, str, bool]]:
@@ -161,6 +161,11 @@ def verify_text(spec: Dict[str, Any], pptx: str) -> Dict[str, Any]:
             n = _norm_text(text)
             if n in b["blob"]:
                 continue
+            # 줄바꿈(\n)이 든 문자열은 문단 단위로 들어가므로 조각별로 확인
+            if "\n" in str(text):
+                pieces = [_norm_text(x) for x in str(text).split("\n") if _norm_text(x)]
+                if pieces and all(x in b["blob"] for x in pieces):
+                    continue
             is_chart = path.startswith("content.chart") or ".chart." in path or path.startswith("content.charts")
             if is_chart and n in b["chart"]:
                 continue
@@ -240,7 +245,9 @@ def audit_slides(slides: List[Dict[str, Any]]) -> Dict[str, Any]:
                             add("total-mismatch", "error", f"표 '{tbl[0][ci] if ci < len(tbl[0]) else ci}' 열: 행 합 {ssum:g} ≠ 합계 {total:g}", s["number"])
         joined = " ".join(s["texts"])
         # 연도·한 자리 번호(단계·순번)는 '통계 수치'로 세지 않는다
-        nums = [n for n in re.findall(NUM, joined) if not re.fullmatch(r"(19|20)\d{2}", n) and not re.fullmatch(r"\d", n)]
+        # 요구 ID(SFR-003)·쪽수 참조(32쪽, 02–05)·일자(2027.03.31)는 통계 수치가 아니다
+        stat_text = re.sub(r"\b[A-Z]{2,4}-\d{2,4}\b|\d{1,3}(?:\s*[–\-~,]\s*\d{1,3})*\s*쪽|\d{1,3}\s*[–\-~]\s*\d{1,3}(?=[\s,·)]|$)|20\d{2}\.\s*\d{1,2}\.\s*\d{1,2}", " ", joined)
+        nums = [n for n in re.findall(NUM, stat_text) if not re.fullmatch(r"(19|20)\d{2}", n) and not re.fullmatch(r"\d", n)]
         pct = [float(p) for p in re.findall(r"(\d+(?:\.\d+)?)\s*%", joined)]
         if any(p > 100 for p in pct):
             add("percent-over", "warning", f"100% 초과 비율 표기 {[p for p in pct if p > 100]} — 증가율이면 '배'나 '%p'를 검토", s["number"])

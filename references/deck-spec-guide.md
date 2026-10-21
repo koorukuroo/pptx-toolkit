@@ -39,35 +39,42 @@ Director(스킬)가 쓰는 중간 명세. 내용·논리·시각 의도를 담�
 | `background` | 기본값을 덮어쓰기 (예: 강조 슬라이드를 dark로) |
 | `appendix` | true면 lint의 본문 규칙 완화 |
 | `role` | 서사 역할. 하나라도 쓰면 lint가 hook(왜 지금)·proof(근거)·takeaway(남길 것) 커버리지를 검사한다 (pre_read는 context·proof·takeaway) |
+| `brief` | 제목 아래 **요구사항·대응방안** 블록 `{requirement, response}` (제안서형, `references/proposal-rfp-rules.md`) |
+| `verification` | 본문 아래 **검증 기준·산출물** 블록 `{criteria, deliverables}` |
+| `tags` | 푸터 요구 ID 태그 띠 `{label: "RFP", ids: ["SFR-003"]}` |
+| `xref` | 푸터 오른쪽 참조 (`기능 조견표 · 32쪽`) |
+| `summary` | 본문 아래 요약 한 줄 `{label, text, style: line|band}` |
+| `footer_left` | 이 슬라이드의 왼쪽 푸터 글자 (기본 문서 제목·기관) |
 
 ## 아키타입별 content 요약 (전체는 `slide-archetypes.json`)
 
-- `cover` {subtitle, organization, presenter, date, image, tagline}
-- `agenda` {items:[{label, detail}]} (≤7)
+- `cover` {subtitle, organization, presenter, date, image, tagline, emphasis(제목 강조 구절, image-light), document_title, document_id}
+- `agenda` {items:[{label, detail, pages?, numeral?}], layout: list|table, subtitle} (≤7)
+- `screen_walkthrough` {image, label, caption, points:[{heading, detail}] (≤5), layout: image-left|image-right|image-top, image_ratio} — 화면 한 장 + 번호 포인트
 - `executive_summary` {answer, points:[{heading, detail}] (3~5), decision}
 - `section_divider` {number, subtitle, image}
 - `hero_metric` {metrics:[{value, unit, label, delta, trend}] (≤3), context, comparison}
 - `evidence_chart` {chart:{type?, relation?, categories, series:[{name, values, kind?, secondary?, dashed?}], unit, highlight, target:{label,value}?, value_format, show_values, y_max, legend_pos?}, insight, callouts (≤3), layout} — `relation` 이 있으면 type 생략 가능 (`data-visualization.md`)
 - `small_multiples` {charts:[{title, chart}] (2~6), columns?, shared_y (true), y_max?, note?}
-- `big_number_stage` {value, unit, label, delta?, trend?, context, comparison?}
+- `big_number_stage` {value, unit, label | [label 2줄], delta?, trend?, context, comparison?, note:{heading, text}?, table:{columns, rows}? | points?}
 - `kpi_bento` {hero:{value, unit, label, delta, trend}, cells:[…] (2~5), note?}
 - `tam_nested` {rings:[{label, value, note}] (3~4, 바깥→안), method?, implication?}
 - `before_after` {before:{label, metric?, metric_unit?, metric_label?, points[]}, after:{…}, arrow_label?}
 - `logo_wall` {logos:[asset id | {image, label}] (≤12), columns?, caption?}
 - `comparison` {columns, rows:[{criterion, cells}], winner, verdict}
-- `process` {steps:[{title, detail, owner}] (≤6), style: numbered|chevron|timeline}
+- `process` {steps:[{title, detail, owner}] (≤6), style: numbered|chevron|timeline|swimlane, lanes:[{label, detail, steps:[{title, detail}]}] (swimlane ≤3 레인)}
 - `roadmap` {phases:[{name, period, items, milestone}] (≤4), horizon}
 - `architecture` {layers:[{name, components:[{name, note}], tone}] (≤5), flows, legend}
 - `matrix` {x_axis:{label, low, high}, y_axis, quadrants[4], items:[{label, x, y, emphasis}], implication}
 - `case_study` {context, intervention, result, evidence, image, client}
 - `recommendation` {recommendation, reasons:[{heading, detail}] (≤4), next_action, owner, timing}
-- `points` {points:[{heading, detail, metric}] (≤4), layout: rows|columns}
+- `points` {points:[{heading, detail, metric | kicker}] (≤4), layout: rows|columns, table:{title, columns, rows, emphasis_row}?}
 - `statement` {statement, attribution, image}
-- `data_table` {columns, rows, highlight_rows, unit, align}
+- `data_table` {columns, rows, highlight_rows, unit, align, lead:{value, label, note}?, highlight_col?, accent_col?, col_widths?, row_h?}
 - `image_focus` {image, caption, points (≤3), layout: image-left|image-right|full-bleed}
 - `team` {members:[{role, name, responsibility, proof}] (≤6)}
 - `pricing_or_budget` {items:[{label, amount, note}], total, unit, assumptions, exclusions}
-- `conclusion` {statement, takeaways (≤3), next_steps:[{label, owner, when}], contact}
+- `conclusion` {statement | intro, takeaways (≤4; 문자열 또는 {heading, detail, note, link}), next_steps:[{label, owner, when}], contact, band?, logo?}
 - `appendix` {paragraphs, table:{columns, rows}, items}
 - `custom` — hooks.js의 `[number]` 핸들러가 그린다 (`examples/proposal-hooks.js`)
 

@@ -1,4 +1,4 @@
-"""pptx-toolkit 회귀 테스트 — 예제 4종을 빌드해 게이트·추정기·감사·편집·팔레트·상속을 검증한다.
+"""pptx-toolkit 회귀 테스트 — 예제 5종을 빌드해 게이트·추정기·감사·편집·팔레트·상속을 검증한다.
 
 실행: python3 -m unittest discover -s tests -v   (Node.js + node_modules/pptxgenjs 필요)
 렌더(LibreOffice)가 필요한 테스트는 soffice가 없으면 건너뛴다.
@@ -25,6 +25,7 @@ EXAMPLES = {
     "gov": ("examples/gov-ai-platform-briefing.spec.json", []),
     "proposal": ("examples/proposal-shipyard-ax.spec.json", ["--hooks", "examples/proposal-hooks.js"]),
     "showcase": ("examples/archetype-showcase.spec.json", []),
+    "rfp": ("examples/proposal-rfp.spec.json", []),
 }
 
 _TMP = Path(tempfile.mkdtemp(prefix="pptx-toolkit-test-"))
@@ -158,7 +159,7 @@ class BuildAndGates(unittest.TestCase):
             self.assertTrue(i["ok"], (prof, [f for f in i["findings"] if f["level"] == "error"]))
 
     def test_text_verify_against_spec(self):
-        for name in ("consulting", "showcase"):
+        for name in ("consulting", "showcase", "rfp"):
             out = build(name)
             spec, _ = specio.load_spec(str(ROOT / EXAMPLES[name][0]))
             v = audit.verify_text(spec, str(out))
@@ -199,6 +200,50 @@ class BuildAndGates(unittest.TestCase):
         r = subprocess.run(["node", str(ROOT / "scripts/build.js"), str(ROOT / EXAMPLES["consulting"][0]), "-o", str(out), "--only", "1-3"], capture_output=True, text=True, cwd=ROOT)
         s = json.loads(r.stdout.strip().splitlines()[-1])
         self.assertEqual(s["slides"], 3)
+
+
+class ProposalFrame(unittest.TestCase):
+    """제안서형 프로파일: 요구·대응·검증·태그 블록이 그려지고, 표지는 쪽번호 없이, 본문은 바닥 안전구역 밖."""
+
+    def test_proposal_frame_blocks_rendered(self):
+        out = build("rfp")
+        ex = extract.extract(str(out))
+        s4 = ex[3]
+        blob = json.dumps(s4, ensure_ascii=False)
+        for needle in ("요구사항", "대응방안", "검증 기준", "산출물", "SFR-003", "관련 조견표", "전환의 기준"):
+            self.assertIn(needle, blob, needle)
+        # 표지엔 쪽번호 placeholder 가 없고, 본문 장엔 있다
+        from core.package import Package, q
+        with Package.open(str(out)) as pkg:
+            refs = pkg.slides()
+            def has_sldnum(ref):
+                lay = pkg.rels(ref.part)
+                for r in lay.values():
+                    if "slideLayout" in r.rtype:
+                        root = pkg.xml(pkg.resolve(ref.part, r.target))
+                        return any(ph.get("type") == "sldNum" for ph in root.iter(q("p:ph")))
+                return False
+            self.assertFalse(has_sldnum(refs[0]))
+            self.assertTrue(has_sldnum(refs[3]))
+
+    def test_proposal_lint_rules(self):
+        spec, _ = specio.load_spec(str(ROOT / EXAMPLES["rfp"][0]))
+        r = lint.lint_spec(spec, [])
+        self.assertTrue(r["ok"], r["findings"][:5])
+        bad = json.loads(json.dumps(spec))
+        bad["slides"][3]["brief"]["response"] = "하나의 행사 흐름"  # 서술어 없음
+        del bad["slides"][5]["tags"]
+        del bad["slides"][6]["brief"]
+        codes = {f["code"] for f in lint.lint_spec(bad, [])["findings"]}
+        for c in ("response-no-verb", "tags-missing", "brief-missing"):
+            self.assertIn(c, codes)
+
+    def test_proposal_profile_tokens(self):
+        spec, _ = specio.load_spec(str(ROOT / EXAMPLES["rfp"][0]))
+        tok = specio.resolve_tokens(spec)
+        self.assertEqual(tok["title"]["max_lines"], 1)
+        self.assertTrue(tok["frame"]["brief"])
+        self.assertEqual(tok["table"]["header_fill"], "secondary")
 
 
 class Palette(unittest.TestCase):
