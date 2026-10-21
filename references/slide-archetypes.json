@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
+  "version": "0.5.0",
   "_doc": "슬라이드 아키타입 = 목적별 레이아웃 레시피. content 필드는 scripts/build.js 렌더러가 읽는 계약이다. max_chars는 본문 글자 수 상한(공백 포함, 한글 기준; 영문은 ×1.6). title_required=true면 액션 타이틀(문장형) 필수. 모든 본문 슬라이드는 role(hook/context/tension/method/proof/takeaway)을 가질 수 있다 (lint role-coverage).",
   "archetypes": {
     "cover": {
@@ -80,11 +80,14 @@
       "content": {
         "number": "string|int",
         "subtitle": "string (optional)",
-        "image": "asset id (optional)"
+        "image": "asset id (optional)",
+        "items": "string[] | [{label}] (optional, 오른쪽 CONTENTS 목록 ≤6 — 기술 제안형 어두운 구분 장)",
+        "chips": "string[] (optional, 키워드 칩 ≤6)",
+        "contents_label": "string (optional, 기본 CONTENTS)"
       },
       "max_chars": {
-        "live": 60,
-        "pre_read": 90
+        "live": 120,
+        "pre_read": 180
       },
       "avoid": [
         "본문 복사",
@@ -391,7 +394,8 @@
             ]
           ],
           "emphasis_row": "int (optional, 0이면 첫 행을 주조색 큰 글자)"
-        }
+        },
+        "_card": "프로파일 tokens.card.enabled 가 참이면 열마다 카드(윗단 띠·그림자)로 감싼다"
       },
       "max_items": 4,
       "max_chars": {
@@ -410,11 +414,14 @@
       "content": {
         "statement": "string",
         "attribution": "string (optional)",
-        "image": "asset id (optional)"
+        "image": "asset id (optional)",
+        "emphasis": "string | string[] (optional, 강조 구절 — 주조색/강조색 또는 형광펜 마커)",
+        "label": "string (optional, 문장 위 큰 기호: Q. / 01)",
+        "kicker": "string (optional, 왼쪽 위 작은 라벨)"
       },
       "max_chars": {
-        "live": 90,
-        "pre_read": 140
+        "live": 110,
+        "pre_read": 160
       },
       "avoid": [
         "문단 길이의 인용",
@@ -812,6 +819,123 @@
         "화면 여러 장 썸네일",
         "포인트 6개 이상",
         "이미지 위 긴 문장"
+      ]
+    },
+    "code_block": {
+      "purpose": "코드·설정·로그·스키마 한 토막을 근거로 보여 준다 (기술 제안·교안). 포인트는 오른쪽 카드",
+      "title_required": true,
+      "content": {
+        "code": "string | string[] (줄 배열; //, #, -- 로 시작하는 줄은 주석색)",
+        "language": "string (optional, 패널 위 라벨)",
+        "caption": "string (optional, 오른쪽 위 설명)",
+        "points": [
+          {
+            "heading": "string",
+            "detail": "string"
+          }
+        ],
+        "layout": "code-left|code-top|code-full (default code-left; points 없으면 code-full)"
+      },
+      "max_items": 5,
+      "max_chars": {
+        "live": 700,
+        "pre_read": 1100
+      },
+      "avoid": [
+        "스크린샷으로 붙인 코드",
+        "20줄 초과(두 장으로)",
+        "설명 없는 코드"
+      ]
+    },
+    "phase_columns": {
+      "purpose": "단계별·연차별 목표 (R&D 계획형): 번호 띠 + 연차 열 카드(머리글·목표·항목) + 아래 흐름 띠",
+      "title_required": true,
+      "content": {
+        "band": {
+          "number": "string|int",
+          "title": "string"
+        },
+        "columns": [
+          {
+            "header": "string (1차년도 / 시범단계)",
+            "heading": "string (해당 연차 목표 한 줄)",
+            "items": "string[] (≤5)"
+          }
+        ],
+        "flow": {
+          "title": "string (optional)",
+          "steps": [
+            {
+              "title": "string",
+              "detail": "string (optional)"
+            }
+          ],
+          "note": "string (optional)"
+        }
+      },
+      "max_items": 5,
+      "max_chars": {
+        "live": 420,
+        "pre_read": 720
+      },
+      "avoid": [
+        "열마다 항목 수가 크게 다른 것",
+        "6단계 초과 흐름"
+      ]
+    },
+    "gantt": {
+      "purpose": "추진 일정표 (네이티브 도형): 기간 열 × 과제 행, 과업 화살표·공통 띠·마일스톤·기대효과",
+      "title_required": true,
+      "content": {
+        "period_label": "string (optional, 왼쪽 위 머리글, 기본 기간)",
+        "periods": [
+          {
+            "label": "string (1차년도 / 시범단계)",
+            "sub": "string (optional, 2026.10 ~ 2027.03)"
+          }
+        ],
+        "rows": [
+          {
+            "number": "string|int (optional)",
+            "label": "string",
+            "color": "hex (optional, 기본 팔레트 순환)",
+            "tasks": [
+              {
+                "label": "string",
+                "period": "string (optional, 두 번째 줄)",
+                "from": "int (1-based 기간 열)",
+                "to": "int (optional, 기본 from)",
+                "final": "bool (optional, 진한 색)"
+              }
+            ]
+          }
+        ],
+        "bands": [
+          {
+            "label": "string",
+            "from": "int",
+            "to": "int"
+          }
+        ],
+        "bands_label": "string (optional, 기본 공통 기반)",
+        "milestones": {
+          "label": "string (optional)",
+          "cells": "string[] (기간 열 수만큼)"
+        },
+        "effects": {
+          "label": "string (optional)",
+          "items": "string[] (≤5)"
+        }
+      },
+      "max_items": 6,
+      "max_chars": {
+        "live": 520,
+        "pre_read": 900
+      },
+      "avoid": [
+        "기간 8열 초과",
+        "행 6개 초과",
+        "과업 라벨 두 줄 초과"
       ]
     }
   },

@@ -83,7 +83,7 @@ def _norm_text(s: str) -> str:
 
 
 KEY_FIELDS = {"title", "answer", "statement", "recommendation", "decision", "insight", "verdict", "implication", "caption", "subtitle"}
-SKIP_KEYS = {"image", "layout", "style", "type", "col_widths", "image_ratio", "row_h", "emphasis_row", "highlight_col", "accent_col", "numbered", "frame", "sizing", "subtitle_above", "trend", "tone", "kind", "secondary", "x", "y", "emphasis", "winner", "highlight", "highlight_rows", "align", "value_format", "show_values", "show_percent", "y_max", "y_min", "hide_value_axis", "hide_unit", "relation", "columns_per_row", "shared_y", "variant", "background", "number", "evidence_ids", "speaker_notes", "takeaway", "qa", "appendix", "role", "logo", "logos", "label_pt"}
+SKIP_KEYS = {"image", "layout", "style", "type", "col_widths", "image_ratio", "row_h", "emphasis_row", "highlight_col", "accent_col", "numbered", "frame", "sizing", "subtitle_above", "trend", "tone", "kind", "secondary", "x", "y", "emphasis", "winner", "highlight", "highlight_rows", "align", "value_format", "show_values", "show_percent", "y_max", "y_min", "hide_value_axis", "hide_unit", "relation", "columns_per_row", "shared_y", "variant", "background", "number", "evidence_ids", "speaker_notes", "takeaway", "qa", "appendix", "role", "logo", "logos", "label_pt", "from", "to", "final", "offset", "language", "contents_label", "period_label", "bands_label"}
 
 
 def _spec_strings(slide: Dict[str, Any]) -> List[Tuple[str, str, bool]]:

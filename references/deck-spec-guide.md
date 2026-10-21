@@ -39,11 +39,12 @@ Director(스킬)가 쓰는 중간 명세. 내용·논리·시각 의도를 담�
 | `background` | 기본값을 덮어쓰기 (예: 강조 슬라이드를 dark로) |
 | `appendix` | true면 lint의 본문 규칙 완화 |
 | `role` | 서사 역할. 하나라도 쓰면 lint가 hook(왜 지금)·proof(근거)·takeaway(남길 것) 커버리지를 검사한다 (pre_read는 context·proof·takeaway) |
+| `lead` | 제목 아래 **리드 문장** 한 줄(회색). 제목이 명사구일 때 주장은 여기에 — lint 는 lead 가 서술어로 끝나면 제목 규칙을 완화한다 |
 | `brief` | 제목 아래 **요구사항·대응방안** 블록 `{requirement, response}` (제안서형, `references/proposal-rfp-rules.md`) |
 | `verification` | 본문 아래 **검증 기준·산출물** 블록 `{criteria, deliverables}` |
 | `tags` | 푸터 요구 ID 태그 띠 `{label: "RFP", ids: ["SFR-003"]}` |
 | `xref` | 푸터 오른쪽 참조 (`기능 조견표 · 32쪽`) |
-| `summary` | 본문 아래 요약 한 줄 `{label, text, style: line|band}` |
+| `summary` | 본문 아래 요약 한 줄 `{label, text, style: line|band|dark}` (dark: 남색 띠 + 흰 글자, 기술 제안형 '핵심 원칙') |
 | `footer_left` | 이 슬라이드의 왼쪽 푸터 글자 (기본 문서 제목·기관) |
 
 ## 아키타입별 content 요약 (전체는 `slide-archetypes.json`)
@@ -52,7 +53,7 @@ Director(스킬)가 쓰는 중간 명세. 내용·논리·시각 의도를 담�
 - `agenda` {items:[{label, detail, pages?, numeral?}], layout: list|table, subtitle} (≤7)
 - `screen_walkthrough` {image, label, caption, points:[{heading, detail}] (≤5), layout: image-left|image-right|image-top, image_ratio} — 화면 한 장 + 번호 포인트
 - `executive_summary` {answer, points:[{heading, detail}] (3~5), decision}
-- `section_divider` {number, subtitle, image}
+- `section_divider` {number, subtitle, image, items (≤6, 오른쪽 CONTENTS 목록), chips (키워드 칩), contents_label}
 - `hero_metric` {metrics:[{value, unit, label, delta, trend}] (≤3), context, comparison}
 - `evidence_chart` {chart:{type?, relation?, categories, series:[{name, values, kind?, secondary?, dashed?}], unit, highlight, target:{label,value}?, value_format, show_values, y_max, legend_pos?}, insight, callouts (≤3), layout} — `relation` 이 있으면 type 생략 가능 (`data-visualization.md`)
 - `small_multiples` {charts:[{title, chart}] (2~6), columns?, shared_y (true), y_max?, note?}
@@ -69,7 +70,10 @@ Director(스킬)가 쓰는 중간 명세. 내용·논리·시각 의도를 담�
 - `case_study` {context, intervention, result, evidence, image, client}
 - `recommendation` {recommendation, reasons:[{heading, detail}] (≤4), next_action, owner, timing}
 - `points` {points:[{heading, detail, metric | kicker}] (≤4), layout: rows|columns, table:{title, columns, rows, emphasis_row}?}
-- `statement` {statement, attribution, image}
+- `statement` {statement (\n 줄바꿈 가능), emphasis (강조 구절: 주조색/강조색 또는 형광펜), label ("Q."), kicker, attribution, image}
+- `code_block` {code (string | 줄 배열), language, caption, points:[{heading, detail}] (≤5), layout: code-left|code-top|code-full} — 코드·설정·로그 한 토막 + 포인트 카드
+- `phase_columns` {band:{number, title}, columns:[{header, heading, items[]}] (≤5), flow:{title, steps:[{title, detail}], note}} — 단계·연차별 목표
+- `gantt` {periods:[{label, sub}] (≤8), rows:[{number, label, color?, tasks:[{label, period, from, to, final}]}] (≤6), bands:[{label, from, to}], milestones:{label, cells[]}, effects:{label, items[]}} — 네이티브 추진 일정표
 - `data_table` {columns, rows, highlight_rows, unit, align, lead:{value, label, note}?, highlight_col?, accent_col?, col_widths?, row_h?}
 - `image_focus` {image, caption, points (≤3), layout: image-left|image-right|full-bleed}
 - `team` {members:[{role, name, responsibility, proof}] (≤6)}

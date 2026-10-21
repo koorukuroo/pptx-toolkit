@@ -1,0 +1,390 @@
+{
+  "version": "0.5",
+  "metadata": {
+    "title": "가온시 민원 응답 AI 플랫폼 기술 제안서",
+    "subtitle": "민감정보는 내부에서만, 외부 호출은 관문 하나로",
+    "organization": "가온시",
+    "presenter": "코어닷투데이",
+    "date": "2026. 10.",
+    "audience": "정보화 담당관·외부 기술 심사위원",
+    "success_condition": "심사위원이 아키텍처·보안 관문·운영 설계를 카드 단위로 읽고 기술 적합성을 판단한다",
+    "delivery_mode": "hybrid",
+    "language": "ko-KR",
+    "audience_state": {
+      "initial": "AI 도입이 민감정보 유출로 이어질까 걱정한다",
+      "desired": "모든 외부 호출이 관문을 지나고 기록이 남는 구조라고 이해한다"
+    }
+  },
+  "route": {
+    "deck_type": "tech_proposal",
+    "style_profile": "solution_cards_kr",
+    "brand_mode": "neutral",
+    "communication_mode": "pyramid"
+  },
+  "design_tokens": {},
+  "assets": {
+    "images": {
+      "hero": "assets/sample-kiosk.png",
+      "gate": "assets/sample-kiosk.png"
+    }
+  },
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "가온시 민원 응답의 61%가 반복 유형이며 평균 응답까지 2.3일이 걸린다",
+      "kind": "user_provided",
+      "confidence": "high",
+      "source": "가온시 민원 처리 현황 (2025)",
+      "period": "2025"
+    },
+    {
+      "id": "E2",
+      "claim": "국내 처리 비율 60% 이상, 외부 전송 위반 0건을 운영 목표로 둔다",
+      "kind": "recommendation",
+      "confidence": "medium",
+      "source": "제안사 설계 목표",
+      "period": "2027"
+    }
+  ],
+  "slides": [
+    {
+      "number": 1,
+      "archetype": "cover",
+      "title": "민원 응답 AI 플랫폼\n기술 제안서",
+      "role": "hook",
+      "content": {
+        "subtitle": "민감정보는 내부에서만, 외부 호출은 관문 하나로",
+        "image": "hero",
+        "tagline": "가온시 · 기술 제안"
+      }
+    },
+    {
+      "number": 2,
+      "section": "시스템 개요",
+      "archetype": "points",
+      "title": "최신 AI를 연결하는 모듈형 하이브리드 플랫폼",
+      "lead": "단일 관문(가드레일 게이트웨이)과 데이터 연결 계층 + 근거 탐색기로 차별화합니다",
+      "role": "context",
+      "takeaway": "모듈·데모 스택·확장 세 축으로 플랫폼을 설명한다",
+      "content": {
+        "layout": "columns",
+        "points": [
+          {
+            "heading": "모듈형 AI 플랫폼",
+            "detail": "화면과 독립 서비스 계층을 분리해 유지보수와 기능 확장이 쉬운 구조로 구축합니다."
+          },
+          {
+            "heading": "데모 스택",
+            "detail": "웹 서버 + 문서 저장소 + 검색 엔진 + 벡터 저장소 · 도구 서버 4종을 자체 호스팅합니다."
+          },
+          {
+            "heading": "확장형 AI 플랫폼",
+            "detail": "새 모델·도구·검색 서비스를 설정만으로 붙일 수 있게 설계합니다."
+          }
+        ]
+      },
+      "summary": {
+        "label": "맞춤 계층",
+        "text": "시 업무 요구는 프롬프트·정책·데이터 연결 설정으로 반영하고 코어 수정 없이 기능을 추가합니다.",
+        "style": "band"
+      }
+    },
+    {
+      "number": 3,
+      "section": "보안 관문",
+      "archetype": "section_divider",
+      "title": "단일 관문",
+      "role": "tension",
+      "content": {
+        "number": 1,
+        "subtitle": "외부로 나가는 모든 호출이 지나는 한 곳, 그리고 그것을 증명하는 기록",
+        "image": "gate",
+        "items": [
+          "등급·민감정보 라우팅",
+          "유출 방지 4지점",
+          "감사 로그 5년 보존"
+        ],
+        "chips": [
+          "국내 처리",
+          "fail-closed",
+          "감사 기록"
+        ]
+      }
+    },
+    {
+      "number": 4,
+      "section": "보안 관문",
+      "archetype": "process",
+      "title": "관문 — 모든 외부 호출의 단일 주권 지점",
+      "lead": "선언이 아니라 강제 — 민감정보는 내부에서만, 그리고 그것을 증명합니다",
+      "role": "method",
+      "takeaway": "다섯 장치가 동시에 있어야 국내 전용이 성립한다",
+      "content": {
+        "style": "numbered",
+        "steps": [
+          {
+            "title": "단일 관문",
+            "detail": "앱은 내부 주소 하나만 알고 모든 호출이 관문을 지난다"
+          },
+          {
+            "title": "등급·민감정보 라우팅",
+            "detail": "문서 등급 × 민감도 등급으로 외부 모델·검색 차단"
+          },
+          {
+            "title": "유출 방지 4지점",
+            "detail": "입력·검색·도구 결과·출력, 한국형 인식기, 실패 시 차단"
+          },
+          {
+            "title": "주입 방어",
+            "detail": "검색·도구 결과를 명령이 아닌 자료로 격리"
+          },
+          {
+            "title": "증적",
+            "detail": "네트워크 기본 차단, 표지 데이터로 '안 나감' 증명"
+          }
+        ]
+      },
+      "summary": {
+        "label": "핵심 원칙",
+        "text": "앱(관문 통과) + 정책(등급 외부 차단) + 네트워크(외부 전송 불가) — 세 겹이 동시에 있어야 국내 전용이 성립합니다.",
+        "style": "dark"
+      }
+    },
+    {
+      "number": 5,
+      "section": "보안 관문",
+      "archetype": "code_block",
+      "title": "모든 외부 전송 1건이 감사 로그로 — 5년 보존",
+      "lead": "'출처-도구-질문-응답-원문링크' 체계로 외부전송 위반 0건을 증명합니다",
+      "role": "proof",
+      "takeaway": "로그 한 줄에 라우팅 사유와 비용까지 남는다",
+      "evidence_ids": [
+        "E2"
+      ],
+      "content": {
+        "language": "audit_log.schema",
+        "caption": "원문은 저장하지 않고 해시만 남긴다",
+        "code": [
+          "// audit_log (append-only, 5년 보존)",
+          "{",
+          "  ts, request_id, user_id, workspace,",
+          "  doc_grade: \"O|S|C\",",
+          "  pii_flag: bool, pii_types: [...],",
+          "  backend: \"onprem|cloud-api\",",
+          "  model, route_reason,",
+          "  in_tokens, out_tokens, cost_krw,",
+          "  prompt_hash: sha256(text),   // 원문 비저장",
+          "  ttft_ms, tpot_ms, status",
+          "}"
+        ],
+        "points": [
+          {
+            "heading": "국내 처리 비율",
+            "detail": "목표 60% 이상"
+          },
+          {
+            "heading": "외부전송 위반",
+            "detail": "0건 (관문 차단)"
+          },
+          {
+            "heading": "지연 기준",
+            "detail": "첫 토큰·토큰당 시간 p95"
+          },
+          {
+            "heading": "비용",
+            "detail": "월 토큰 비용 리포트"
+          }
+        ]
+      },
+      "source_note": "출처: 지표 정의: 제안사 운영 설계 기준 (안)"
+    },
+    {
+      "number": 6,
+      "section": "데이터 연결",
+      "archetype": "architecture",
+      "title": "4계층 — 화면·앱·관문·백엔드/데이터",
+      "lead": "화면은 관문만 보고, 관문은 정책에 따라 내부 모델과 외부 API를 고른다",
+      "role": "method",
+      "takeaway": "계층마다 책임이 하나씩이다",
+      "content": {
+        "layers": [
+          {
+            "name": "화면",
+            "tone": "primary",
+            "components": [
+              {
+                "name": "민원 응답 화면",
+                "note": "상담사·관리자"
+              },
+              {
+                "name": "근거 탐색기",
+                "note": "출처·원문 링크"
+              }
+            ]
+          },
+          {
+            "name": "앱",
+            "components": [
+              {
+                "name": "응답 생성 서비스",
+                "note": "프롬프트·정책"
+              },
+              {
+                "name": "업무 연동",
+                "note": "민원 시스템 API"
+              }
+            ]
+          },
+          {
+            "name": "관문",
+            "tone": "accent",
+            "components": [
+              {
+                "name": "라우팅·차단",
+                "note": "등급 × 민감도"
+              },
+              {
+                "name": "감사 로그",
+                "note": "5년 보존"
+              }
+            ]
+          },
+          {
+            "name": "백엔드·데이터",
+            "components": [
+              {
+                "name": "내부 모델 서버",
+                "note": "온프레미스"
+              },
+              {
+                "name": "외부 API",
+                "note": "비민감만"
+              },
+              {
+                "name": "문서·벡터 저장소",
+                "note": "민원 사례·규정"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "number": 7,
+      "section": "운영 설계",
+      "archetype": "hero_metric",
+      "title": "상담사 1명당 하루 처리 민원 24건에서 60건으로",
+      "lead": "반복 유형 민원은 초안 응답을 먼저 만들고 상담사가 확인만 한다",
+      "role": "proof",
+      "takeaway": "처리량 2.5배는 반복 유형 61%에서 나온다",
+      "evidence_ids": [
+        "E1"
+      ],
+      "content": {
+        "metrics": [
+          {
+            "value": "60",
+            "unit": "건/일",
+            "label": "상담사 1명 처리 민원",
+            "delta": "현행 24건 대비 2.5배",
+            "trend": "up"
+          },
+          {
+            "value": "0.5",
+            "unit": "일",
+            "label": "평균 응답 소요",
+            "delta": "현행 2.3일",
+            "trend": "up"
+          },
+          {
+            "value": "0",
+            "unit": "건",
+            "label": "외부 전송 위반",
+            "delta": "관문 차단 목표",
+            "trend": "flat"
+          }
+        ],
+        "context": "처리량은 반복 유형 민원(61%)에 초안 응답을 적용한 경우의 추정치이며, 비반복 민원은 현행 절차를 유지합니다."
+      },
+      "source_note": "출처: 가온시 민원 처리 현황 (2025), 제안사 추정 (안)"
+    },
+    {
+      "number": 8,
+      "section": "운영 설계",
+      "archetype": "data_table",
+      "title": "도입 단계와 산출물",
+      "lead": "3개월 시범 뒤 전 부서로 넓힌다",
+      "role": "method",
+      "takeaway": "단계마다 진입 조건이 있다",
+      "content": {
+        "columns": [
+          "단계",
+          "기간",
+          "범위",
+          "산출물",
+          "진입 조건"
+        ],
+        "col_widths": [
+          1.2,
+          1.4,
+          2.6,
+          3.2,
+          3.0
+        ],
+        "rows": [
+          [
+            "시범",
+            "1~3개월",
+            "민원과 2개 팀",
+            "관문·감사 로그·초안 응답 화면",
+            "내부 모델 서버 설치 완료"
+          ],
+          [
+            "확산",
+            "4~8개월",
+            "전 부서",
+            "업무 연동·근거 탐색기",
+            "시범 지표 달성(위반 0건)"
+          ],
+          [
+            "안정화",
+            "9~12개월",
+            "운영 인계",
+            "운영 매뉴얼·교육·비용 리포트",
+            "확산 완료·운영팀 지정"
+          ]
+        ]
+      },
+      "source_note": "출처: 기간·범위는 계약 후 착수 회의에서 확정 (안)"
+    },
+    {
+      "number": 9,
+      "section": "맺음",
+      "archetype": "conclusion",
+      "title": "근거 위에서 동작하는 민원 응답 AI를 제안합니다",
+      "role": "takeaway",
+      "takeaway": "민감정보는 내부에, 호출은 관문 하나로, 기록은 5년",
+      "content": {
+        "statement": "민감정보는 내부에서만 처리하고 모든 외부 호출은 관문 하나를 지나며 기록으로 남습니다.",
+        "takeaways": [
+          "관문·정책·네트워크 세 겹의 국내 전용 구조",
+          "반복 민원 초안 응답으로 처리량 2.5배",
+          "출처·원문 링크가 붙는 근거 탐색기",
+          "시범 3개월 뒤 전 부서 확산"
+        ],
+        "next_steps": [
+          {
+            "label": "내부 모델 서버 사양 확정",
+            "owner": "정보화 담당관·제안사",
+            "when": "계약 후 2주"
+          },
+          {
+            "label": "시범 부서 선정",
+            "owner": "민원과",
+            "when": "계약 후 1개월"
+          }
+        ]
+      }
+    }
+  ]
+}

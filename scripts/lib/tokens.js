@@ -95,12 +95,14 @@ function resolveTokens(spec) {
   t.mode = mode;
   t.scale = t.type[mode] || t.type.hybrid;
   t.profile = name;
-  const disp = resolveFont(t.fonts.display, t.fonts.fallback);
-  const body = resolveFont(t.fonts.body, t.fonts.fallback);
+  // fallback_display / fallback_body 가 있으면 역할별 대체 사슬(세리프 제목 + 산세리프 본문 프로파일용)
+  const disp = resolveFont(t.fonts.display, t.fonts.fallback_display || t.fonts.fallback);
+  const body = resolveFont(t.fonts.body, t.fonts.fallback_body || t.fonts.fallback);
   t.fonts.resolved = {
     display: disp.use,
     body: body.use,
     numeral: resolveFont(t.fonts.numeral || t.fonts.display, t.fonts.fallback).use,
+    mono: t.fonts.mono ? resolveFont(t.fonts.mono, ['Menlo', 'Consolas', 'Courier New']).use : null,
     warnings: [disp, body].filter((r) => r.substituted || r.missing).map((r) => (r.missing ? `폰트 '${r.requested}'와 대체 폰트 모두 미설치 — 수신 PC 폰트로 렌더됨` : `폰트 '${r.requested}' 미설치 → '${r.use}' 사용`)),
   };
   t.fonts.titleBold = weightToBold(t.fonts.weights && t.fonts.weights.title);

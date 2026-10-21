@@ -111,7 +111,25 @@ function numeral(ctx, slide, n, box, opts = {}) {
 
 // 작은 대문자 라벨 (kicker / 섹션 라벨 / exhibit)
 function label(ctx, slide, text, box, opts = {}) {
-  ctxText(ctx, slide, text, { x: box.x, y: box.y, w: box.w, h: box.h, fontSize: opts.pt || ctx.scale.kicker, bold: opts.bold != null ? opts.bold : true, color: opts.color || ctx.pal.ink_muted, charSpacing: opts.spacing == null ? Math.round((opts.pt || ctx.scale.kicker) * ctx.tok.typography.tracking_em.kicker * 10) / 10 : opts.spacing, valign: 'middle', align: opts.align || 'left', fontFace: ctx.font.body, singleLine: !opts.wrap });
+  // typography.mono_labels: 라벨·킥커를 모노스페이스(fonts.mono)로 — 데이터 브리핑형
+  const face = opts.fontFace || (ctx.tok.typography.mono_labels && ctx.font.mono ? ctx.font.mono : ctx.font.body);
+  ctxText(ctx, slide, text, { x: box.x, y: box.y, w: box.w, h: box.h, fontSize: opts.pt || ctx.scale.kicker, bold: opts.bold != null ? opts.bold : true, color: opts.color || ctx.pal.ink_muted, charSpacing: opts.spacing == null ? Math.round((opts.pt || ctx.scale.kicker) * ctx.tok.typography.tracking_em.kicker * 10) / 10 : opts.spacing, valign: 'middle', align: opts.align || 'left', fontFace: face, singleLine: !opts.wrap });
+}
+
+// 카드 컨테이너 — 프로파일 tokens.card: accent(top|left|none) · shadow · fill(background|surface) · border
+// 열 레이아웃(points·recommendation·hero_metric 등)의 각 칸을 카드로 감쌀 때 쓴다. 반환: 글자가 들어갈 안쪽 상자
+function card(ctx, slide, box, opts = {}) {
+  const CT = Object.assign({ accent: 'none', shadow: false, fill: 'background', border: true, pad: 0.22 }, ctx.tok.card || {}, opts);
+  const fill = CT.fill === 'surface' ? ctx.pal.surface : CT.fill === 'primary_soft' ? ctx.pal.primary_soft : ctx.pal.background;
+  const o = { x: box.x, y: box.y, w: box.w, h: box.h, fill: { color: fill }, line: CT.border ? { color: ctx.pal.line, width: 0.75 } : { type: 'none' } };
+  if (CT.shadow && !ctx.pal.dark) o.shadow = { type: 'outer', blur: 6, offset: 2, angle: 90, color: '000000', opacity: 0.08 };
+  const radius = CT.radius != null ? CT.radius : ctx.tok.geometry.radius;
+  if (radius > 0) { o.rectRadius = radius / 72; slide.addShape(ctx.pres.ShapeType.roundRect, o); } else slide.addShape(ctx.pres.ShapeType.rect, o);
+  const accent = opts.accentColor || ctx.pal.primary;
+  if (CT.accent === 'top') rect(ctx, slide, { x: box.x, y: box.y, w: box.w, h: 0.06 }, { fill: accent, radius: 0 });
+  if (CT.accent === 'left') rect(ctx, slide, { x: box.x, y: box.y + 0.14, w: 0.05, h: box.h - 0.28 }, { fill: accent, radius: 0 });
+  const padL = CT.accent === 'left' ? CT.pad + 0.08 : CT.pad;
+  return { x: box.x + padL, y: box.y + CT.pad, w: box.w - padL - CT.pad, h: box.h - 2 * CT.pad };
 }
 
 // 헤딩 + 본문 블록 — 세로로 heading 아래 detail. 반환: 실제 사용 높이
@@ -182,11 +200,21 @@ function table(ctx, slide, columns, rows, box, opts = {}) {
 }
 
 // 문자열 안의 강조 구간(emphasis 문자열 또는 배열)을 다른 색 run 으로 쪼갠다
-function emphasisRuns(text, emphasis, color, extra = {}) {
+// style: 'color'(기본) | 'marker'(형광펜: highlight 색, 글자색 유지) — 프로파일 typography.emphasis_style 과 colors.marker
+function emphasisRuns(text, emphasis, color, extra = {}, style = 'color') {
   const words = (Array.isArray(emphasis) ? emphasis : [emphasis]).filter(Boolean);
   if (!words.length) return [{ text, options: Object.assign({}, extra) }];
   const re = new RegExp(`(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
-  return String(text).split(re).filter((p) => p.length).map((p) => ({ text: p, options: Object.assign({}, extra, words.includes(p) ? { color } : {}) }));
+  const hit = style === 'marker' ? { highlight: color } : { color };
+  return String(text).split(re).filter((p) => p.length).map((p) => ({ text: p, options: Object.assign({}, extra, words.includes(p) ? hit : {}) }));
+}
+
+// ctx 기준 강조 run: 프로파일의 emphasis_style·marker 색을 자동 적용
+function emphasize(ctx, text, emphasis, extra = {}, color) {
+  // 어두운 배경에서는 형광펜 대신 강조색 글자 (노란 띠 위 흰 글자는 읽히지 않는다)
+  const style = ctx.pal.dark ? 'color' : (ctx.tok.typography.emphasis_style || 'color');
+  const col = color || (style === 'marker' ? (ctx.pal.marker || ctx.tok.colors.marker || 'FDE68A') : (ctx.pal.dark ? ctx.pal.accent : ctx.pal.primary));
+  return emphasisRuns(text, emphasis, col, extra, style);
 }
 
 // 이미지 (cover 크롭) + 선택적 스크림
@@ -198,4 +226,4 @@ function image(ctx, slide, assetId, box, opts = {}) {
   return true;
 }
 
-module.exports = { ctxText, fitBox, bulletList, rect, hline, vline, arrow, bigNumber, numeral, label, headingDetail, sourceNote, callout, table, image, heightFor, linesFor, typo, emphasisRuns };
+module.exports = { ctxText, fitBox, bulletList, rect, hline, vline, arrow, bigNumber, numeral, label, card, headingDetail, sourceNote, callout, table, image, heightFor, linesFor, typo, emphasisRuns, emphasize };

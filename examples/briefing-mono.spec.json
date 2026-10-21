@@ -1,0 +1,280 @@
+{
+  "version": "0.5",
+  "metadata": {
+    "title": "회의록을 질문할 수 있게 만들다 — 의정 기록 탐색기 브리핑",
+    "subtitle": "회의록 720권을 읽는 시간을 정책을 만드는 시간으로",
+    "organization": "가온시의회",
+    "presenter": "코어닷투데이",
+    "date": "2026. 10.",
+    "audience": "의회 사무처 담당자·의원 보좌진",
+    "success_condition": "읽는 사람이 회의록 탐색기가 무엇을 바꾸는지 숫자와 화면으로 이해한다",
+    "delivery_mode": "pre_read",
+    "language": "ko-KR",
+    "audience_state": {
+      "initial": "회의록은 검색해도 맥락을 찾기 어렵다고 생각한다",
+      "desired": "질문 한 줄로 발언·안건·표결을 연결해 볼 수 있다고 믿는다"
+    }
+  },
+  "route": {
+    "deck_type": "data_briefing",
+    "style_profile": "briefing_paper_mono",
+    "brand_mode": "neutral",
+    "communication_mode": "briefing"
+  },
+  "design_tokens": {},
+  "assets": {
+    "images": {
+      "screen": "assets/sample-kiosk.png"
+    }
+  },
+  "evidence": [
+    {
+      "id": "E1",
+      "claim": "가온시의회 회의록은 720권, 27만 쪽, 발언 95만 건이다",
+      "kind": "fact",
+      "confidence": "high",
+      "source": "가온시의회 회의록 시스템 집계 (2026. 9.)",
+      "period": "2000–2026"
+    },
+    {
+      "id": "E2",
+      "claim": "안건 하나의 논의 이력을 찾는 데 평균 1.8시간이 걸린다",
+      "kind": "user_provided",
+      "confidence": "medium",
+      "source": "의회 사무처 담당자 5명 인터뷰 (2026. 8.)",
+      "period": "2026"
+    }
+  ],
+  "slides": [
+    {
+      "number": 1,
+      "archetype": "cover",
+      "title": "회의록을\n질문할 수 있게 만들다.",
+      "role": "hook",
+      "content": {
+        "subtitle": "720권의 회의록을 읽는 시간을 정책을 만드는 시간으로",
+        "tagline": "의정 기록 탐색기 브리핑"
+      }
+    },
+    {
+      "number": 2,
+      "section": "현황",
+      "archetype": "statement",
+      "title": "본회의 다음날 아침, 책상 위에 올라오는 한 권의 회의록",
+      "role": "context",
+      "content": {
+        "kicker": "01 · 현황",
+        "statement": "본회의 다음날 아침,\n책상 위에 올라오는 한 권의 회의록.",
+        "emphasis": "한 권의 회의록",
+        "attribution": "검색은 되지만, 맥락은 찾아지지 않는다"
+      }
+    },
+    {
+      "number": 3,
+      "section": "현황",
+      "archetype": "kpi_bento",
+      "title": "회의록은 많지만 읽히지 않는다",
+      "lead": "720권, 27만 쪽을 사람이 다 읽을 수는 없다",
+      "role": "tension",
+      "takeaway": "양이 문제이고, 찾는 시간이 비용이다",
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ],
+      "content": {
+        "hero": {
+          "value": "720",
+          "unit": "권",
+          "label": "누적 회의록",
+          "delta": "2000년 이후",
+          "trend": "flat"
+        },
+        "cells": [
+          {
+            "value": "27",
+            "unit": "만 쪽",
+            "label": "전체 분량"
+          },
+          {
+            "value": "95",
+            "unit": "만 건",
+            "label": "발언 기록"
+          },
+          {
+            "value": "1.8",
+            "unit": "시간",
+            "label": "안건 이력 1건 탐색",
+            "delta": "담당자 평균",
+            "trend": "down"
+          },
+          {
+            "value": "4",
+            "unit": "단계",
+            "label": "지금의 탐색 절차",
+            "delta": "검색→회차→쪽→발언"
+          }
+        ],
+        "note": "집계: 가온시의회 회의록 시스템 (2026. 9.), 탐색 시간: 담당자 5명 인터뷰"
+      },
+      "source_note": "출처: 가온시의회 회의록 시스템 집계 (2026. 9.) · 사무처 담당자 인터뷰 (2026. 8.)"
+    },
+    {
+      "number": 4,
+      "section": "제품",
+      "archetype": "screen_walkthrough",
+      "title": "회의록을 읽는 도구가 아니라, 질문할 수 있게 만드는 도구",
+      "lead": "질문 한 줄이 발언·안건·표결을 한 화면에 묶는다",
+      "role": "method",
+      "takeaway": "답변마다 원문 링크가 붙는다",
+      "content": {
+        "image": "screen",
+        "label": "탐색기 화면 (예시 데이터)",
+        "caption": "2026. 9. 시연 화면",
+        "layout": "image-left",
+        "points": [
+          {
+            "heading": "질문",
+            "detail": "'하천 정비 예산이 언제 어떻게 바뀌었나' 같은 자연어"
+          },
+          {
+            "heading": "근거",
+            "detail": "발언·안건·표결을 회차와 쪽수로 연결해 보여 준다"
+          },
+          {
+            "heading": "원문",
+            "detail": "모든 답변은 회의록 원문 링크를 가진다"
+          }
+        ]
+      }
+    },
+    {
+      "number": 5,
+      "section": "제품",
+      "archetype": "evidence_chart",
+      "title": "안건 이력 탐색이 1.8시간에서 6분으로 줄었다",
+      "lead": "같은 질문 10개를 담당자 5명이 두 방식으로 수행",
+      "role": "proof",
+      "takeaway": "시간이 줄어든 만큼 검토에 쓸 수 있다",
+      "evidence_ids": [
+        "E2"
+      ],
+      "content": {
+        "chart": {
+          "type": "bar",
+          "categories": [
+            "현행 검색",
+            "탐색기"
+          ],
+          "series": [
+            {
+              "name": "평균 소요(분)",
+              "values": [
+                108,
+                6
+              ]
+            }
+          ],
+          "unit": "분",
+          "highlight": 1,
+          "show_values": true
+        },
+        "insight": "질문 10개 기준 평균. 탐색기는 원문 확인 시간을 포함한다.",
+        "callouts": [
+          "현행: 검색 → 회차 → 쪽 → 발언 4단계",
+          "탐색기: 질문 → 근거 묶음 → 원문"
+        ]
+      },
+      "source_note": "출처: 제안사 시연 측정 (2026. 9., 담당자 5명 × 질문 10개)"
+    },
+    {
+      "number": 6,
+      "section": "제품",
+      "archetype": "data_table",
+      "title": "회의록은 네 가지 묶음으로 쪼개진다",
+      "lead": "문서 → 개체 → 사건 → 주장 → 통찰",
+      "role": "method",
+      "takeaway": "묶음 단위가 질문의 단위다",
+      "content": {
+        "columns": [
+          "묶음",
+          "뜻",
+          "예"
+        ],
+        "col_widths": [
+          1.6,
+          4.0,
+          5.0
+        ],
+        "rows": [
+          [
+            "문서",
+            "회의록 한 회차·한 쪽",
+            "제312회 본회의 제2차 회의록 34쪽"
+          ],
+          [
+            "개체",
+            "사람·기관·장소·예산 항목",
+            "하천정비과, 하천 정비 사업비"
+          ],
+          [
+            "사건",
+            "안건 상정·질의·표결",
+            "2025. 3. 하천 정비 예산 수정안 가결"
+          ],
+          [
+            "주장",
+            "발언 속 사실·의견",
+            "'정비 구간을 2km 늘려야 한다'"
+          ]
+        ]
+      },
+      "source_note": "출처: 묶음 정의: 제안사 데이터 모델 (2026. 9.), 예시는 가상의 안건"
+    },
+    {
+      "number": 7,
+      "section": "다음",
+      "archetype": "statement",
+      "title": "회의록을 읽는 시간을 정책을 만드는 시간으로",
+      "role": "takeaway",
+      "content": {
+        "kicker": "03 · 제안",
+        "statement": "회의록을 읽는 시간을\n정책을 만드는 시간으로.",
+        "emphasis": "정책을 만드는 시간"
+      }
+    },
+    {
+      "number": 8,
+      "section": "다음",
+      "archetype": "conclusion",
+      "title": "30일 시범 운영으로 시작합니다",
+      "role": "takeaway",
+      "takeaway": "회의록 전체를 넣고 담당자 10명이 30일 동안 쓴다",
+      "content": {
+        "statement": "회의록 720권 전체를 넣고 담당자 10명이 30일 동안 실제 질문으로 씁니다.",
+        "takeaways": [
+          "원문 링크 없는 답변은 내보내지 않는다",
+          "탐색 시간·원문 확인율을 매주 측정한다",
+          "의회 내부망에 설치하고 외부 전송은 없다"
+        ],
+        "next_steps": [
+          {
+            "label": "회의록 원문 제공",
+            "owner": "의회 사무처",
+            "when": "1주"
+          },
+          {
+            "label": "시범 담당자 10명 선정",
+            "owner": "사무처·보좌진",
+            "when": "2주"
+          },
+          {
+            "label": "30일 시범 운영 시작",
+            "owner": "코어닷투데이",
+            "when": "3주"
+          }
+        ],
+        "contact": "의정 기록 탐색기 · 브리핑 문의 — 코어닷투데이"
+      }
+    }
+  ]
+}

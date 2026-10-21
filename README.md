@@ -1,7 +1,7 @@
 # pptx-toolkit
 
 **내용과 논리를 적은 JSON 명세에서, 고객이 다음 날 직접 고칠 수 있는 전문가 수준의 PPTX를 만들고 검증하는 도구 모음이자 Claude 스킬입니다.**
-정부·공공기관 보고, 컨설팅 그레이드 임원 보고, 한국형 제안서·영업자료, 공공 RFP 제안서, 에디토리얼 백서, 고밀도 리포트, IR 피치, 키노트를 위한 스타일 프로파일 10종과 아키타입 29종을 내장했습니다.
+정부·공공기관 보고, 컨설팅 그레이드 임원 보고, 한국형 제안서·영업자료, 공공 RFP 제안서, 국가 R&D 연구개발계획, 기술·솔루션 제안, 데이터 브리핑, 강연·교안, 전시·이벤트 제안, 철학·비전 선언문, 회사소개서, 에디토리얼 백서, 고밀도 리포트, IR 피치, 키노트를 위한 스타일 프로파일 18종과 아키타입 32종을 내장했습니다.
 
 > Build editable, professional-grade PowerPoint decks from a `deck-spec.json` — Korean government briefings, consulting-style executive decks, proposals, editorial reports, IR pitches and keynotes — with automated quality gates (lint · package · geometry · pixel-bleed · number audit · text-loss · variety), font-metric overflow estimation, OKLCH palette derivation, a direction-comparison gate and render-based visual review. Python stdlib + PptxGenJS. MIT.
 
@@ -20,6 +20,14 @@
 <img src="docs/samples/rfp-04.png" width="49%" alt="proposal frame, as-is to-be table"> <img src="docs/samples/rfp-05.png" width="49%" alt="proposal frame, swimlane process">
 </p>
 
+v0.5에서 실제 납품 자료 8종의 스타일을 프로파일로 더했습니다. 국가 R&D 계획(`rnd_plan_kr`: 단계별 목표 `phase_columns`, 네이티브 간트 `gantt`), 기술·솔루션 제안(`solution_cards_kr`: 카드·어두운 구분 장·`code_block`), 데이터 브리핑(`briefing_paper_mono`), 강연 스토리형(`lecture_story`), 강의 교안, 전시·이벤트 제안, 철학·비전 선언문, 회사소개서.
+
+<p align="center">
+<img src="docs/samples/rnd-04.png" width="49%" alt="rnd plan, phase columns"> <img src="docs/samples/rnd-06.png" width="49%" alt="rnd plan, native gantt">
+<img src="docs/samples/cards-03.png" width="49%" alt="solution cards, dark section divider with contents"> <img src="docs/samples/cards-05.png" width="49%" alt="solution cards, code block">
+<img src="docs/samples/brief-03.png" width="49%" alt="briefing paper mono, kpi bento"> <img src="docs/samples/lecture-05.png" width="49%" alt="lecture story, statement with emphasis">
+</p>
+
 같은 명세를 프로파일 세 개로 만든 **방향 비교 시트**(`directions`): 왼쪽부터 제안형 · 두 글꼴 컨설팅형 · 에디토리얼형.
 
 <p align="center"><img src="docs/samples/directions.png" width="90%" alt="directions sheet"></p>
@@ -33,7 +41,7 @@
 AI가 만든 PPT는 두 가지 이유로 실무에 못 씁니다. **편집이 안 되거나**(이미지 슬라이드, 깨진 차트), **예쁜데 틀립니다**(출처 없는 숫자, 합계 불일치, 토픽만 적힌 제목, 장표마다 다른 스타일). pptx-toolkit은 이 둘을 구조로 막습니다.
 
 - **네이티브 PPTX** — 텍스트·표·차트가 PowerPoint 객체입니다. 차트 데이터를 PowerPoint에서 바로 고칠 수 있습니다.
-- **내용과 디자인의 분리** — 사람(또는 Claude)은 `deck-spec.json`에 *무엇을 말할지*만 씁니다. 색·글꼴·여백·글자 크기·행간은 **스타일 프로파일 토큰**이, 슬라이드 구성은 **29개 아키타입**(요약·핵심 숫자·근거 차트·작은 차트 격자·비교·전후·프로세스·로드맵·아키텍처·2×2·중첩 시장·사례·권고·결론…)이 결정합니다. 같은 명세를 프로파일만 바꿔 정부형·컨설팅형·에디토리얼형으로 다시 만들 수 있고, `directions`가 그 비교 시트를 한 장으로 만들어 줍니다.
+- **내용과 디자인의 분리** — 사람(또는 Claude)은 `deck-spec.json`에 *무엇을 말할지*만 씁니다. 색·글꼴·여백·글자 크기·행간은 **스타일 프로파일 토큰**이, 슬라이드 구성은 **32개 아키타입**(요약·핵심 숫자·근거 차트·작은 차트 격자·비교·전후·프로세스·로드맵·아키텍처·2×2·중첩 시장·사례·권고·결론…)이 결정합니다. 같은 명세를 프로파일만 바꿔 정부형·컨설팅형·에디토리얼형으로 다시 만들 수 있고, `directions`가 그 비교 시트를 한 장으로 만들어 줍니다.
 - **일곱 겹의 자동 게이트** — 명세 lint(액션 타이틀·글자량·출처·색 대비·AI 티) → 패키지 검사(PowerPoint가 거부하는 패턴) → 기하 검사(경계 이탈·겹침·**설치 폰트의 실제 글자 폭과 어절 단위 줄바꿈으로 추정한 넘침**·글자 하한·바닥 안전구역·이미지 해상도) → 렌더 픽셀 넘침 검출 → 내용 감사(합계·단위 혼용·기간·추정 표기) → 텍스트 손실 검증(명세의 모든 문자열·차트 데이터가 파일에 들어갔는지) → 변주 감사(레이아웃 반복·색 튐). 하나라도 실패하면 종료 코드가 0이 아닙니다. 렌더 전에는 한글이 실제로 그려지는 환경인지 프로브로 확인합니다.
 - **한국 실무 규범 내장** — 정부상징 색상·보호공간·상징체 사용 제한, KRDS 60-30-10과 명도 대비 기준, 행정업무운영 편람의 항목 기호(□ ○ -, Ⅰ·Ⅱ 장 번호), 컨설팅 장표 문법(액션 타이틀·Exhibit·출처 줄·트래커), 숫자 중심 타이포그래피, CJK 행간·자간·기울임 금지 규칙. 모두 Paperlogy·Pretendard·Nanum Myeongjo(SIL OFL) 폰트 체계 위에서 동작합니다.
 - **색은 도출한다** — 브랜드 hex나 로고 PNG에서 OKLCH로 주조·보조·강조와 중성 명도 램프를 수렴시키고(`palette`), 채도 밴드·색상 간격·대비를 검사한 뒤 한 문장 근거와 함께 토큰을 내놓습니다.
@@ -139,6 +147,14 @@ ln -s "$(pwd)" ~/.claude/skills/pptx-toolkit
 | `paperlogy_business` | 제안서·영업·내부 보고·교육 | 큰 숫자, 간결한 카피, 과감한 이미지 크롭, 이미지·어두운 표지 |
 | `institutional_pitch` | IR·지원사업 심사·신사업 심의 | 남색 + 절제된 금속색 강조, 중첩 시장·2×2·큰 숫자, 과장 표현 lint |
 | `proposal_rfp_kr` | 나라장터·공공 시스템 구축 제안서, 정성평가 | 모든 장에 요구사항→대응방안→검증 기준→산출물 블록, 요구 ID 태그 띠, 빵부스러기 킥커, 남색 표 머리글, 큰 쪽번호. 화면 증명(`screen_walkthrough`)·주체별 흐름(`swimlane`) |
+| `rnd_plan_kr` | 국가 R&D 연구개발계획 발표, 과제 선정 평가 | 왼쪽 가장자리 탭, 한 줄 제목 + 리드 문장, 남색 머리글과 단계별 색, 연차 열 카드(`phase_columns`), 네이티브 추진 일정표(`gantt`), 굵은 쪽번호 |
+| `solution_cards_kr` | 기술 아키텍처·솔루션·지자체 협력 제안 | 흰 카드(윗단 파란 띠·그림자), 어두운 사진 구분 장 + CONTENTS 목록·키워드 칩, 코드·설정 블록(`code_block`), 어두운 핵심 원칙 띠, `02 / 25` 쪽번호, 오른쪽 위 로고 |
+| `briefing_paper_mono` | 데이터 분석 브리핑, 사실 중심 보고 | 종이색 바탕, 세리프 제목 + 모노스페이스 라벨·숫자, 녹슨 주황 강조, 형광펜 마커(`emphasis`), 어두운 선언 장 |
+| `lecture_story` | 대중 강연·워크숍 | 어두운 문장 장(핵심 구절 주황)과 종이색 삽화 장을 교차, 한 장에 한 생각, `Q.` 라벨·빈칸·인용 |
+| `course_material_kr` | 강의 교안·실습 안내 | 제목 띠, 청록 주조 + 남색 헤딩, 둥근 번호, 표·코드·정의 중심 고밀도 읽기 |
+| `expo_neon_dark` | 박람회 특별관·체험 이벤트·쇼케이스 제안 | 남빛 검정 바탕, 상단 시안 띠, 단계마다 다른 네온(시안·마젠타·민트·노랑) 번호 원, 카드 격자 |
+| `manifesto_navy` | 철학·문화·비전 선언, 온보딩 | 두 줄 문장 제목 + `01 / 섹션` 킥커, 남색 선언 장, 파란 띠, 장식 없는 위계 |
+| `company_profile_gold` | 회사소개서·포트폴리오 | 검정 표지·구분 장에 금빛 큰 번호, 상단 금빛 띠, 따뜻한 종이색 카드, 오른쪽 위 로고 |
 | `editorial_report` | 연차보고·백서·문화기관 | 종이색 바탕, 명조 제목, 주사(朱砂) 강조 한 번, 넓은 행간 |
 | `research_dense` | 조사·분석 리포트(pre_read) | 고밀도, 하한 11pt, 단색 명도 계단, Exhibit·트래커 |
 | `executive_keynote` | 키노트·비전·제품 공개 | 어두운 배경, 장당 메시지 하나, 큰 글자 |
@@ -177,7 +193,7 @@ python3 scripts/pptx.py inherit out.pptx 양식.pptx -o 결과.pptx --layout "�
 
 | 커맨드 | 역할 |
 |---|---|
-| `profiles [--match]` · `archetypes` | 프로파일 10종(meta 라우팅), 아키타입 29종과 `content` 계약 |
+| `profiles [--match]` · `archetypes` | 프로파일 18종(meta 라우팅), 아키타입 32종과 `content` 계약 |
 | `new-spec` | 명세 스캐폴드 |
 | `lint spec [--ghost]` | 명세 검사(AI 티 포함), 고스트덱 출력 |
 | `palette hex… \| --image png [--check spec]` | OKLCH 팔레트 도출·검사 → `design_tokens` 조각 |

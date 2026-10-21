@@ -32,6 +32,9 @@ function palette(tok, bg) {
   return base;
 }
 
+// 어두운 띠 위 라벨용: 주조색을 밝게
+function lighten(hex) { return shade(hex, 70); }
+
 function shade(hex, amount) {
   const n = parseInt(hex, 16);
   const r = Math.min(255, ((n >> 16) & 255) + amount), g = Math.min(255, ((n >> 8) & 255) + amount), b = Math.min(255, (n & 255) + amount);
@@ -88,7 +91,8 @@ function defineMasters(ctx) {
     const titleH = (maxLines * ctx.scale.title * tok.typography.line_height.title) / 72 + 0.08;
     objects.push({ placeholder: { options: { name: 'title', type: 'title', x: M.left + chipShift, y: titleY, w: W - M.left - M.right - chipShift - (meta.sticker ? 1.4 : 0), h: titleH, bold: tok.fonts.titleBold, color: pal.ink_strong, fontFace: ctx.font.display, margin: 0, valign: 'top', align: tok.title.align || 'left', lang: 'ko-KR' }, text: '' } });
     const def = { title: `TK_${bg.toUpperCase()}`, background: { color: pal.background }, objects };
-    if (F.right === 'page_number') {
+    const perSlidePn = F.page_number_style === 'fraction' || F.page_number_style === 'prefix' || F.page_position === 'left';
+    if (F.right === 'page_number' && !perSlidePn) {
       const big = F.page_number_style === 'display';
       const pnPt = big ? Math.round(ctx.scale.title * 0.6) : Math.max(8, ctx.scale.source - 1);
       def.slideNumber = { x: W - M.right - 0.8, y: footY, w: 0.8, h: footH, fontSize: pnPt, bold: big, color: big ? pal.primary : colorOf(pal, F.color, pal.ink_faint), fontFace: big ? ctx.font.numeral : ctx.font.body, align: 'right', margin: 0, valign: 'middle' };
@@ -135,20 +139,37 @@ function begin(ctx, slideSpec, opts = {}) {
     return { slide, body, bg };
   }
 
-  // 상단 괘선 (제안서형): 가는 선 + 왼쪽 짧은 주조색 구간
+  // 제목 띠 (교안형): 제목 영역 뒤 전체 폭 연한 띠
+  if (FR.title_band) P.rect(ctx, slide, { x: 0, y: 0, w: W, h: master.titleY + master.titleH + 0.12 }, { fill: ctx.pal.dark ? ctx.pal.surface : (colorOf(ctx.pal, FR.title_band_color, ctx.pal.surface)), radius: 0 });
+  // 상단 괘선: 가는 선 + 왼쪽 짧은 주조색 구간 (제안서형) 또는 전체 폭 색 띠 (top_rule_full: 전시형·소개서형)
   if (FR.top_rule) {
-    P.rect(ctx, slide, { x: M.left, y: 0.15, w: frame.width, h: 0.03 }, { fill: ctx.pal.line, radius: 0 });
-    P.rect(ctx, slide, { x: M.left, y: 0.15, w: FR.top_rule_accent_w || 1.35, h: 0.03 }, { fill: ctx.pal.primary, radius: 0 });
+    const ruleColor = FR.top_rule_color === 'section' ? (ctx.tok.chart.palette[((slideSpec._sectionIndex || 1) - 1) % ctx.tok.chart.palette.length]) : colorOf(ctx.pal, FR.top_rule_color, ctx.pal.primary);
+    if (FR.top_rule_full) P.rect(ctx, slide, { x: 0, y: 0, w: W, h: FR.top_rule_h || 0.06 }, { fill: ruleColor, radius: 0 });
+    else {
+      P.rect(ctx, slide, { x: M.left, y: 0.15, w: frame.width, h: 0.03 }, { fill: ctx.pal.line, radius: 0 });
+      P.rect(ctx, slide, { x: M.left, y: 0.15, w: FR.top_rule_accent_w || 1.35, h: 0.03 }, { fill: ruleColor, radius: 0 });
+    }
   }
+  // 왼쪽 가장자리 탭 (R&D 계획형): 슬라이드 왼쪽 끝 작은 주조색 막대
+  if (FR.edge_tab) P.rect(ctx, slide, { x: 0, y: master.titleY - 0.1, w: 0.09, h: 0.5 }, { fill: ctx.pal.primary, radius: 0 });
+  // 로고 (footer.logo: top-right) — 승인 자산 'logo' 가 있을 때 본문 장 오른쪽 위
+  if (tok.footer.logo === 'top-right' && ctx.asset('logo')) slide.addImage({ path: ctx.asset('logo'), x: W - M.right - 1.5, y: Math.max(0.12, M.top - 0.06), w: 1.5, h: 0.3, sizing: { type: 'contain', w: 1.5, h: 0.3 }, objectName: 'logo' });
   // 킥커 / 트래커 / 빵부스러기 / exhibit
   const kickerY = M.top - 0.02;
   const kickerParts = [];
-  if ((tok.title.kicker === 'section' || tok.title.kicker === 'tracker' || tok.title.kicker === 'breadcrumb') && slideSpec.section) kickerParts.push(slideSpec.section);
+  if (['section', 'tracker', 'breadcrumb', 'chip', 'numbered'].includes(tok.title.kicker) && slideSpec.section) kickerParts.push(slideSpec.section);
   if (slideSpec.kicker) kickerParts.push(slideSpec.kicker);
   if (tok.footer.exhibit_numbers && slideSpec.exhibit != null) kickerParts.unshift(typeof slideSpec.exhibit === 'number' ? `Exhibit ${slideSpec.exhibit}` : String(slideSpec.exhibit));
   if (tok.title.kicker !== 'none' && kickerParts.length) {
     if (tok.title.kicker === 'breadcrumb') P.label(ctx, slide, kickerParts.join('   /   '), { x: M.left, y: kickerY, w: frame.width - 1.6, h: 0.24 }, { color: ctx.pal.primary, spacing: 0 });
-    else P.label(ctx, slide, kickerParts.join('  ·  '), { x: M.left, y: kickerY, w: frame.width - 1.6, h: 0.24 }, { color: ctx.pal.ink_muted });
+    else if (tok.title.kicker === 'chip') {
+      // 알약 칩 (소개서형): 연한 주조색 바탕 + 주조색 글자
+      const txt = kickerParts.join('  ·  ');
+      const cw = Math.min(frame.width - 1.6, txt.length * (ctx.scale.kicker * 0.75) / 72 + 0.4);
+      P.rect(ctx, slide, { x: M.left, y: kickerY, w: cw, h: 0.24 }, { fill: ctx.pal.primary_soft, radius: 12 });
+      P.label(ctx, slide, txt, { x: M.left + 0.12, y: kickerY, w: cw - 0.24, h: 0.24 }, { color: ctx.pal.primary, spacing: 0, align: 'center' });
+    } else if (tok.title.kicker === 'numbered') P.label(ctx, slide, [slideSpec._sectionIndex ? numeralText(ctx, slideSpec._sectionIndex, 'pad') : null, ...kickerParts].filter(Boolean).join('  /  '), { x: M.left, y: kickerY, w: frame.width - 1.6, h: 0.24 }, { color: colorOf(ctx.pal, tok.title.kicker_color, ctx.pal.ink_muted) });
+    else P.label(ctx, slide, kickerParts.join('  ·  '), { x: M.left, y: kickerY, w: frame.width - 1.6, h: 0.24 }, { color: colorOf(ctx.pal, tok.title.kicker_color, ctx.pal.ink_muted) });
     if (tok.title.kicker === 'tracker' && ctx.sections.length > 1) drawTracker(ctx, slide, slideSpec, { x: W - M.right - 1.5, y: kickerY + 0.06, w: 1.5, h: 0.12 });
   }
   // 스티커 (DRAFT / 초안 / 예시)
@@ -180,6 +201,14 @@ function begin(ctx, slideSpec, opts = {}) {
   slide.addText(title, Object.assign({ placeholder: 'title', fontSize: fit.pt, lineSpacingMultiple: spacingMultiple(tlh, ctx.font.display, tok.fonts.titleBold), lang: 'ko-KR' }, trk ? { charSpacing: trk } : {}));
   let bodyTop = master.titleY + master.titleH + (opts.bodyGap != null ? opts.bodyGap : 0.22);
   if (FR.title_rule) { P.hline(ctx, slide, M.left, master.titleY + master.titleH + 0.02, frame.width, { color: ctx.pal.line, width: 0.5 }); bodyTop = master.titleY + master.titleH + 0.1; }
+  if (FR.title_band) bodyTop = master.titleY + master.titleH + 0.34;
+  // 리드 문장 (제목 아래 한 줄, 회색): 기술 제안·R&D 계획·브리핑형의 부제
+  if (slideSpec.lead && String(slideSpec.lead).trim()) {
+    const leadPt = ctx.scale.body + (tok.mode === 'live' ? 1 : 0);
+    const lh = Math.min(0.62, P.heightFor([slideSpec.lead], titleW, leadPt, { lineHeight: 1.3, face: ctx.font.body }) + 0.08);
+    P.fitBox(ctx, slide, [slideSpec.lead], { x: M.left, y: bodyTop - (FR.title_rule ? 0 : 0.08), w: titleW, h: lh, name: 'lead' }, { maxPt: leadPt, minPt: ctx.scale.body_min, lineHeight: 1.3, textOptions: { color: colorOf(ctx.pal, tok.title.lead_color, ctx.pal.ink_muted), valign: 'top' } });
+    bodyTop += lh + 0.12;
+  }
 
   // 요구사항 / 대응방안 블록 (제안서형) — 본문 위
   const brief = briefRows(ctx, slideSpec.brief);
@@ -252,7 +281,13 @@ function end(ctx, slideSpec) {
   if (isChrome && f.summary) {
     const sm = f.summary.spec;
     const labelW = sm.label ? Math.min(2.4, Math.max(1.2, sm.label.length * 0.2 + 0.4)) : 0;
-    if (sm.style === 'band') {
+    if (sm.style === 'dark') {
+      // 어두운 띠 (기술 제안형 '핵심 원칙'): 남색 바탕 + 주조색 라벨 + 흰 글자
+      const fill = ctx.pal.dark ? ctx.pal.surface_strong : (tok.cover.band_color || ctx.pal.ink_strong);
+      P.rect(ctx, slide, { x: f.left, y: f.summary.y, w: f.width, h: f.summary.h }, { fill, radius: ctx.tok.geometry.radius });
+      if (sm.label) P.ctxText(ctx, slide, sm.label, { x: f.left + 0.25, y: f.summary.y, w: labelW, h: f.summary.h, fontSize: ctx.scale.body, bold: true, color: ctx.pal.dark ? ctx.pal.accent : lighten(ctx.pal.primary), valign: 'middle', fontFace: ctx.font.display, singleLine: true });
+      P.fitBox(ctx, slide, [sm.text], { x: f.left + 0.25 + labelW + 0.2, y: f.summary.y, w: f.width - labelW - 0.7, h: f.summary.h, name: 'summary' }, { maxPt: ctx.scale.body, minPt: ctx.scale.body_min, lineHeight: 1.2, textOptions: { color: 'FFFFFF', valign: 'middle' } });
+    } else if (sm.style === 'band') {
       P.rect(ctx, slide, { x: f.left, y: f.summary.y, w: f.width, h: f.summary.h }, { fill: ctx.pal.surface, radius: 0 });
       if (sm.label) P.ctxText(ctx, slide, sm.label, { x: f.left + 0.25, y: f.summary.y, w: labelW, h: f.summary.h, fontSize: ctx.scale.body + 1, bold: true, color: ctx.pal.accent, valign: 'middle', fontFace: ctx.font.display, singleLine: true });
       P.fitBox(ctx, slide, [sm.text], { x: f.left + 0.25 + labelW + 0.2, y: f.summary.y, w: f.width - labelW - 0.7, h: f.summary.h, name: 'summary' }, { maxPt: ctx.scale.body + 1, minPt: ctx.scale.body_min, lineHeight: 1.2, textOptions: { bold: !sm.label, color: ctx.pal.ink_strong, valign: 'middle' } });
@@ -295,6 +330,22 @@ function end(ctx, slideSpec) {
       if (slideSpec.xref) P.ctxText(ctx, slide, slideSpec.xref, { x: f.left + f.width * 0.5, y: footY, w: f.width * 0.5 - pnW, h: footH, fontSize: ctx.scale.source, bold: true, color: ctx.pal.primary, align: 'right', valign: 'middle', singleLine: true });
     }
   } else if (isChrome && FR.footer_rule) P.hline(ctx, slide, f.left, f.footerY - 0.08, f.width, { color: ctx.pal.line, width: 0.5 });
+  // 슬라이드별 쪽번호: fraction("02 / 25") · prefix("C14") · 왼쪽 배치 — 마스터 slideNumber 대신 직접 그린다
+  const F = tok.footer;
+  const perSlidePn = F.right === 'page_number' && (F.page_number_style === 'fraction' || F.page_number_style === 'prefix' || F.page_position === 'left');
+  if (perSlidePn && slideSpec.archetype !== 'cover') {
+    const n = ctx.slideIndex || slideSpec.number;
+    const total = ctx.slideTotal || ctx.spec.slides.length;
+    const footY = f.footerY, footH = master.footH || 0.28;
+    const pnFace = tok.typography.mono_labels && ctx.font.mono ? ctx.font.mono : ctx.font.numeral;
+    const left = F.page_position === 'left';
+    const box = { x: left ? f.left : f.right - 1.2, y: footY, w: 1.2, h: footH };
+    let runs;
+    if (F.page_number_style === 'fraction') runs = [{ text: String(n).padStart(2, '0'), options: { bold: true, color: ctx.pal.ink } }, { text: `  /  ${total}`, options: { color: ctx.pal.ink_faint } }];
+    else if (F.page_number_style === 'prefix') runs = [{ text: `${F.page_prefix || ''}${String(n).padStart(2, '0')}`, options: { bold: true, color: ctx.pal.primary } }];
+    else runs = [{ text: String(n), options: { color: colorOf(ctx.pal, F.color, ctx.pal.ink_faint) } }];
+    P.ctxText(ctx, slide, runs, Object.assign(box, { fontSize: F.page_number_style === 'prefix' ? Math.min(11, ctx.scale.caption + 1) : Math.max(8, ctx.scale.source), fontFace: pnFace, align: left ? 'left' : 'right', valign: 'middle', wrap: false }));
+  }
   if (slideSpec.source_note) P.sourceNote(ctx, slide, slideSpec.source_note);
   const notes = [];
   if (slideSpec.speaker_notes) notes.push(slideSpec.speaker_notes);

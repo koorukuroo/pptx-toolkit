@@ -56,7 +56,8 @@ async function build(specPath, outPath, { hooksPath, only } = {}) {
   if (spec.assets && spec.assets.logo) assets.logo = spec.assets.logo;
   const ctx = {
     pres, spec, tok, scale: tok.scale, masters: {}, hooks: null,
-    font: { display: tok.fonts.resolved.display, body: tok.fonts.resolved.body, numeral: tok.fonts.resolved.numeral },
+    font: { display: tok.fonts.resolved.display, body: tok.fonts.resolved.body, numeral: tok.fonts.resolved.numeral, mono: tok.fonts.resolved.mono || null },
+    slideIndex: 0, slideTotal: 0,
     sections: [], currentSection: null,
     warn: (msg, extra) => warnings.push(Object.assign({ slide: ctx.slideSpec ? ctx.slideSpec.number : null, message: msg }, extra || {})),
     info: (msg) => infos.push({ slide: ctx.slideSpec ? ctx.slideSpec.number : null, message: msg }),
@@ -78,6 +79,7 @@ async function build(specPath, outPath, { hooksPath, only } = {}) {
   frame.defineMasters(ctx);
 
   const onlySet = parseOnly(only);
+  ctx.slideTotal = onlySet ? slides.filter((s) => onlySet.has(s.number)).length : slides.length;
   let built = 0;
   let lastSection = null;
   for (const s of slides) {
@@ -86,6 +88,7 @@ async function build(specPath, outPath, { hooksPath, only } = {}) {
     else if (!s.section && lastSection !== null && !ctx.currentSection) { /* 섹션 없는 슬라이드는 기본 섹션 */ }
     const render = archetypes[s.archetype];
     if (!render) { warnings.push({ slide: s.number, message: `알 수 없는 아키타입 '${s.archetype}' — 건너뜀 (가능: ${Object.keys(ARCHETYPES).join(', ')})` }); continue; }
+    ctx.slideIndex = built + 1;
     const { slide, body } = frame.begin(ctx, s);
     try {
       render(ctx, slide, s, body);

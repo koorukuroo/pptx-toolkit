@@ -99,9 +99,16 @@
             "public_policy_report",
             "consulting_executive",
             "proposal_bid",
+            "rnd_plan",
+            "tech_proposal",
+            "data_briefing",
             "product_intro",
+            "company_profile",
             "training_lecture",
+            "course_material",
             "keynote_story",
+            "manifesto",
+            "expo_showcase",
             "template_fill",
             "redesign_existing"
           ]
@@ -277,6 +284,10 @@
               "takeaway"
             ],
             "description": "서사 역할 — lint role-coverage 가 hook/proof/takeaway 커버리지를 검사"
+          },
+          "lead": {
+            "type": "string",
+            "description": "제목 아래 리드 문장 한 줄 (회색). 기술 제안·R&D 계획·브리핑형"
           },
           "brief": {
             "description": "제목 아래 요구사항·대응방안 블록 (제안서형 프레임). {requirement, response} 또는 [{label, text, emphasis}]",

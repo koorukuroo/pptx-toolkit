@@ -1,6 +1,6 @@
 ---
 name: pptx-toolkit
-description: "전문가 수준의 편집 가능한 PPTX를 설계·생성·편집·검수하는 스킬. 정부·공공기관 보고(정부상징·KRDS 규범), 컨설팅 그레이드 임원 보고(액션 타이틀·전시물), 한국형 제안서·영업자료, 공공 RFP 제안서(요구→대응→검증 고정 블록), 에디토리얼 백서, 고밀도 리포트, IR 피치, 키노트 — 10개 스타일 프로파일·29개 아키타입. deck-spec.json(내용·논리·시각 의도) → 네이티브 PPTX(pptxgenjs) → 자동 게이트(명세 lint·패키지·기하·픽셀 넘침·숫자 감사·텍스트 손실·변주) → 렌더 시각 검수. 방향 비교 시트(directions), 브랜드 색 팔레트 도출(palette), 기존 PPTX·기관 양식 채우기(inventory→replace)와 양식 상속(inherit), 슬라이드 복제·재배열, 템플릿 분석도 담당. '.pptx', 'PPT', '발표자료', '보고서 장표', '제안서 슬라이드', '덱' 요청 시 사용."
+description: "전문가 수준의 편집 가능한 PPTX를 설계·생성·편집·검수하는 스킬. 정부·공공기관 보고(정부상징·KRDS 규범), 컨설팅 그레이드 임원 보고(액션 타이틀·전시물), 한국형 제안서·영업자료, 공공 RFP 제안서(요구→대응→검증 고정 블록), 국가 R&D 연구개발계획(단계별 목표·네이티브 간트), 기술·솔루션 제안(카드형·코드 블록), 데이터 브리핑(종이색·모노), 강연 스토리형, 강의 교안, 전시·이벤트 제안, 철학·비전 선언문, 회사소개서, 에디토리얼 백서, 고밀도 리포트, IR 피치, 키노트 — 18개 스타일 프로파일·32개 아키타입. deck-spec.json(내용·논리·시각 의도) → 네이티브 PPTX(pptxgenjs) → 자동 게이트(명세 lint·패키지·기하·픽셀 넘침·숫자 감사·텍스트 손실·변주) → 렌더 시각 검수. 방향 비교 시트(directions), 브랜드 색 팔레트 도출(palette), 기존 PPTX·기관 양식 채우기(inventory→replace)와 양식 상속(inherit), 슬라이드 복제·재배열, 템플릿 분석도 담당. '.pptx', 'PPT', '발표자료', '보고서 장표', '제안서 슬라이드', '덱' 요청 시 사용."
 allowed-tools: Bash(python3 *), Bash(node *), Read, Write, Glob, Grep
 ---
 
@@ -29,8 +29,8 @@ Director는 이 문서와 `references/`를 읽고 `deck-spec.json`을 쓴다. Re
 ## 커맨드
 
     S="${CLAUDE_SKILL_DIR}/scripts/pptx.py"
-    python3 "$S" profiles [--match "occasion=투자,density=high"]   # 스타일 프로파일 10종 요약 + meta 라우팅
-    python3 "$S" archetypes                                 # 아키타입 29종과 content 계약
+    python3 "$S" profiles [--match "occasion=투자,density=high"]   # 스타일 프로파일 18종 요약 + meta 라우팅
+    python3 "$S" archetypes                                 # 아키타입 32종과 content 계약
     python3 "$S" new-spec -o deck-spec.json --profile consulting_grade --deck-type consulting_executive --mode hybrid --title "…"
     python3 "$S" lint deck-spec.json --ghost                # 스키마+내용 규칙+AI 티 검사, 고스트덱(제목만) 출력
     python3 "$S" palette 0F4C81 E4572E [-o tokens.json] | --image logo.png [--paper] | --check deck-spec.json   # 색 도출·검사
@@ -61,11 +61,11 @@ Director는 이 문서와 `references/`를 읽고 `deck-spec.json`을 쓴다. Re
 
 **Phase 0 — 브리프.** 청중·직급, 요청하는 결정, 전달 모드(`live`/`pre_read`/`hybrid`), 시간·분량, 기관 자산(로고·양식) 유무, 기밀 표시, 근거 수준을 확인한다. 성공 조건 한 문장: "이 자료를 본 뒤 **[청중]** 은 **[핵심 결론]** 을 이해하고 **[행동]** 을 결정한다". 빠진 것이 결과를 크게 바꾸면 질문하고, 아니면 가정을 적고 진행한다.
 
-**Phase 1 — 라우팅.** `deck_type`, `style_profile`(`profiles --match` 로 meta(mood·occasion·formality·density)와 맞춘다: 정부 `government_kr`, 정책 pre-read `public_policy`, 임원 `consulting_grade`, 자문·금융 `two_font_consulting`, 제안·영업 `paperlogy_business`, 공공 RFP 제안서·정성평가 `proposal_rfp_kr`, IR·심사 `institutional_pitch`, 백서·연차보고 `editorial_report`, 고밀도 조사 리포트 `research_dense`, 강연 `executive_keynote`), `brand_mode`(`provided`=기관 양식 직접 채움 / `derived`=양식 토큰 차용 / `neutral`), `communication_mode`(`pyramid`·`briefing`·`narrative`·`instructional`·`showcase`). 브랜드 색이 주어지면 `palette` 로 토큰을 도출하고 근거 문장을 함께 보고한다. 읽을 참조: 전 경로 `references/storyline-rules.md`·`deck-spec-guide.md`·`typography-cjk.md`; 정부·공공 `government-rules.md`; 임원·컨설팅·제안 `consulting-rules.md`; 한국형 제안·영업 `paperlogy-rules.md`; 공공 RFP 제안서 `proposal-rfp-rules.md`(요구·대응·검증·태그 블록, 아키타입 조합); 데이터 슬라이드 `data-visualization.md`; 기관 양식 `template-workflow.md`.
+**Phase 1 — 라우팅.** `deck_type`, `style_profile`(`profiles --match` 로 meta(mood·occasion·formality·density)와 맞춘다: 정부 `government_kr`, 정책 pre-read `public_policy`, 임원 `consulting_grade`, 자문·금융 `two_font_consulting`, 제안·영업 `paperlogy_business`, 공공 RFP 제안서·정성평가 `proposal_rfp_kr`, 국가 R&D 과제 발표 `rnd_plan_kr`, 기술·솔루션·협력 제안 `solution_cards_kr`, 데이터 브리핑 `briefing_paper_mono`, 대중 강연 `lecture_story`, 강의 교안·실습 안내 `course_material_kr`, 전시·이벤트 제안 `expo_neon_dark`, 철학·비전 선언 `manifesto_navy`, 회사소개서 `company_profile_gold`, IR·심사 `institutional_pitch`, 백서·연차보고 `editorial_report`, 고밀도 조사 리포트 `research_dense`, 무대 키노트 `executive_keynote`), `brand_mode`(`provided`=기관 양식 직접 채움 / `derived`=양식 토큰 차용 / `neutral`), `communication_mode`(`pyramid`·`briefing`·`narrative`·`instructional`·`showcase`). 브랜드 색이 주어지면 `palette` 로 토큰을 도출하고 근거 문장을 함께 보고한다. 읽을 참조: 전 경로 `references/storyline-rules.md`·`deck-spec-guide.md`·`typography-cjk.md`; 정부·공공 `government-rules.md`; 임원·컨설팅·제안 `consulting-rules.md`; 한국형 제안·영업 `paperlogy-rules.md`; 공공 RFP 제안서 `proposal-rfp-rules.md`(요구·대응·검증·태그 블록, 아키타입 조합); R&D 계획·기술 제안·브리핑·강연·교안·전시·선언문·소개서 `profile-playbooks.md`(프로파일별 전용 요소·장 구성); 데이터 슬라이드 `data-visualization.md`; 기관 양식 `template-workflow.md`.
 
 **Phase 2 — 근거표.** `evidence[]`에 주장·종류(fact/estimate/interpretation/recommendation/user_provided)·신뢰도·출처·기간. **수치·출처·사례를 지어내지 않는다.** 사용자 제공 사실과 외부 조사 사실을 구분한다. 없는 숫자는 쓰지 않거나 `(추정)`과 근거를 쓴다.
 
-**Phase 3 — 스토리라인 → deck-spec.** `new-spec`으로 시작. `metadata.audience_state`(시작 상태 → 목표 상태)를 적고 슬라이드마다 `role`(hook·context·tension·method·proof·takeaway)을 단다. 2번째 슬라이드에 답(`executive_summary`). 본문 제목은 모두 액션 타이틀(결론 문장, 2줄). 슬라이드당 결론 하나·전시물 하나. 아키타입은 `archetypes`에서 고른다 (`points` 남용 금지, 데이터는 `evidence_chart`(`relation` 으로 유형 선택, `target` 목표선), 부문별 같은 지표는 `small_multiples`, 숫자 하나는 `big_number_stage`, 핵심+보조 지표는 `kpi_bento`, 전후는 `before_after`, 시장 규모는 `tam_nested`, 선택은 `comparison`, 순서는 `process`(주체별이면 `swimlane`), 화면 증명은 `screen_walkthrough`, 시간은 `roadmap`, 구조는 `architecture`). 마지막은 `conclusion`/`recommendation`. 10장 초과면 `agenda`·`section_divider`. 상세는 `appendix`. 통계 슬라이드엔 `source_note` 필수. 발표자 노트는 200~400자(큐 + 전환). `lint --ghost`로 제목만 읽어 이야기가 되는지 확인하고 오류 0까지 고친다 (경고 중 AI 티 항목 — 이모지·수동 글머리·과장 표현·강조 남발 — 은 고친다).
+**Phase 3 — 스토리라인 → deck-spec.** `new-spec`으로 시작. `metadata.audience_state`(시작 상태 → 목표 상태)를 적고 슬라이드마다 `role`(hook·context·tension·method·proof·takeaway)을 단다. 2번째 슬라이드에 답(`executive_summary`). 본문 제목은 모두 액션 타이틀(결론 문장, 2줄). 슬라이드당 결론 하나·전시물 하나. 아키타입은 `archetypes`에서 고른다 (`points` 남용 금지, 데이터는 `evidence_chart`(`relation` 으로 유형 선택, `target` 목표선), 부문별 같은 지표는 `small_multiples`, 숫자 하나는 `big_number_stage`, 핵심+보조 지표는 `kpi_bento`, 전후는 `before_after`, 시장 규모는 `tam_nested`, 선택은 `comparison`, 순서는 `process`(주체별이면 `swimlane`), 화면 증명은 `screen_walkthrough`, 코드·설정은 `code_block`, 단계·연차 목표는 `phase_columns`, 추진 일정표는 `gantt`, 시간은 `roadmap`, 구조는 `architecture`). 마지막은 `conclusion`/`recommendation`. 10장 초과면 `agenda`·`section_divider`. 상세는 `appendix`. 통계 슬라이드엔 `source_note` 필수. 발표자 노트는 200~400자(큐 + 전환). `lint --ghost`로 제목만 읽어 이야기가 되는지 확인하고 오류 0까지 고친다 (경고 중 AI 티 항목 — 이모지·수동 글머리·과장 표현·강조 남발 — 은 고친다).
 
 **Phase 4 — 방향 게이트 → 전체 빌드.** `directions deck-spec.json -o build/directions`로 프로파일 2~3개 × (표지·요약·데이터 장) 비교 시트(`directions.png`)를 만들어 Read 로 보고 사용자에게 열 번호와 함께 보여 준다. 사용자가 고르면 `directions --approve <profile> --note "사용자 발언" --apply-to-spec` 으로 기록한다(이후 톤·색·밀도는 이 기록 없이 바꾸지 않는다). 방향이 이미 정해진 재작업이면 `build --only 1-3` 샘플로 대신한다. 그다음 전체 `build`. build 출력의 `warnings`(텍스트 넘침 추정, 폰트 대체, 이미지 없음)를 모두 처리한다. **넘치면 글자를 줄이지 말고 내용을 줄이거나 슬라이드를 나눈다** (하한 `body_min` 아래로 내려가지 않는다).
 
@@ -92,7 +92,7 @@ Director는 이 문서와 `references/`를 읽고 `deck-spec.json`을 쓴다. Re
     scripts/pptx.py          CLI (게이트·편집·렌더·템플릿·감사·팔레트·방향·상속) — Python 3.9+ 표준 라이브러리
     scripts/build.js         deck-spec → pptx (pptxgenjs) ; scripts/lib/{tokens,fontmetrics,text,frame,primitives,charts,archetypes,theme}.js
     core/                    package · check · inspect · fontmetrics · probe · bleed · render · variety · extract · edit · template · inherit · audit · lint · palette · directions · specio · fonts
-    references/              style-profiles.json(토큰 10종) · slide-archetypes.json(계약 29종) · *.md 규칙 문서 (typography-cjk.md 포함)
+    references/              style-profiles.json(토큰 18종) · slide-archetypes.json(계약 32종) · *.md 규칙 문서 (typography-cjk.md 포함)
     schemas/deck-spec.schema.json
-    examples/                consulting-kiosk-strategy · gov-ai-platform-briefing · proposal-shipyard-ax(+hooks) · archetype-showcase(신규 아키타입·차트 기능) — 골든 샘플
+    examples/                consulting-kiosk-strategy · gov-ai-platform-briefing · proposal-shipyard-ax(+hooks) · archetype-showcase(신규 아키타입·차트 기능) · proposal-rfp · rnd-plan(phase_columns·gantt) · solution-cards(카드·code_block) · briefing-mono · lecture-story — 골든 샘플
     tests/                   python3 -m unittest discover -s tests

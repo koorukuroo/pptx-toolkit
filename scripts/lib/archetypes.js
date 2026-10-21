@@ -17,6 +17,29 @@ function columns(box, n, gap) {
   return Array.from({ length: n }, (_, i) => ({ x: box.x + i * (w + gap), y: box.y, w, h: box.h }));
 }
 
+// 색 보조: 팔레트 순환(단계·행 색), 흰색 혼합 틴트
+function paletteColor(ctx, i) { const pal = ctx.tok.chart.palette || [ctx.pal.primary]; return pal[i % pal.length]; }
+function tint(hex, amount = 0.85) {
+  const n = parseInt(hex, 16);
+  const mix = (v) => Math.round(v + (255 - v) * amount);
+  return [mix((n >> 16) & 255), mix((n >> 8) & 255), mix(n & 255)].map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+// 번호 배지: list.numeral_style 'circle'(연한 원 + 주조색 숫자) | 'plain'(큰 숫자 타이포). 반환: 사용 높이
+function numBadge(ctx, slide, n, box, opts = {}) {
+  const style = opts.style || ctx.tok.list.numeral_style || 'plain';
+  const color = opts.color || ctx.pal.primary;
+  if (style === 'circle') {
+    const d = opts.size || 0.52;
+    const cx = opts.align === 'center' ? box.x + (box.w - d) / 2 : box.x;
+    slide.addShape(ctx.pres.ShapeType.ellipse, { x: cx, y: box.y, w: d, h: d, fill: { color: opts.fill || (ctx.pal.dark ? ctx.pal.surface_strong : tint(color, 0.86)) }, line: { type: 'none' } });
+    P.ctxText(ctx, slide, numeralText(ctx, n, 'pad'), { x: cx, y: box.y, w: d, h: d, fontSize: Math.round(d * 36), bold: true, color, align: 'center', valign: 'middle', fontFace: ctx.font.numeral });
+    return d + 0.12;
+  }
+  P.numeral(ctx, slide, numeralText(ctx, n, ctx.tok.list.numbering[0] === '01' ? 'pad' : 'plain'), { x: box.x, y: box.y, w: box.w, h: box.h }, { pt: opts.pt || Math.round(ctx.scale.title * 1.0), color, align: opts.align });
+  return box.h + 0.08;
+}
+const cardsOn = (ctx) => !!(ctx.tok.card && ctx.tok.card.enabled);
+
 // ---------------------------------------------------------------- cover
 function cover(ctx, slide, s, body) {
   const tok = ctx.tok, W = tok.canvas.width, H = tok.canvas.height, M = tok.canvas.margin;
@@ -38,8 +61,8 @@ function cover(ctx, slide, s, body) {
     if (head) { P.ctxText(ctx, slide, head, { x: M.left, y, w: tw, h: 0.26, fontSize: ctx.scale.caption, color: ctx.pal.ink_muted, valign: 'middle' }); y += 0.28; }
     const docTitle = k.document_title || (k.subtitle_above !== false ? meta.title : '');
     if (docTitle && docTitle !== s.title) { P.ctxText(ctx, slide, docTitle, { x: M.left, y, w: tw, h: 0.32, fontSize: ctx.scale.caption + 2, bold: true, color: ctx.pal.ink, valign: 'middle' }); y += 0.42; }
-    const fit = fitText([s.title], tw, 2.2, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15 }, D(ctx)));
-    const runs = P.emphasisRuns(s.title, k.emphasis, ctx.pal.primary, { fontSize: fit.pt, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display });
+    const fit = fitText(String(s.title).split('\n'), tw, 2.2, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15, paraGapEm: 0 }, D(ctx)));
+    const runs = P.emphasize(ctx, s.title, k.emphasis, { fontSize: fit.pt, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display });
     P.ctxText(ctx, slide, runs, { x: M.left, y, w: tw, h: Math.min(2.2, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
     y += Math.min(2.2, fit.needIn) + 0.2;
     if (k.subtitle) {
@@ -60,7 +83,7 @@ function cover(ctx, slide, s, body) {
     else P.rect(ctx, slide, { x: fieldX, y: 0, w: W - fieldX, h: H }, { fill: tok.cover.band_color || ctx.pal.primary, radius: 0 });
     const tw = fieldX - M.left - 0.5;
     if (k.tagline) P.label(ctx, slide, k.tagline, { x: M.left, y: H * 0.3 - 0.4, w: tw, h: 0.3 }, { color: ctx.pal.primary, pt: ctx.scale.kicker + 1 });
-    const fit = fitText([s.title], tw, 2.6, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15 }, D(ctx)));
+    const fit = fitText(String(s.title).split('\n'), tw, 2.6, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15, paraGapEm: 0 }, D(ctx)));
     P.ctxText(ctx, slide, s.title, { x: M.left, y: H * 0.3, w: tw, h: Math.min(2.6, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.primary, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
     const subY = H * 0.3 + Math.min(2.6, fit.needIn) + 0.25;
     if (k.subtitle) P.fitBox(ctx, slide, [k.subtitle], { x: M.left, y: subY, w: tw, h: 1.0, name: 'cover subtitle' }, { maxPt: ctx.scale.subtitle + 2, minPt: ctx.scale.subtitle - 2, textOptions: { color: ctx.pal.ink_muted } });
@@ -74,7 +97,7 @@ function cover(ctx, slide, s, body) {
   const tw = center ? W - 2 * M.left - 1.0 : W * 0.72;
   const tx = center ? (W - tw) / 2 : M.left;
   if (k.tagline) P.label(ctx, slide, k.tagline, { x: tx, y: H * 0.3 - 0.42, w: tw, h: 0.3 }, { color: ctx.pal.accent, pt: ctx.scale.kicker + 1, align: center ? 'center' : 'left' });
-  const fit = fitText([s.title], tw, 2.6, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15 }, D(ctx)));
+  const fit = fitText(String(s.title).split('\n'), tw, 2.6, titlePt, titlePt - 12, Object.assign({ lineHeight: 1.15, paraGapEm: 0 }, D(ctx)));
   P.ctxText(ctx, slide, s.title, { x: tx, y: H * 0.3, w: tw, h: Math.min(2.6, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'top', align: center ? 'center' : 'left', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
   const subY = H * 0.3 + Math.min(2.6, fit.needIn) + 0.25;
   if (k.subtitle) P.fitBox(ctx, slide, [k.subtitle], { x: tx, y: subY, w: tw, h: 1.0, name: 'cover subtitle' }, { maxPt: ctx.scale.subtitle + 2, minPt: ctx.scale.subtitle - 2, textOptions: { color: ctx.pal.ink_muted, align: center ? 'center' : 'left' } });
@@ -157,13 +180,52 @@ function executive_summary(ctx, slide, s, body) {
 function section_divider(ctx, slide, s, body) {
   const tok = ctx.tok, W = tok.canvas.width, H = tok.canvas.height, M = tok.canvas.margin;
   const k = c(s);
-  if (k.image) P.image(ctx, slide, k.image, { x: W * 0.55, y: 0, w: W * 0.45, h: H }, { scrim: true, scrimTransparency: 60 });
+  const items = (k.items || []).slice(0, 6);
+  const chips = (k.chips || []).slice(0, 6);
+  const contents = items.length > 0;
+  // 어두운 구분 장(기술 제안형): 사진 전체 깔고 짙은 스크림, 오른쪽에 CONTENTS 목록
+  if (k.image && (ctx.pal.dark || contents)) P.image(ctx, slide, k.image, { x: 0, y: 0, w: W, h: H }, { scrim: true, scrimTransparency: ctx.pal.dark ? 28 : 70 });
+  else if (k.image) P.image(ctx, slide, k.image, { x: W * 0.55, y: 0, w: W * 0.45, h: H }, { scrim: true, scrimTransparency: 60 });
   const n = k.number != null ? k.number : s._sectionIndex;
-  const tw = k.image ? W * 0.5 - M.left : W - 2 * M.left;
-  if (n != null) P.numeral(ctx, slide, numeralText(ctx, Number(n) || 1), { x: M.left, y: H * 0.22, w: tw, h: 1.4 }, { pt: ctx.scale.hero_number, color: ctx.pal.dark ? ctx.pal.accent : ctx.pal.primary });
-  const fit = fitText([s.title], tw, 1.8, ctx.scale.section_title, ctx.scale.section_title - 10, Object.assign({ lineHeight: 1.15 }, D(ctx)));
-  P.ctxText(ctx, slide, s.title, { x: M.left, y: H * 0.22 + 1.45, w: tw, h: Math.min(1.8, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
-  if (k.subtitle) P.fitBox(ctx, slide, [k.subtitle], { x: M.left, y: H * 0.22 + 1.45 + Math.min(1.8, fit.needIn) + 0.2, w: tw, h: 1.0, name: 'section subtitle' }, { maxPt: ctx.scale.subtitle + 2, minPt: ctx.scale.subtitle - 2, textOptions: { color: ctx.pal.ink_muted } });
+  const tw = (k.image && !contents) || contents ? W * 0.5 - M.left : W - 2 * M.left;
+  const accent = ctx.pal.dark ? ctx.pal.accent : ctx.pal.primary;
+  const numColor = tok.section && tok.section.numeral_color ? (ctx.pal[tok.section.numeral_color] || tok.section.numeral_color) : (ctx.pal.dark && contents ? ctx.pal.ink : accent);
+  const top = contents ? H * 0.2 : H * 0.22;
+  if (n != null) P.numeral(ctx, slide, numeralText(ctx, Number(n) || 1, contents ? 'pad' : undefined), { x: M.left, y: top, w: tw, h: 1.4 }, { pt: ctx.scale.hero_number, color: numColor });
+  if (contents) P.rect(ctx, slide, { x: M.left, y: top + 1.5, w: 0.9, h: 0.06 }, { fill: accent, radius: 0 });
+  const titleY = top + (contents ? 1.75 : 1.45);
+  const fit = fitText(String(s.title).split('\n'), tw, 1.8, ctx.scale.section_title, ctx.scale.section_title - 10, Object.assign({ lineHeight: 1.15, paraGapEm: 0 }, D(ctx)));
+  P.ctxText(ctx, slide, s.title, { x: M.left, y: titleY, w: tw, h: Math.min(1.8, fit.needIn) + 0.1, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'top', lineSpacingMultiple: spacingMultiple(1.15, ctx.font.display, true) });
+  let y = titleY + Math.min(1.8, fit.needIn) + 0.2;
+  if (k.subtitle) { P.fitBox(ctx, slide, [k.subtitle], { x: M.left, y, w: tw, h: 0.8, name: 'section subtitle' }, { maxPt: ctx.scale.subtitle + (contents ? 0 : 2), minPt: ctx.scale.subtitle - 2, textOptions: { color: ctx.pal.ink_muted } }); y += 0.9; }
+  if (chips.length) {
+    // 키워드 칩 줄 (가는 선 위)
+    const cy = Math.max(y + 0.3, H - M.bottom - 1.3);
+    P.hline(ctx, slide, M.left, cy - 0.2, tw, { color: ctx.pal.line });
+    let cx = M.left;
+    chips.forEach((ch) => {
+      const cw = Math.min(2.4, textWidthIn(String(ch), ctx.scale.caption, ctx.font.body, true) + 0.36);
+      if (cx + cw > M.left + tw) return;
+      P.rect(ctx, slide, { x: cx, y: cy, w: cw, h: 0.34 }, { fill: ctx.pal.surface_strong, radius: 6 });
+      P.ctxText(ctx, slide, String(ch), { x: cx, y: cy, w: cw, h: 0.34, fontSize: ctx.scale.caption, bold: true, color: ctx.pal.ink, align: 'center', valign: 'middle', singleLine: true });
+      cx += cw + 0.14;
+    });
+  }
+  if (contents) {
+    // 오른쪽 목차: 라벨 + 번호·항목 행 (헤어라인 구분)
+    const lx = W * 0.57, lw = W - M.right - lx;
+    const rowH = Math.min(0.62, 2.8 / items.length);
+    const ly = top + 0.3;
+    P.label(ctx, slide, k.contents_label || 'CONTENTS', { x: lx, y: ly, w: lw, h: 0.24 }, { color: ctx.pal.ink_muted });
+    P.hline(ctx, slide, lx, ly + 0.36, lw, { color: ctx.pal.line });
+    items.forEach((it, i) => {
+      const iy = ly + 0.44 + i * rowH;
+      const label = typeof it === 'string' ? it : it.label;
+      P.ctxText(ctx, slide, numeralText(ctx, i + 1, 'pad'), { x: lx, y: iy, w: 0.6, h: rowH, fontSize: ctx.scale.caption + 1, bold: true, color: accent, valign: 'middle', fontFace: ctx.font.numeral });
+      P.ctxText(ctx, slide, label || '', { x: lx + 0.65, y: iy, w: lw - 0.65, h: rowH, fontSize: ctx.scale.body, color: ctx.pal.ink, valign: 'middle', singleLine: true });
+      P.hline(ctx, slide, lx, iy + rowH, lw, { color: ctx.pal.line_faint });
+    });
+  }
 }
 
 // ---------------------------------------------------------------- hero_metric
@@ -183,14 +245,17 @@ function hero_metric(ctx, slide, s, body) {
     if (paras.length) P.callout(ctx, slide, paras, { x: rx, y: body.y + 0.2, w: body.w - lw - 0.6, h: body.h - 0.4 }, { maxPt: ctx.scale.body + 2, minPt: ctx.scale.body_min, color: ctx.pal.accent });
     return;
   }
-  const cols = columns({ x: body.x, y: body.y, w: body.w, h: body.h - ctxH }, metrics.length, 0.5);
+  const cards = cardsOn(ctx);
   const numPt = Math.round(ctx.scale.hero_number * (metrics.length === 3 ? 0.78 : 0.9));
   const numH = (numPt * 1.15) / 72;
+  // 카드형: 카드 높이를 숫자+라벨 블록에 맞춰 짧게 (빈 흰 상자가 길게 남지 않도록)
+  const cols0 = columns({ x: body.x, y: body.y, w: body.w, h: cards ? Math.min(body.h - ctxH, numH + 1.7) : body.h - ctxH }, metrics.length, cards ? 0.3 : 0.5);
+  const cols = cards ? cols0.map((cb) => P.card(ctx, slide, cb)) : cols0;
   const blockH = numH + 0.55 + 0.4;
   const top = cols[0].y + Math.max(0.1, (cols[0].h - blockH) * 0.35); // 위쪽으로 당겨 빈 공간이 아래보다 위에 덜 쌓이게
   metrics.forEach((m, i) => {
     const col = cols[i];
-    if (i > 0) P.vline(ctx, slide, col.x - 0.25, col.y + 0.1, col.h - 0.2, { color: ctx.pal.line_faint });
+    if (i > 0 && !cards) P.vline(ctx, slide, col.x - 0.25, col.y + 0.1, col.h - 0.2, { color: ctx.pal.line_faint });
     P.bigNumber(ctx, slide, m.value, m.unit, { x: col.x, y: top, w: col.w, h: numH }, { valign: 'bottom', pt: numPt });
     P.ctxText(ctx, slide, m.label, { x: col.x, y: top + numH + 0.08, w: col.w, h: 0.5, fontSize: ctx.scale.body, bold: true, color: ctx.pal.ink });
     if (m.delta) P.ctxText(ctx, slide, m.delta, { x: col.x, y: top + numH + 0.58, w: col.w, h: 0.4, fontSize: ctx.scale.body - 1, color: m.trend === 'down' ? ctx.pal.negative : m.trend === 'up' ? ctx.pal.positive : ctx.pal.ink_muted, bold: true });
@@ -309,10 +374,13 @@ function process(ctx, slide, s, body) {
   }
   // numbered (기본): 큰 번호 + 제목 + 설명, 번호 사이 가는 연결선
   const numH = 0.9;
+  const circle = (ctx.tok.list.numeral_style || 'plain') === 'circle';
   steps.forEach((st, i) => {
     const col = cols[i];
-    P.numeral(ctx, slide, numeralText(ctx, i + 1, ctx.tok.list.numbering[0] === '01' ? 'pad' : 'plain'), { x: col.x, y: body.y, w: col.w, h: numH }, { pt: Math.round(ctx.scale.hero_number * 0.55), color: i === n - 1 ? ctx.pal.accent : ctx.pal.primary });
-    if (i < n - 1) P.arrow(ctx, slide, col.x + col.w - 0.35, body.y + numH * 0.45, col.x + col.w + 0.22, body.y + numH * 0.45, { color: ctx.pal.line, width: 1 });
+    const color = ctx.tok.list.step_colors === 'palette' ? paletteColor(ctx, i) : (i === n - 1 ? ctx.pal.accent : ctx.pal.primary);
+    if (circle) numBadge(ctx, slide, i + 1, { x: col.x, y: body.y + 0.15, w: col.w, h: 0.6 }, { color, size: 0.6 });
+    else P.numeral(ctx, slide, numeralText(ctx, i + 1, ctx.tok.list.numbering[0] === '01' ? 'pad' : 'plain'), { x: col.x, y: body.y, w: col.w, h: numH }, { pt: Math.round(ctx.scale.hero_number * 0.55), color });
+    if (i < n - 1) P.arrow(ctx, slide, col.x + (circle ? 0.75 : col.w - 0.35), body.y + numH * 0.45, col.x + col.w + 0.22, body.y + numH * 0.45, { color: ctx.pal.line, width: 1 });
     P.headingDetail(ctx, slide, st.title, [st.detail, st.owner ? `담당: ${st.owner}` : null].filter(Boolean), { x: col.x, y: body.y + numH + 0.05, w: col.w - 0.15, h: body.h - numH - 0.05, name: `step ${i + 1}` }, { headingPt: ctx.scale.body + 1, detailPt: ctx.scale.body - 1 });
   });
 }
@@ -374,7 +442,7 @@ function architecture(ctx, slide, s, body) {
       const cx = diag.x + nameW + 0.15 + j * (cw + cgap);
       P.rect(ctx, slide, { x: cx, y, w: cw, h: rowH }, { fill: ctx.pal.background, line: ctx.pal.line, lineWidth: 0.75, radius: 0 });
       const paras = [co.name, co.note].filter(Boolean);
-      P.fitBox(ctx, slide, paras, { x: cx + 0.08, y: y + 0.05, w: cw - 0.16, h: rowH - 0.1, name: `${ly.name}/${co.name}` }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min - 1, paraGapEm: 0.15, textOptions: { valign: 'middle', align: 'center' }, runOptions: (idx) => ({ bold: idx === 0, color: idx === 0 ? ctx.pal.ink : ctx.pal.ink_muted, fontSize: idx === 0 ? undefined : ctx.scale.caption }) });
+      P.fitBox(ctx, slide, paras, { x: cx + 0.08, y: y + 0.05, w: cw - 0.16, h: rowH - 0.1, name: `${ly.name}/${co.name}` }, { maxPt: ctx.scale.body - 1, minPt: Math.max(12, ctx.scale.body_min - 1), paraGapEm: 0.15, textOptions: { valign: 'middle', align: 'center' }, runOptions: (idx) => ({ bold: idx === 0, color: idx === 0 ? ctx.pal.ink : ctx.pal.ink_muted, fontSize: idx === 0 ? undefined : Math.max(ctx.scale.caption, 12) }) });
     });
   });
   if (flows.length) {
@@ -462,12 +530,14 @@ function recommendation(ctx, slide, s, body) {
   P.callout(ctx, slide, k.recommendation || s.takeaway || '', { x: body.x, y: body.y, w: body.w, h: topH }, { maxPt: ctx.scale.body + 5, minPt: ctx.scale.body, bold: true, color: ctx.pal.primary });
   const midY = body.y + topH + 0.35;
   const midH = body.h - topH - 0.35 - (nextH ? nextH + 0.3 : 0);
-  const cols = columns({ x: body.x, y: midY, w: body.w, h: midH }, reasons.length || 1, 0.4);
+  const cards = cardsOn(ctx);
+  const cols = columns({ x: body.x, y: midY, w: body.w, h: midH }, reasons.length || 1, cards ? 0.3 : 0.4);
   reasons.forEach((r, i) => {
-    const col = cols[i];
-    if (i > 0) P.vline(ctx, slide, col.x - 0.2, col.y, col.h, { color: ctx.pal.line_faint });
-    P.numeral(ctx, slide, numeralText(ctx, i + 1, ctx.tok.list.numbering[0] === '01' ? 'pad' : 'plain'), { x: col.x, y: col.y, w: col.w, h: 0.55 }, { pt: Math.round(ctx.scale.title * 0.9) });
-    P.headingDetail(ctx, slide, r.heading, r.detail, { x: col.x, y: col.y + 0.62, w: col.w, h: col.h - 0.62, name: `reason ${i + 1}` }, { headingPt: ctx.scale.body + 1, detailPt: ctx.scale.body - 1 });
+    let col = cols[i];
+    if (cards) col = P.card(ctx, slide, col);
+    else if (i > 0) P.vline(ctx, slide, col.x - 0.2, col.y, col.h, { color: ctx.pal.line_faint });
+    const used = numBadge(ctx, slide, i + 1, { x: col.x, y: col.y, w: col.w, h: 0.55 }, { pt: Math.round(ctx.scale.title * 0.9) });
+    P.headingDetail(ctx, slide, r.heading, r.detail, { x: col.x, y: col.y + used, w: col.w, h: col.h - used, name: `reason ${i + 1}` }, { headingPt: ctx.scale.body + 1, detailPt: ctx.scale.body - 1 });
   });
   if (k.next_action) {
     const ny = body.y + body.h - nextH;
@@ -498,14 +568,16 @@ function points(ctx, slide, s, body) {
     P.table(ctx, slide, k.table.columns, k.table.rows || [], { x: body.x, y: ty + titleH, w: body.w, h: tableH }, { style: { header_align: 'center', grid: 'all' }, align: k.table.columns.map(() => 'center'), rowH: Math.min(0.42, tableH / (rowsN + 1)), cellStyle: (ri, ci) => (ri === 0 && k.table.emphasis_row === 0 ? { bold: true, color: ctx.pal.primary, fontSize: ctx.scale.table + 2 } : null) });
   }
   if (layout === 'columns') {
-    const cols = columns(area, pts.length || 1, 0.45);
+    const cards = cardsOn(ctx);
+    const cols = columns(area, pts.length || 1, cards ? 0.3 : 0.45);
     pts.forEach((p, i) => {
-      const col = cols[i];
-      if (i > 0 && !p.kicker) P.vline(ctx, slide, col.x - 0.22, col.y, col.h, { color: ctx.pal.line_faint });
+      let col = cols[i];
+      if (cards) col = P.card(ctx, slide, col);
+      else if (i > 0 && !p.kicker) P.vline(ctx, slide, col.x - 0.22, col.y, col.h, { color: ctx.pal.line_faint });
       let y = col.y;
       if (p.kicker) { P.ctxText(ctx, slide, p.kicker, { x: col.x, y, w: col.w, h: 0.34, fontSize: ctx.scale.body + 1, bold: true, color: ctx.pal.accent, valign: 'middle', singleLine: true }); y += 0.44; }
       else if (p.metric) { P.bigNumber(ctx, slide, p.metric, '', { x: col.x, y, w: col.w, h: 0.9 }, { pt: Math.round(ctx.scale.hero_number * 0.5), valign: 'bottom' }); y += 1.0; }
-      else { P.numeral(ctx, slide, numeralText(ctx, i + 1, ctx.tok.list.numbering[0] === '01' ? 'pad' : 'plain'), { x: col.x, y, w: col.w, h: 0.6 }, { pt: Math.round(ctx.scale.title * 1.0) }); y += 0.68; }
+      else y += numBadge(ctx, slide, i + 1, { x: col.x, y, w: col.w, h: 0.6 }, { color: ctx.tok.list.step_colors === 'palette' ? paletteColor(ctx, i) : undefined });
       P.headingDetail(ctx, slide, p.heading, p.detail, { x: col.x, y, w: col.w, h: col.y + col.h - y, name: `point ${i + 1}` }, { headingPt: p.kicker ? ctx.scale.body + 5 : ctx.scale.body + 2, detailPt: ctx.scale.body - 1 });
     });
     return;
@@ -530,9 +602,24 @@ function statement(ctx, slide, s, body) {
   const k = c(s);
   if (k.image) P.image(ctx, slide, k.image, { x: 0, y: 0, w: W, h: H }, { scrim: true });
   const tw = W - 2 * M.left - 0.8;
-  const fit = fitText([k.statement || s.title], tw, 3.0, ctx.scale.section_title, ctx.scale.title, Object.assign({ lineHeight: 1.25 }, D(ctx)));
-  P.ctxText(ctx, slide, k.statement || s.title, { x: M.left + 0.4, y: (H - Math.min(3.0, fit.needIn)) / 2 - 0.3, w: tw, h: Math.min(3.0, fit.needIn) + 0.2, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'middle', lineSpacingMultiple: spacingMultiple(1.25, ctx.font.display, true) });
-  if (k.attribution) P.ctxText(ctx, slide, `— ${k.attribution}`, { x: M.left + 0.4, y: (H + Math.min(3.0, fit.needIn)) / 2 + 0.1, w: tw, h: 0.4, fontSize: ctx.scale.body, color: ctx.pal.ink_muted });
+  const text = k.statement || s.title;
+  // 킥커(왼쪽 위 작은 라벨: 강연형 '2부 · 보상')와 라벨(문장 위 큰 기호: 'Q.')
+  if (k.kicker || s.kicker) P.label(ctx, slide, k.kicker || s.kicker, { x: M.left + 0.4, y: M.top + 0.1, w: tw, h: 0.24 }, { color: ctx.pal.ink_muted });
+  const paras = String(text).split('\n');
+  const fit = fitText(paras, tw, 3.0, ctx.scale.section_title, ctx.scale.title, Object.assign({ lineHeight: 1.25, paraGapEm: 0 }, D(ctx)));
+  const blockH = Math.min(3.0, fit.needIn) + 0.2;
+  const labelH = k.label ? 0.7 : 0;
+  const y0 = (H - blockH - labelH) / 2 - 0.2;
+  if (k.label) P.ctxText(ctx, slide, k.label, { x: M.left + 0.4, y: y0, w: tw, h: labelH, fontSize: Math.round(fit.pt * 1.1), bold: true, color: ctx.pal.dark ? ctx.pal.accent : ctx.pal.primary, fontFace: ctx.font.display, valign: 'bottom' });
+  const emph = k.emphasis;
+  const runs = [];
+  paras.forEach((p, i) => {
+    const rs = emph ? P.emphasize(ctx, p, emph, { fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display }) : [{ text: p, options: { fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display } }];
+    rs[rs.length - 1].options.breakLine = i < paras.length - 1;
+    runs.push(...rs);
+  });
+  P.ctxText(ctx, slide, runs, { x: M.left + 0.4, y: y0 + labelH, w: tw, h: blockH, fontSize: fit.pt, bold: true, color: ctx.pal.ink, fontFace: ctx.font.display, valign: 'middle', lineSpacingMultiple: spacingMultiple(1.25, ctx.font.display, true) });
+  if (k.attribution) P.ctxText(ctx, slide, `— ${k.attribution}`, { x: M.left + 0.4, y: y0 + labelH + blockH + 0.1, w: tw, h: 0.4, fontSize: ctx.scale.body, color: ctx.pal.ink_muted });
 }
 
 // ---------------------------------------------------------------- data_table
@@ -972,9 +1059,204 @@ function kpi_bento(ctx, slide, s, body) {
   if (k.note) P.fitBox(ctx, slide, [k.note], { x: body.x, y: body.y + body.h - noteH + 0.12, w: body.w, h: noteH - 0.12, name: 'note' }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min, textOptions: { color: ctx.pal.ink_muted } });
 }
 
+// ---------------------------------------------------------------- code_block
+// 코드·설정·로그 한 토막 + 오른쪽(또는 아래) 포인트: 기술 제안·교안의 "실제 구성" 장
+function code_block(ctx, slide, s, body) {
+  const k = c(s);
+  const lines = Array.isArray(k.code) ? k.code.map(String) : String(k.code || '').split('\n');
+  const pts = (k.points || []).slice(0, 5);
+  const layout = k.layout || (pts.length ? 'code-left' : 'code-full');
+  const mono = ctx.font.mono || 'Menlo';
+  let panel, side;
+  if (layout === 'code-top') { const ph = pts.length ? body.h * 0.55 : body.h; panel = { x: body.x, y: body.y, w: body.w, h: ph }; side = pts.length ? { x: body.x, y: body.y + ph + 0.3, w: body.w, h: body.h - ph - 0.3 } : null; }
+  else if (layout === 'code-full') { panel = { x: body.x, y: body.y, w: body.w, h: body.h }; side = null; }
+  else { const pw = body.w * 0.56; panel = { x: body.x, y: body.y, w: pw, h: body.h }; side = { x: body.x + pw + 0.35, y: body.y, w: body.w - pw - 0.35, h: body.h }; }
+  const capH = k.caption || k.language ? 0.3 : 0;
+  const bg = ctx.tok.colors.code_background || (ctx.pal.dark ? ctx.pal.surface_strong : ctx.pal.ink_strong);
+  const fg = ctx.tok.colors.code_ink || 'E6EDF3';
+  const cm = ctx.tok.colors.code_comment || tint(ctx.pal.primary, 0.45);
+  P.rect(ctx, slide, { x: panel.x, y: panel.y + capH, w: panel.w, h: panel.h - capH }, { fill: bg, radius: ctx.tok.geometry.radius });
+  if (k.language) P.label(ctx, slide, k.language, { x: panel.x, y: panel.y, w: panel.w * 0.4, h: 0.26 }, { color: ctx.pal.ink_muted, fontFace: mono });
+  if (k.caption) P.ctxText(ctx, slide, k.caption, { x: panel.x + panel.w * 0.4, y: panel.y, w: panel.w * 0.6, h: 0.26, fontSize: ctx.scale.caption, color: ctx.pal.ink_muted, align: 'right', valign: 'middle', singleLine: true });
+  // 글자 크기: 줄 수와 가장 긴 줄 폭으로 결정 (caption+1 상한, 8pt 하한)
+  const inner = { x: panel.x + 0.22, y: panel.y + capH + 0.18, w: panel.w - 0.44, h: panel.h - capH - 0.36 };
+  const maxPt = ctx.scale.caption + 1;
+  const longest = Math.max(1, ...lines.map((l) => l.length));
+  const ptByW = (inner.w * 72) / (longest * 0.62);
+  const ptByH = (inner.h * 72) / (lines.length * 1.5);
+  const pt = Math.max(8, Math.min(maxPt, Math.floor(Math.min(ptByW, ptByH) * 2) / 2));
+  if (pt < 9) ctx.warn(`code_block: 코드가 많아 ${pt}pt — 줄을 줄이거나 두 장으로 나눈다`, {});
+  const isComment = (l) => /^\s*(\/\/|#|--|;|\*|\/\*)/.test(l);
+  const runs = lines.map((l, i) => ({ text: l.replace(/\t/g, '    ') || ' ', options: { breakLine: i < lines.length - 1, color: isComment(l) ? cm : fg } }));
+  P.ctxText(ctx, slide, runs, { x: inner.x, y: inner.y, w: inner.w, h: inner.h, fontSize: pt, fontFace: mono, color: fg, lineSpacingMultiple: spacingMultiple(1.45, mono, false), valign: 'top', wrap: false });
+  if (side && pts.length) {
+    if (layout === 'code-top') {
+      const cols = columns(side, pts.length, 0.25);
+      pts.forEach((p, i) => { const col = P.card(ctx, slide, cols[i], { accent: 'top', pad: 0.16 }); P.headingDetail(ctx, slide, p.heading, p.detail, { x: col.x, y: col.y, w: col.w, h: col.h, name: `point ${i + 1}` }, { headingPt: ctx.scale.body, detailPt: ctx.scale.caption + 1 }); });
+      return;
+    }
+    const gap = 0.14;
+    const rowH = Math.min(1.3, (side.h - gap * (pts.length - 1)) / pts.length);
+    pts.forEach((p, i) => {
+      const box = P.card(ctx, slide, { x: side.x, y: side.y + i * (rowH + gap), w: side.w, h: rowH }, { accent: 'left', pad: 0.14 });
+      P.headingDetail(ctx, slide, p.heading, p.detail, { x: box.x, y: box.y, w: box.w, h: box.h, name: `point ${i + 1}` }, { headingPt: ctx.scale.body, detailPt: ctx.scale.caption + 1 });
+    });
+  }
+}
+
+// ---------------------------------------------------------------- phase_columns
+// 단계별 목표 (R&D 계획형): 번호 띠 + 연차 열 카드(머리글·목표·항목) + 아래 흐름 띠
+function phase_columns(ctx, slide, s, body) {
+  const k = c(s);
+  const cols = (k.columns || []).slice(0, 5);
+  if (!cols.length) { ctx.warn('phase_columns: columns 비어 있음', {}); return; }
+  const band = k.band || {};
+  const flow = k.flow || null;
+  const head = ctx.pal.secondary && ctx.pal.secondary !== ctx.pal.primary ? ctx.pal.secondary : ctx.pal.primary;
+  let y = body.y;
+  if (band.title) {
+    P.rect(ctx, slide, { x: body.x, y, w: body.w, h: 0.44 }, { fill: head, radius: ctx.tok.geometry.radius });
+    const runs = [];
+    if (band.number != null) runs.push({ text: `${numeralText(ctx, Number(band.number) || band.number, 'pad')}    `, options: { fontFace: ctx.font.numeral } });
+    runs.push({ text: band.title, options: {} });
+    P.ctxText(ctx, slide, runs, { x: body.x + 0.22, y, w: body.w - 0.44, h: 0.44, fontSize: ctx.scale.body + 3, bold: true, color: ctx.pal.on_primary, fontFace: ctx.font.display, valign: 'middle' });
+    y += 0.58;
+  }
+  const flowSteps = flow ? (flow.steps || []).slice(0, 6) : [];
+  const flowH = flow ? Math.min(2.3, 0.5 + (flow.title ? 0.4 : 0) + 1.05 + (flow.note ? 0.32 : 0)) : 0;
+  const colsH = body.y + body.h - y - (flowH ? flowH + 0.25 : 0);
+  const cs = columns({ x: body.x, y, w: body.w, h: colsH }, cols.length, 0.28);
+  cols.forEach((col, i) => {
+    const cb = cs[i];
+    const color = ctx.tok.list.step_colors === 'palette' ? paletteColor(ctx, i) : ctx.pal.primary;
+    P.rect(ctx, slide, { x: cb.x, y: cb.y, w: cb.w, h: cb.h }, { fill: ctx.pal.dark ? ctx.pal.surface : tint(color, 0.9), radius: ctx.tok.geometry.radius });
+    P.rect(ctx, slide, { x: cb.x, y: cb.y, w: cb.w, h: 0.36 }, { fill: color, radius: ctx.tok.geometry.radius });
+    P.ctxText(ctx, slide, col.header || '', { x: cb.x + 0.14, y: cb.y, w: cb.w - 0.28, h: 0.36, fontSize: ctx.scale.body, bold: true, color: ctx.pal.on_primary, fontFace: ctx.font.display, valign: 'middle', singleLine: true });
+    let cy = cb.y + 0.48;
+    if (col.heading) { P.ctxText(ctx, slide, col.heading, { x: cb.x + 0.16, y: cy, w: cb.w - 0.32, h: 0.34, fontSize: ctx.scale.body + 1, bold: true, color, fontFace: ctx.font.display, valign: 'middle' }); cy += 0.4; }
+    const items = (col.items || []).slice(0, 5);
+    if (items.length) P.bulletList(ctx, slide, items, { x: cb.x + 0.16, y: cy, w: cb.w - 0.32, h: cb.y + cb.h - cy - 0.12, name: `phase col ${i + 1}` }, { maxPt: ctx.scale.body - 1, minPt: ctx.scale.body_min, paraGapEm: 0.3 });
+  });
+  if (flow) {
+    const fy = body.y + body.h - flowH;
+    P.rect(ctx, slide, { x: body.x, y: fy, w: body.w, h: flowH }, { fill: ctx.pal.surface, radius: ctx.tok.geometry.radius });
+    let ty = fy + 0.16;
+    if (flow.title) { P.ctxText(ctx, slide, flow.title, { x: body.x + 0.25, y: ty, w: body.w - 0.5, h: 0.34, fontSize: ctx.scale.body + 1, bold: true, color: ctx.pal.ink_strong, fontFace: ctx.font.display, valign: 'middle' }); ty += 0.42; }
+    const n = flowSteps.length || 1;
+    const gap = 0.3;
+    const sw = (body.w - 0.5 - gap * (n - 1)) / n;
+    const sh = Math.min(1.0, fy + flowH - ty - (flow.note ? 0.36 : 0.16));
+    flowSteps.forEach((st, i) => {
+      const sx = body.x + 0.25 + i * (sw + gap);
+      P.rect(ctx, slide, { x: sx, y: ty, w: sw, h: sh }, { fill: ctx.pal.background, line: ctx.pal.line, lineWidth: 0.75, radius: 0 });
+      P.rect(ctx, slide, { x: sx, y: ty, w: sw, h: 0.34 }, { fill: head, radius: 0 });
+      P.ctxText(ctx, slide, st.title || '', { x: sx + 0.08, y: ty, w: sw - 0.16, h: 0.34, fontSize: ctx.scale.body - 1, bold: true, color: ctx.pal.on_primary, align: 'center', valign: 'middle', singleLine: true });
+      if (st.detail) P.fitBox(ctx, slide, [st.detail], { x: sx + 0.08, y: ty + 0.38, w: sw - 0.16, h: sh - 0.42, name: `flow ${i + 1}` }, { maxPt: ctx.scale.caption + 1, minPt: Math.max(8, ctx.scale.source), lineHeight: 1.25, textOptions: { color: ctx.pal.ink, align: 'center', valign: 'middle' } });
+      if (i < n - 1) P.arrow(ctx, slide, sx + sw + 0.04, ty + sh / 2, sx + sw + gap - 0.04, ty + sh / 2, { color: ctx.pal.primary, width: 1.5 });
+    });
+    if (flow.note) P.ctxText(ctx, slide, flow.note, { x: body.x + 0.25, y: fy + flowH - 0.34, w: body.w - 0.5, h: 0.3, fontSize: ctx.scale.caption, color: ctx.pal.ink_muted, valign: 'middle' });
+  }
+}
+
+// ---------------------------------------------------------------- gantt
+// 추진 일정표 (네이티브 도형): 기간 열(셰브론 머리글) × 과제 행(색 라벨 + 과업 화살표) + 공통 띠 + 마일스톤 + 기대효과
+function gantt(ctx, slide, s, body) {
+  const k = c(s);
+  const periods = (k.periods || []).slice(0, 8);
+  const rows = (k.rows || []).slice(0, 6);
+  if (!periods.length || !rows.length) { ctx.warn('gantt: periods/rows 비어 있음', {}); return; }
+  const bands = (k.bands || []).slice(0, 3);
+  const ms = k.milestones;
+  const eff = k.effects;
+  const labelW = Math.min(1.9, body.w * 0.16);
+  const gridX = body.x + labelW + 0.08, gridW = body.w - labelW - 0.08;
+  const colW = gridW / periods.length;
+  const headH = 0.52, bandH = bands.length ? 0.34 * bands.length + 0.12 : 0, msH = ms ? 0.5 : 0, effH = eff ? 0.5 : 0;
+  const gaps = 0.08;
+  const rowH = Math.min(1.1, (body.h - headH - bandH - msH - effH - gaps * (rows.length + 3)) / rows.length);
+  const cx = (i) => gridX + i * colW;
+  const dark = ctx.pal.dark;
+  const periodColor = (i) => (ctx.tok.list.step_colors === 'palette' ? paletteColor(ctx, i) : (i % 2 ? ctx.pal.secondary || ctx.pal.primary : ctx.pal.primary));
+  // 머리글: 왼쪽 '연도(단계)' 상자 + 기간 셰브론
+  P.rect(ctx, slide, { x: body.x, y: body.y, w: labelW, h: headH }, { fill: ctx.pal.background, line: ctx.pal.line, lineWidth: 0.75, radius: 0 });
+  P.ctxText(ctx, slide, k.period_label || '기간', { x: body.x, y: body.y, w: labelW, h: headH, fontSize: ctx.scale.body - 1, bold: true, color: ctx.pal.ink_strong, align: 'center', valign: 'middle' });
+  periods.forEach((p, i) => {
+    slide.addShape(i === 0 ? ctx.pres.ShapeType.homePlate : ctx.pres.ShapeType.chevron, { x: cx(i) - (i ? 0.1 : 0), y: body.y, w: colW + (i < periods.length - 1 ? 0.1 : 0) + (i ? 0.1 : 0), h: headH, fill: { color: periodColor(i) }, line: { type: 'none' } });
+    // 라벨·기간은 별도 상자(짧은 한 줄 라벨 — 작은 글자 허용)
+    if (p.sub) {
+      P.ctxText(ctx, slide, p.label || '', { x: cx(i) + 0.12, y: body.y + 0.04, w: colW - 0.3, h: headH * 0.5, fontSize: ctx.scale.caption + 1, bold: true, color: ctx.pal.on_primary, align: 'center', valign: 'bottom', singleLine: true });
+      P.ctxText(ctx, slide, p.sub, { x: cx(i) + 0.12, y: body.y + headH * 0.52, w: colW - 0.3, h: headH * 0.44, fontSize: Math.max(8, ctx.scale.source), color: ctx.pal.on_primary, align: 'center', valign: 'top', singleLine: true });
+    } else P.ctxText(ctx, slide, p.label || '', { x: cx(i) + 0.12, y: body.y, w: colW - 0.3, h: headH, fontSize: ctx.scale.caption + 1, bold: true, color: ctx.pal.on_primary, align: 'center', valign: 'middle', singleLine: true });
+  });
+  // 과제 행
+  let y = body.y + headH + gaps;
+  rows.forEach((r, ri) => {
+    const color = r.color && /^[0-9A-Fa-f]{6}$/.test(r.color) ? r.color : paletteColor(ctx, ri);
+    P.rect(ctx, slide, { x: body.x, y, w: labelW, h: rowH }, { fill: color, radius: ctx.tok.geometry.radius });
+    const runs = [];
+    if (r.number != null) runs.push({ text: `${numeralText(ctx, Number(r.number) || r.number, 'pad')}  `, options: { fontSize: ctx.scale.body + 3, fontFace: ctx.font.numeral } });
+    runs.push({ text: r.label || '', options: {} });
+    P.ctxText(ctx, slide, runs, { x: body.x + 0.14, y, w: labelW - 0.28, h: rowH, fontSize: ctx.scale.body - 1, bold: true, color: ctx.pal.on_primary, fontFace: ctx.font.display, valign: 'middle' });
+    P.rect(ctx, slide, { x: gridX, y, w: gridW, h: rowH }, { fill: ctx.pal.background, line: ctx.pal.line, lineWidth: 0.5, radius: 0 });
+    for (let i = 1; i < periods.length; i++) P.vline(ctx, slide, cx(i), y, rowH, { color: ctx.pal.line, dash: 'dash' });
+    const tasks = (r.tasks || []).slice(0, periods.length);
+    const barH = Math.min(0.5, rowH - 0.14);
+    tasks.forEach((t, ti) => {
+      const from = clamp(Number(t.from != null ? t.from : ti + 1), 1, periods.length), to = clamp(Number(t.to != null ? t.to : from), from, periods.length);
+      const bx = cx(from - 1) + 0.08, bw = colW * (to - from + 1) - 0.2;
+      const by = y + (rowH - barH) / 2 + (t.offset ? t.offset * 0.2 : 0);
+      const final = !!t.final;
+      slide.addShape(ctx.pres.ShapeType.homePlate, { x: bx, y: by, w: bw, h: barH, fill: { color: final ? color : (dark ? ctx.pal.surface_strong : tint(color, 0.86)) }, line: { type: 'none' } });
+      const fg = final ? ctx.pal.on_primary : ctx.pal.ink;
+      if (t.period) {
+        P.ctxText(ctx, slide, t.label || '', { x: bx + 0.06, y: by + 0.02, w: bw - 0.2, h: barH * 0.5, fontSize: ctx.scale.caption, bold: final, color: fg, align: 'center', valign: 'bottom', singleLine: true });
+        P.ctxText(ctx, slide, t.period, { x: bx + 0.06, y: by + barH * 0.5, w: bw - 0.2, h: barH * 0.46, fontSize: Math.max(8, ctx.scale.source), color: fg, align: 'center', valign: 'top', singleLine: true });
+      } else P.ctxText(ctx, slide, t.label || '', { x: bx + 0.06, y: by, w: bw - 0.2, h: barH, fontSize: ctx.scale.caption, bold: final, color: fg, align: 'center', valign: 'middle', singleLine: true });
+    });
+    y += rowH + gaps;
+  });
+  // 공통 띠 (기반 연구·협의): 회색 화살표
+  if (bands.length) {
+    const head = ctx.pal.dark ? ctx.pal.surface_strong : (ctx.tok.cover.band_color || ctx.pal.ink_strong);
+    P.rect(ctx, slide, { x: body.x, y, w: labelW, h: bandH }, { fill: head, radius: ctx.tok.geometry.radius });
+    P.ctxText(ctx, slide, k.bands_label || '공통 기반', { x: body.x, y, w: labelW, h: bandH, fontSize: ctx.scale.body - 1, bold: true, color: 'FFFFFF', align: 'center', valign: 'middle', fontFace: ctx.font.display });
+    bands.forEach((b, bi) => {
+      const from = clamp(Number(b.from || 1), 1, periods.length), to = clamp(Number(b.to || periods.length), from, periods.length);
+      const bx = cx(from - 1) + 0.08, bw = colW * (to - from + 1) - 0.2, by = y + 0.06 + bi * 0.34;
+      slide.addShape(ctx.pres.ShapeType.homePlate, { x: bx, y: by, w: bw, h: 0.28, fill: { color: dark ? ctx.pal.surface : ctx.pal.line }, line: { type: 'none' } });
+      P.ctxText(ctx, slide, b.label || b.text || '', { x: bx + 0.1, y: by, w: bw - 0.3, h: 0.28, fontSize: ctx.scale.caption, color: ctx.pal.ink, valign: 'middle', singleLine: true });
+    });
+    y += bandH + gaps;
+  }
+  // 마일스톤 행
+  if (ms) {
+    const head = ctx.pal.dark ? ctx.pal.surface_strong : (ctx.tok.cover.band_color || ctx.pal.ink_strong);
+    P.rect(ctx, slide, { x: body.x, y, w: labelW, h: msH }, { fill: head, radius: ctx.tok.geometry.radius });
+    P.ctxText(ctx, slide, ms.label || '주요 마일스톤', { x: body.x, y, w: labelW, h: msH, fontSize: ctx.scale.body - 1, bold: true, color: 'FFFFFF', align: 'center', valign: 'middle', fontFace: ctx.font.display });
+    P.rect(ctx, slide, { x: gridX, y, w: gridW, h: msH }, { fill: ctx.pal.background, line: ctx.pal.line, lineWidth: 0.5, radius: 0 });
+    (ms.cells || []).slice(0, periods.length).forEach((cell, i) => {
+      if (i > 0) P.vline(ctx, slide, cx(i), y, msH, { color: ctx.pal.line });
+      P.fitBox(ctx, slide, String(cell || '').split('\n'), { x: cx(i) + 0.06, y: y + 0.03, w: colW - 0.12, h: msH - 0.06, name: `milestone ${i + 1}` }, { maxPt: ctx.scale.caption, minPt: Math.max(8, ctx.scale.source), lineHeight: 1.2, paraGapEm: 0, textOptions: { color: ctx.pal.ink, align: 'center', valign: 'middle' } });
+    });
+    y += msH + gaps;
+  }
+  // 기대효과 줄 (테두리 상자 + 세로선 구분)
+  if (eff) {
+    const items = (eff.items || []).slice(0, 5);
+    P.rect(ctx, slide, { x: body.x, y, w: body.w, h: effH }, { line: ctx.pal.ink_strong, lineWidth: 1, radius: ctx.tok.geometry.radius });
+    P.ctxText(ctx, slide, eff.label || '기대효과', { x: body.x + 0.14, y, w: labelW - 0.2, h: effH, fontSize: ctx.scale.body - 1, bold: true, color: ctx.pal.ink_strong, valign: 'middle', fontFace: ctx.font.display });
+    const iw = (body.w - labelW) / Math.max(1, items.length);
+    items.forEach((it, i) => {
+      const ix = body.x + labelW + i * iw;
+      P.vline(ctx, slide, ix, y + 0.08, effH - 0.16, { color: ctx.pal.line });
+      P.ctxText(ctx, slide, String(it), { x: ix + 0.1, y, w: iw - 0.2, h: effH, fontSize: ctx.scale.caption + 1, color: ctx.pal.ink, valign: 'middle', singleLine: true });
+    });
+  }
+}
+
 function custom(ctx, slide, s, body) {
   const fn = ctx.hooks && (ctx.hooks[s.number] || ctx.hooks[String(s.number)]);
   if (!fn) { ctx.warn(`custom 슬라이드 ${s.number}: hooks 파일에 핸들러가 없음 — 빈 본문`, {}); return; }
 }
 
-module.exports = { cover, agenda, executive_summary, section_divider, hero_metric, evidence_chart, comparison, process, roadmap, architecture, matrix, case_study, recommendation, points, statement, data_table, image_focus, team, pricing_or_budget, conclusion, appendix, small_multiples, big_number_stage, tam_nested, logo_wall, before_after, kpi_bento, screen_walkthrough, custom, columns };
+module.exports = { cover, agenda, executive_summary, section_divider, hero_metric, evidence_chart, comparison, process, roadmap, architecture, matrix, case_study, recommendation, points, statement, data_table, image_focus, team, pricing_or_budget, conclusion, appendix, small_multiples, big_number_stage, tam_nested, logo_wall, before_after, kpi_bento, screen_walkthrough, code_block, phase_columns, gantt, custom, columns };

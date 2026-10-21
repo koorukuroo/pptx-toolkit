@@ -1,0 +1,165 @@
+{
+  "version": "0.5",
+  "metadata": {
+    "title": "말을 배우는 기계 — 나로 이해하는 AI",
+    "subtitle": "단어·보상·정렬을 내 하루에서 꺼내 보는 60분",
+    "organization": "가온시립도서관",
+    "presenter": "코어닷투데이",
+    "date": "2026. 11.",
+    "audience": "일반 시민 (성인 60명, 비전공)",
+    "success_condition": "청중이 '기계도 결을 보고 뜻을 안다'는 비유 하나를 기억하고 돌아간다",
+    "delivery_mode": "live",
+    "duration_minutes": 60,
+    "language": "ko-KR",
+    "audience_state": {
+      "initial": "AI는 어렵고 남의 일이라고 느낀다",
+      "desired": "내가 말을 배운 방식과 기계가 배우는 방식이 닮았다고 느낀다"
+    }
+  },
+  "route": {
+    "deck_type": "training_lecture",
+    "style_profile": "lecture_story",
+    "brand_mode": "neutral",
+    "communication_mode": "narrative"
+  },
+  "design_tokens": {},
+  "assets": {
+    "images": {
+      "illust_word": "assets/sample-kiosk.png",
+      "illust_reward": "assets/sample-kiosk.png"
+    }
+  },
+  "evidence": [],
+  "slides": [
+    {
+      "number": 1,
+      "archetype": "cover",
+      "title": "말을 배우는 기계",
+      "role": "hook",
+      "content": {
+        "subtitle": "나로 이해하는 AI — 단어·보상·정렬을 내 하루에서 꺼내 보기",
+        "tagline": "가온시립도서관 시민 강좌"
+      }
+    },
+    {
+      "number": 2,
+      "section": "1부 · 단어",
+      "archetype": "statement",
+      "title": "단어도 그렇다",
+      "role": "hook",
+      "content": {
+        "kicker": "1부 · 단어",
+        "statement": "\"단어도 그렇다.\"",
+        "attribution": "뜻을 몰라도, 결을 보면 안다"
+      }
+    },
+    {
+      "number": 3,
+      "section": "1부 · 단어",
+      "archetype": "statement",
+      "title": "철수는 ___에 가서 주사를 맞았다",
+      "role": "tension",
+      "content": {
+        "label": "Q.",
+        "statement": "\"철수는 ___에 가서\n주사를 맞았다.\"",
+        "emphasis": "___"
+      }
+    },
+    {
+      "number": 4,
+      "section": "1부 · 단어",
+      "archetype": "image_focus",
+      "title": "뜻을 몰라도, 곁을 보면 안다",
+      "role": "method",
+      "content": {
+        "image": "illust_word",
+        "layout": "image-left",
+        "caption": "기계는 단어의 뜻을 배우지 않는다. 어떤 단어 곁에 자주 오는지를 센다.",
+        "points": [
+          "병원 곁에는 주사·의사·접수가 온다",
+          "곁이 비슷하면 뜻도 비슷하다고 본다",
+          "그래서 '약국'과 '병원'은 가까운 단어가 된다"
+        ]
+      }
+    },
+    {
+      "number": 5,
+      "section": "2부 · 보상",
+      "archetype": "statement",
+      "title": "월급은 25일에 나온다. 그런데 왜 금요일 오후가 행복할까",
+      "role": "tension",
+      "content": {
+        "kicker": "2부 · 보상",
+        "statement": "월급은 25일에 나온다.\n그런데 왜, 금요일 오후가\n행복할까?",
+        "emphasis": "행복할까?"
+      }
+    },
+    {
+      "number": 6,
+      "section": "2부 · 보상",
+      "archetype": "image_focus",
+      "title": "기계는 의도가 아니라, 보상을 최적화한다",
+      "role": "method",
+      "content": {
+        "image": "illust_reward",
+        "layout": "image-right",
+        "caption": "점수로 줄 수 없는 것을 어떻게 가르칠까.",
+        "points": [
+          "보상이 있는 행동은 강해진다",
+          "지루함은 호기심의 면역체계다",
+          "새벽 2시의 나를 위한 알고리즘은 없다"
+        ]
+      }
+    },
+    {
+      "number": 7,
+      "section": "3부 · 정렬",
+      "archetype": "statement",
+      "title": "가장 위험한 운전자는 초보가 아니라, 초보인 줄 모르는 운전자다",
+      "role": "proof",
+      "content": {
+        "kicker": "3부 · 정렬",
+        "statement": "가장 위험한 운전자는\n초보가 아니라,\n초보인 줄 모르는 운전자다",
+        "emphasis": "초보인 줄 모르는 운전자다"
+      }
+    },
+    {
+      "number": 8,
+      "section": "3부 · 정렬",
+      "archetype": "points",
+      "title": "같은 질문을 서로 다른 AI에게 던져 본다",
+      "lead": "답이 아니라 차이를 보는 연습",
+      "role": "method",
+      "takeaway": "같은 질문에 다른 답이 나오는 이유가 정렬의 질문이다",
+      "content": {
+        "layout": "rows",
+        "points": [
+          {
+            "heading": "금요일 밤 야근이 3번이면, 그만둬야 할까요?",
+            "detail": "답이 같은가, 근거가 같은가"
+          },
+          {
+            "heading": "친구가 빌린 돈을 안 갚아요. 어떻게 말할까요?",
+            "detail": "누구 편을 드는가"
+          },
+          {
+            "heading": "오늘 저녁 뭐 먹을까요?",
+            "detail": "질문을 되묻는가, 바로 고르는가"
+          }
+        ]
+      }
+    },
+    {
+      "number": 9,
+      "section": "맺음",
+      "archetype": "statement",
+      "title": "기계를 가르치다 보면, 나를 돌아보게 된다",
+      "role": "takeaway",
+      "content": {
+        "statement": "기계를 가르치다 보면,\n나를 돌아보게 된다",
+        "emphasis": "나를 돌아보게 된다",
+        "attribution": "오늘 가져갈 한 문장"
+      }
+    }
+  ]
+}

@@ -205,7 +205,10 @@ def lint_spec(spec: Dict[str, Any], schema_errors: List[str]) -> Dict[str, Any]:
                     add("verification-missing", "info", "검증 기준·산출물 블록(verification) 없음", n)
             if not s.get("tags"):
                 add("tags-missing", "info", "요구 ID 태그(tags) 없음 — 심사위원이 요구사항으로 되돌아갈 수 있게", n)
-        # 제목 규칙 (제안서형에서 대응방안 문장이 주장을 담으면 제목은 짧은 토픽 허용)
+        # 제목 규칙 (제안서형에서 대응방안 문장이, 리드 문장(lead)이 주장을 담으면 제목은 짧은 토픽 허용)
+        lead = (s.get("lead") or "").strip()
+        if not response and lead and VERB_ENDINGS.search(lead):
+            response = lead
         if meta.get("title_required", False) and is_content:
             t_norm = re.sub(r"[\s\d.:：\-–—()\[\]]+", " ", title).strip().lower()
             if t_norm in {x.lower() for x in TOPIC_LABELS} or (len(title) <= 8 and not response):

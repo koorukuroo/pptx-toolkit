@@ -26,6 +26,10 @@ EXAMPLES = {
     "proposal": ("examples/proposal-shipyard-ax.spec.json", ["--hooks", "examples/proposal-hooks.js"]),
     "showcase": ("examples/archetype-showcase.spec.json", []),
     "rfp": ("examples/proposal-rfp.spec.json", []),
+    "rnd": ("examples/rnd-plan.spec.json", []),
+    "cards": ("examples/solution-cards.spec.json", []),
+    "brief": ("examples/briefing-mono.spec.json", []),
+    "lecture": ("examples/lecture-story.spec.json", []),
 }
 
 _TMP = Path(tempfile.mkdtemp(prefix="pptx-toolkit-test-"))
